@@ -407,7 +407,7 @@ def parse_trackline_from_db(
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
-    conn.close()
+    
     
     tables = [table[0] for table in tables]
     for table in tables:
@@ -427,7 +427,7 @@ def parse_trackline_from_db(
                 output_dir = ""
             for i, df in enumerate(validated_subsections):
                 df.to_csv(os.path.join(output_dir, f"{table}_{i}.csv"))
-
+    conn.close()
 
 # General  parsing
 def split_and_validate_dataset(

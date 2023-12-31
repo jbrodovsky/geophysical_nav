@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <h1>Geophysical Nav Data processing</h1>
+
+    <h2>Raw Datasets</h2>
+
+    <!-- List all the tables in tracklines.db -->
+    <ul>
+    {% for table in tables %}
+        <li>{{ table }}</li>
+    {% endfor %}
+    </ul>
+
+    <h2>Upload Raw File</h2>
+
+    <form action="/upload_m77t" method="post" enctype="multipart/form-data">
+        Select file to upload:
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Upload File" name="submit">
+    </form>
+
+    <h2>Parsed trajectories</h2>
+    <ul>
+        {% for trackline in tracklines %}
+            <li>{{ trackline }}</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

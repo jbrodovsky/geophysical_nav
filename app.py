@@ -5,7 +5,7 @@ Flask-based web application for interacting with the geophysical navigation syst
 import os
 import sqlite3
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 from pandas import read_csv
 
@@ -27,7 +27,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "Main page"
+    tables = get_tables(".db/tracklines.db")
+    return render_template("index.html", tables=tables)
+    # return jsonify({"message": tables})
 
 
 # Define a route for uploading a .m77t data file
