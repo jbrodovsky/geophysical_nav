@@ -155,10 +155,12 @@ def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
     datetimes += timezones.astype(str)
     datetimes = pd.to_datetime(datetimes, format="%Y%m%d%H%M%z")
     data.index = datetimes
+    data = data[
+        ["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]
+    ]
     # Clean up the rest of the data frame
-    data = data.drop(columns=["DATE", "TIME", "TIMEZONE", "SURVEY_ID"])
-    data = data.dropna(axis=1, how="all")
-    data = data.dropna(axis=0, how="any")
+    # data = data.dropna(axis=1, how="all")
+    # data = data.dropna(axis=0, how="any")
     # Sort the DataFrame by the index
     data = data.sort_index()
     # Remove duplicate index values
@@ -365,10 +367,11 @@ def parse_trackline_from_file(
         dtype={
             "LAT": float,
             "LON": float,
-            "BAT_TTIME": float,
             "CORR_DEPTH": float,
             "MAG_TOT": float,
             "MAG_RES": float,
+            "GRA_OBS": float,
+            "FREEAIR": float,
         },
     )
     # get the filename without the extension
@@ -379,6 +382,7 @@ def parse_trackline_from_file(
         max_delta_t=max_delta_t,
         min_duration=min_duration,
     )
+    names = [f"{file_name}_{i}" for i in range(len(validated_subsections))]
     # Save off the subsections to CSV files
     if save:
         if output_dir is not None and not os.path.isdir(output_dir):
@@ -388,18 +392,16 @@ def parse_trackline_from_file(
         for i, df in enumerate(validated_subsections):
             df.to_csv(os.path.join(output_dir, f"{file_name}_{i}.csv"))
 
-    return validated_subsections
+    return validated_subsections, names
 
 
 # MGD77T parsing from a database
-def parse_trackline_from_db(
+def parse_tracklines_from_db(
     db_path: str,
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
-    save: bool = False,
-    output_dir: str = None,
-) -> None:
+) -> tuple[list : pd.DataFrame, list:str]:
     """
     Parse a trackline dataset into periods of continuous data.
     """
@@ -407,8 +409,9 @@ def parse_trackline_from_db(
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
-    
-    
+
+    parsed = []
+    names = []
     tables = [table[0] for table in tables]
     for table in tables:
         print(f"Processing: {table}")
@@ -419,15 +422,75 @@ def parse_trackline_from_db(
             max_delta_t=max_delta_t,
             min_duration=min_duration,
         )
+        new_names = [f"{table}_{i}" for i in range(len(validated_subsections))]
+        parsed.extend(validated_subsections)
+        names.extend(new_names)
+
         # Save off the subsections to CSV files
-        if save:
-            if output_dir is not None and not os.path.isdir(output_dir):
-                os.makedirs(output_dir)
-            if output_dir is None:
-                output_dir = ""
-            for i, df in enumerate(validated_subsections):
-                df.to_csv(os.path.join(output_dir, f"{table}_{i}.csv"))
+        # if save:
+        #     if output_dir is not None and not os.path.isdir(output_dir):
+        #         os.makedirs(output_dir)
+        #     if output_dir is None:
+        #         output_dir = ""
+        #     for i, df in enumerate(validated_subsections):
+        #         df.to_csv(os.path.join(output_dir, f"{table}_{i}.csv"))
     conn.close()
+    return parsed, names
+
+
+def get_parsed_data_summary(data: list[pd.DataFrame], names: list[str]) -> pd.DataFrame:
+    """
+    For each dataframe in data, calculate the following: start time, end time, duration, starting latitude and longitude, ending latitude and longitude, and number of data points.
+    """
+
+
+# Next create a function that will save the parsed data to a database
+def save_parsed_dataset(
+    data: list[pd.DataFrame],
+    names: list[str],
+    output_location: str,
+    output_format: str = "db",
+    dataset_name: str = "parsed",
+) -> None:
+    """
+    Used to save the parsed MGD77T data. Data is either saved to a folder as
+    .csv or to a single .db file. Default is .db.
+
+    Parameters
+    ----------
+    :param data: list of dataframes containing the parsed data
+    :type data: list of pandas.DataFrame
+    :param names: list of names of the files
+    :type names: list of strings
+    :param output_location: The file path to the root folder to search.
+    :type output_location: STRING
+    :param output_format: The format for the output (db or csv).
+    :type output_format: STRING
+    :param dataset_name: The name of the dataset to be saved.
+    :type dataset_name: STRING
+
+    Returns
+    -------
+    :returns: none
+    """
+
+    if output_format == "db":
+        conn = sqlite3.connect(os.path.join(output_location, f"{dataset_name}.db"))
+        with sqlite3.connect(
+            os.path.join(output_location, f"{dataset_name}.db")
+        ) as conn:
+            for i, df in enumerate(data):
+                df.to_sql(names[i], conn, if_exists="replace")
+    elif output_format == "csv":
+        for i, df in enumerate(data):
+            df.to_csv(os.path.join(output_location, names[i] + ".csv"))
+
+    else:
+        raise NotImplementedError(
+            f"Output format {output_format} not recognized. Please choose from the "
+            + "following: db, csv"
+        )
+
 
 # General  parsing
 def split_and_validate_dataset(
@@ -435,10 +498,32 @@ def split_and_validate_dataset(
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
+    data_types: list[str] = ["all"],
 ) -> list:
     """
     Split the dataset into periods of continuous data and validate the subsections.
     """
+    # Preprocess the data columns
+    if "any" in data_types:
+        data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
+    elif "all" in data_types:
+        data = data.dropna(axis=1, how="all")
+        data = data.dropna(axis=0, how="any")
+        data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
+    else:
+        data_out = data.loc[:, ("LAT", "LON")]
+        for t in data_types:
+            t = t.lower()
+            if t in ("relief", "depth", "bathy"):
+                data_out["DEPTH"] = data.loc[:, "CORR_DEPTH"]
+            elif t in ("mag", "magnetic"):
+                data_out["MAG_TOT"] = data.loc[:, "MAG_TOT"]
+                data_out["MAG_RES"] = data.loc[:, "MAG_RES"]
+            elif t in ("grav", "gravity"):
+                data_out["GRA_OBS"] = data.loc[:, "GRA_OBS"]
+                data_out["FREEAIR"] = data.loc[:, "FREEAIR"]
+        data = data_out
+
     # Split the dataset into periods of continuous data
     data["DT"] = data.index.to_series().diff()
     data.loc[data.index[0], "DT"] = timedelta(seconds=0)
