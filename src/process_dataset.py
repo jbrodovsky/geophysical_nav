@@ -708,15 +708,6 @@ def table_to_df(db_path: str, table_name: str):
             f"SELECT * FROM {table_name}",
             conn,
             index_col="TIME",
-            dtype={
-                "LAT": float,
-                "LON": float,
-                "CORR_DEPTH": float,
-                "MAG_TOT": float,
-                "MAG_RES": float,
-                "GRA_OBS": float,
-                "FREEAIR": float,
-            },
         )
         data.index = pd.to_datetime(data.index)
 
@@ -737,16 +728,6 @@ def df_to_table(df: pd.DataFrame, db_path: str, table_name: str) -> None:
                 if_exists="replace",
                 index=True,
                 index_label="TIME",
-                dtype={
-                    "TIME": "TIMESTAMP",
-                    "LAT": "FLOAT",
-                    "LON": "FLOAT",
-                    "CORR_DEPTH": "FLOAT",
-                    "MAG_TOT": "FLOAT",
-                    "MAG_RES": "FLOAT",
-                    "GRA_OBS": "FLOAT",
-                    "FREEAIR": "FLOAT",
-                },
             )
     except sqlite3.OperationalError as e:
         print(e)
