@@ -29,23 +29,6 @@ def create_app(test_config=None):
         pass
     # End boiler plate code from Flask tutorial
 
-    # a simple page that says hello
-    @app.route("/hello")
-    def hello():
-        return "Hello, World!"
-
-    # from . import db
-
-    # db.init_app(app)
-
-    # from . import auth
-
-    # app.register_blueprint(auth.bp)
-
-    # from . import blog
-
-    # app.register_blueprint(blog.bp)
-
     app.register_blueprint(home.bp)
     app.add_url_rule("/", endpoint="index")
 
@@ -53,12 +36,12 @@ def create_app(test_config=None):
     # app.add_url_rule("/upload", endpoint="upload")
 
     # Place holder routes
-    @app.route("/run")
-    def run():
-        return jsonify({"message": "Run route"})
+    # @app.route("/run")
+    # def run():
+    #    return jsonify({"message": "Run route"})
 
-    @app.route("/results")
-    def results():
-        return jsonify({"message": "results route"})
+    # @app.route("/results")
+    # def results():
+    #    return jsonify({"message": "results route"})
 
     return app

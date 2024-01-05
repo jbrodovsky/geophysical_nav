@@ -1,6 +1,6 @@
 """
 Tools for interacting with the database. Raw data processing and parsing tools
-should bin in src/process_dataset.py
+should be in src/process_dataset.py
 """
 
 import sqlite3
