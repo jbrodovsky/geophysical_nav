@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Upload .m77t File{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form id="uploadForm" action="/db/upload_m77t" method="post" enctype="multipart/form-data">
+    Select file to upload:
+    <input type="file" name="file" id="file">
+    <input type="submit" value="Upload File" name="submit">
+</form>
+
+<!-- This div will hold the response message -->
+<div id="response"></div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    var formData = new FormData(event.target);
+    fetch(event.target.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('response').textContent = JSON.stringify(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+</script>
+
+{% endblock %}
