@@ -1,6 +1,10 @@
+"""
+GUI for geophysical navigation
+"""
+
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from . import home, db
 
 
@@ -47,5 +51,14 @@ def create_app(test_config=None):
 
     app.register_blueprint(db.up)
     # app.add_url_rule("/upload", endpoint="upload")
+
+    # Place holder routes
+    @app.route("/run")
+    def run():
+        return jsonify({"message": "Run route"})
+
+    @app.route("/results")
+    def results():
+        return jsonify({"message": "results route"})
 
     return app

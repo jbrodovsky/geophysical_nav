@@ -1,16 +1,18 @@
 """
-Toolbox for processing raw data collected from the SensorLogger app and the MGD77T format.
+Toolbox for processing raw data collected from the SensorLogger app and the MGD77T format
+as well as tools for saving and organizing the data into a database in either a SQLite
+based .db formate or a folder of .csv files.
 """
 
 import os
 import argparse
 import fnmatch
+from typing import List
+from datetime import timedelta
+import sqlite3
+
 import pytz
 import pandas as pd
-
-from datetime import timedelta
-
-import sqlite3
 
 
 ##############################################################################
@@ -231,7 +233,23 @@ def save_mgd77_dataset(
             os.path.join(output_location, f"{dataset_name}.db")
         ) as conn:
             for i, df in enumerate(data):
-                df.to_sql(names[i], conn, if_exists="replace")
+                df.to_sql(
+                    names[i],
+                    conn,
+                    if_exists="replace",
+                    index=True,
+                    index_label="TIME",
+                    dtype={
+                        "TIME": "TIMESTAMP",
+                        "LAT": "FLOAT",
+                        "LON": "FLOAT",
+                        "CORR_DEPTH": "FLOAT",
+                        "MAG_TOT": "FLOAT",
+                        "MAG_RES": "FLOAT",
+                        "GRA_OBS": "FLOAT",
+                        "FREEAIR": "FLOAT",
+                    },
+                )
     elif output_format == "csv":
         for i, df in enumerate(data):
             df.to_csv(os.path.join(output_location, names[i] + ".csv"))
@@ -243,6 +261,9 @@ def save_mgd77_dataset(
         )
 
 
+##############################################################################
+### Private Utitilty Functions ###############################################
+##############################################################################
 def _process_mgd77_dataset(folder_path: str) -> (list, list):
     """
     Recursively search through a given folder to find .m77t files. When found,
@@ -280,9 +301,6 @@ def _process_mgd77_dataset(folder_path: str) -> (list, list):
     # data_out.to_csv(os.path.join(output_path, f"{name}.csv"))
 
 
-##############################################################################
-### Private Utitilty Functions ###############################################
-##############################################################################
 def _search_folder(folder_path: str, extension: str) -> list:
     """
     Recursively search through a given folder to find files of a given file's
@@ -357,7 +375,7 @@ def parse_trackline_from_file(
     output_dir: str = None,
 ) -> list:
     """
-    Parse a trackline dataset into periods of continuous data.
+    Parse a single trackline dataset csv into periods of continuous data.
     """
     data = pd.read_csv(
         filepath,
@@ -401,95 +419,162 @@ def parse_tracklines_from_db(
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
+    data_types: List[str] = None,
 ) -> tuple[list : pd.DataFrame, list:str]:
     """
-    Parse a trackline dataset into periods of continuous data.
+    Parse a trackline database into periods of continuous data.
     """
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = cursor.fetchall()
-
+    tables = get_tables(db_path)
     parsed = []
-    names = []
-    tables = [table[0] for table in tables]
+    parsed_names = []
     for table in tables:
         print(f"Processing: {table}")
-        data = pd.read_sql_query(f"SELECT * FROM {table}", conn)
-        validated_subsections = split_and_validate_dataset(
-            data,
-            max_time=max_time,
-            max_delta_t=max_delta_t,
-            min_duration=min_duration,
-        )
-        new_names = [f"{table}_{i}" for i in range(len(validated_subsections))]
-        parsed.extend(validated_subsections)
-        names.extend(new_names)
+        data = table_to_df(db_path, table)
+        for data_type in data_types:
+            if isinstance(data_type, str):
+                type_string = validate_data_type_string(data_type)
+            elif isinstance(data_type, list):
+                type_string = ""
+                for dt in data_type:
+                    type_string += validate_data_type_string(dt)
+            else:
+                raise NotImplementedError(f"Data type {type(data_type)} not supported.")
+            validated_subsections = split_and_validate_dataset(
+                data,
+                max_time=max_time,
+                max_delta_t=max_delta_t,
+                min_duration=min_duration,
+                data_types=type_string,
+            )
+            new_names = [
+                f"{table}_{type_string}_{i}" for i in range(len(validated_subsections))
+            ]
+            parsed.extend(validated_subsections)
+            parsed_names.extend(new_names)
 
-        # Save off the subsections to CSV files
-        # if save:
-        #     if output_dir is not None and not os.path.isdir(output_dir):
-        #         os.makedirs(output_dir)
-        #     if output_dir is None:
-        #         output_dir = ""
-        #     for i, df in enumerate(validated_subsections):
-        #         df.to_csv(os.path.join(output_dir, f"{table}_{i}.csv"))
-    conn.close()
-    return parsed, names
+    return parsed, parsed_names
+
+
+def validate_data_type_string(data_type: str) -> str:
+    """
+    Checks for valid data type strings and standardizes the input
+    """
+    valid_string = ""
+    data_type = data_type.lower()
+    if data_type == "all":
+        return "DGM"
+    if data_type in ("relief", "depth", "bathy"):
+        valid_string += "D"
+    if data_type in ("grav", "gravity"):
+        valid_string += "G"
+    if data_type in ("mag", "magnetic"):
+        valid_string += "M"
+    if data_type not in (
+        "relief",
+        "depth",
+        "bathy",
+        "mag",
+        "magnetic",
+        "grav",
+        "gravity",
+    ):
+        raise NotImplementedError(
+            f"Data type {data_type} not recognized. Please choose from the following: "
+            + "relief, depth, bathy, mag, magnetic, grav, gravity"
+        )
+    return valid_string
 
 
 def get_parsed_data_summary(data: list[pd.DataFrame], names: list[str]) -> pd.DataFrame:
     """
-    For each dataframe in data, calculate the following: start time, end time, duration, starting latitude and longitude, ending latitude and longitude, and number of data points.
+    For each dataframe in data, calculate the following: start time, end time, duration,
+    starting latitude and longitude, ending latitude and longitude, and number of data
+    points.
     """
+    summary = pd.DataFrame(
+        columns=[
+            "num_points",
+            "start_time",
+            "end_time",
+            "duration",
+            "start_lat",
+            "start_lon",
+            "end_lat",
+            "end_lon",
+            "depth_mean",
+            "depth_std",
+            "depth_range",
+            "grav_mean",
+            "grav_std",
+            "grav_range",
+            "mag_mean",
+            "mag_std",
+            "mag_range",
+        ]
+    )
+    for df, name in zip(data, names):
+        start_time = df.index[0]
+        end_time = df.index[-1]
+        duration = end_time - start_time
+        start_lat = df["LAT"].iloc[0]
+        start_lon = df["LON"].iloc[0]
+        end_lat = df["LAT"].iloc[-1]
+        end_lon = df["LON"].iloc[-1]
+        num_points = len(df)
+        try:
+            depth_mean, depth_std, depth_range = _get_measurement_statistics(
+                df["DEPTH"]
+            )
+        except KeyError:
+            depth_mean = None
+            depth_std = None
+            depth_range = None
+        try:
+            grav_mean, grav_std, grav_range = _get_measurement_statistics(
+                df["GRAV_ANOM"]
+            )
+        except KeyError:
+            grav_mean = None
+            grav_std = None
+            grav_range = None
+        try:
+            mag_mean, mag_std, mag_range = _get_measurement_statistics(df["MAG_RES"])
+        except KeyError:
+            mag_mean = None
+            mag_std = None
+            mag_range = None
+
+        summary.loc[name] = [
+            num_points,
+            start_time,
+            end_time,
+            duration,
+            start_lat,
+            start_lon,
+            end_lat,
+            end_lon,
+            depth_mean,
+            depth_std,
+            depth_range,
+            grav_mean,
+            grav_std,
+            grav_range,
+            mag_mean,
+            mag_std,
+            mag_range,
+        ]
+
+    return summary
 
 
-# Next create a function that will save the parsed data to a database
-def save_parsed_dataset(
-    data: list[pd.DataFrame],
-    names: list[str],
-    output_location: str,
-    output_format: str = "db",
-    dataset_name: str = "parsed",
-) -> None:
+def _get_measurement_statistics(measurement: pd.Series) -> tuple:
     """
-    Used to save the parsed MGD77T data. Data is either saved to a folder as
-    .csv or to a single .db file. Default is .db.
-
-    Parameters
-    ----------
-    :param data: list of dataframes containing the parsed data
-    :type data: list of pandas.DataFrame
-    :param names: list of names of the files
-    :type names: list of strings
-    :param output_location: The file path to the root folder to search.
-    :type output_location: STRING
-    :param output_format: The format for the output (db or csv).
-    :type output_format: STRING
-    :param dataset_name: The name of the dataset to be saved.
-    :type dataset_name: STRING
-
-    Returns
-    -------
-    :returns: none
+    Calculate the mean, standard deviation, and number of data points for a given measurement.
     """
-
-    if output_format == "db":
-        conn = sqlite3.connect(os.path.join(output_location, f"{dataset_name}.db"))
-        with sqlite3.connect(
-            os.path.join(output_location, f"{dataset_name}.db")
-        ) as conn:
-            for i, df in enumerate(data):
-                df.to_sql(names[i], conn, if_exists="replace")
-    elif output_format == "csv":
-        for i, df in enumerate(data):
-            df.to_csv(os.path.join(output_location, names[i] + ".csv"))
-
-    else:
-        raise NotImplementedError(
-            f"Output format {output_format} not recognized. Please choose from the "
-            + "following: db, csv"
-        )
+    mean = measurement.mean()
+    std = measurement.std()
+    meas_range = measurement.max() - measurement.min()
+    return mean, std, meas_range
 
 
 # General  parsing
@@ -498,34 +583,41 @@ def split_and_validate_dataset(
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
-    data_types: list[str] = ["all"],
+    data_types: List[str] = None,
 ) -> list:
     """
     Split the dataset into periods of continuous data and validate the subsections.
     """
-    # Preprocess the data columns
-    if "any" in data_types:
-        data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
-    elif "all" in data_types:
-        data = data.dropna(axis=1, how="all")
-        data = data.dropna(axis=0, how="any")
-        data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
-    else:
-        data_out = data.loc[:, ("LAT", "LON")]
-        for t in data_types:
-            t = t.lower()
-            if t in ("relief", "depth", "bathy"):
-                data_out["DEPTH"] = data.loc[:, "CORR_DEPTH"]
-            elif t in ("mag", "magnetic"):
-                data_out["MAG_TOT"] = data.loc[:, "MAG_TOT"]
-                data_out["MAG_RES"] = data.loc[:, "MAG_RES"]
-            elif t in ("grav", "gravity"):
-                data_out["GRA_OBS"] = data.loc[:, "GRA_OBS"]
-                data_out["FREEAIR"] = data.loc[:, "FREEAIR"]
-        data = data_out
 
-    # Split the dataset into periods of continuous data
-    data["DT"] = data.index.to_series().diff()
+    data_columns = []
+    if data_types is None:
+        data_types = ["DGM"]
+    if "D" in data_types:
+        data_columns.append("CORR_DEPTH")
+    if "G" in data_types:
+        data_columns.append("FREEAIR")
+    if "M" in data_types:
+        data_columns.append("MAG_RES")
+
+    columns_to_copy = ["LAT", "LON"]
+    columns_to_copy.extend(data_columns)
+    data = data[columns_to_copy].copy()
+
+    # Drop the rows that contain N/A values for all of CorrDepth, MagTot, MagRes, GraObs, and FreeAir
+    # data = data.dropna(axis=1, how="all").copy()
+    data = data.dropna(subset=data_columns, how="any", axis=0).copy()
+    # Rename the columns to be more descriptive
+    data = data.rename(columns={"CORR_DEPTH": "DEPTH", "FREEAIR": "GRAV_ANOM"})
+
+    if not isinstance(max_time, timedelta):
+        max_time = timedelta(minutes=max_time)
+    if not isinstance(max_delta_t, timedelta):
+        max_delta_t = timedelta(minutes=max_delta_t)
+    if not isinstance(min_duration, timedelta):
+        min_duration = timedelta(minutes=min_duration)
+
+    # Split the dataset into periods of continuous data collection
+    data["DT"] = data.index.to_series().diff().fillna(pd.Timedelta(seconds=0))
     data.loc[data.index[0], "DT"] = timedelta(seconds=0)
     inds = (data["DT"] > max_time).to_list()
     subsets = find_periods(inds)
@@ -543,6 +635,7 @@ def split_and_validate_dataset(
         # Check that the subsection has at least 2 unique timestamps
         if len(df.index.unique()) < 2:
             continue
+        df = df.drop(columns="DT")
         validated_subsections.append(df)
 
     return validated_subsections
@@ -583,6 +676,128 @@ def split_dataset(df: pd.DataFrame, periods: list) -> list:
     return subsections
 
 
+##############################################################################
+### Database Utility Functions ###############################################
+##############################################################################
+def get_tables(db_path: str):
+    """
+    Get the names of all tables in a database.
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+
+    conn.close()
+
+    # The result is a list of tuples. Convert it to a list of strings.
+    tables = [table[0] for table in tables]
+
+    return tables
+
+
+def table_to_df(db_path: str, table_name: str):
+    """
+    Load and convert a table in a database to a pandas data frame. Thin wrapper
+    around pandas.read_sql_query that specifies the default data format for
+    each column.
+    """
+    with sqlite3.connect(db_path) as conn:
+        data = pd.read_sql_query(
+            f"SELECT * FROM {table_name}",
+            conn,
+            index_col="TIME",
+            dtype={
+                "LAT": float,
+                "LON": float,
+                "CORR_DEPTH": float,
+                "MAG_TOT": float,
+                "MAG_RES": float,
+                "GRA_OBS": float,
+                "FREEAIR": float,
+            },
+        )
+        data.index = pd.to_datetime(data.index)
+
+    return data
+
+
+def df_to_table(df: pd.DataFrame, db_path: str, table_name: str) -> None:
+    """
+    Write a pandas data frame to a table in a database. Thin wrapper around
+    pandas.DataFrame.to_sql that specifies the default data format for each
+    column.
+    """
+    try:
+        with sqlite3.connect(db_path) as conn:
+            df.to_sql(
+                table_name,
+                conn,
+                if_exists="replace",
+                index=True,
+                index_label="TIME",
+                dtype={
+                    "TIME": "TIMESTAMP",
+                    "LAT": "FLOAT",
+                    "LON": "FLOAT",
+                    "CORR_DEPTH": "FLOAT",
+                    "MAG_TOT": "FLOAT",
+                    "MAG_RES": "FLOAT",
+                    "GRA_OBS": "FLOAT",
+                    "FREEAIR": "FLOAT",
+                },
+            )
+    except sqlite3.OperationalError as e:
+        print(e)
+
+    return None
+
+
+def save_dataset(
+    data: list[pd.DataFrame],
+    names: list[str],
+    output_location: str,
+    output_format: str = "db",
+    dataset_name: str = "parsed",
+) -> None:
+    """
+    Used to save the parsed MGD77T data. Data is either saved to a folder as
+    .csv or to a single .db file. Default is .db.
+
+    Parameters
+    ----------
+    :param data: list of dataframes containing the parsed data
+    :type data: list of pandas.DataFrame
+    :param names: list of names of the files
+    :type names: list of strings
+    :param output_location: The file path to the root folder to search.
+    :type output_location: STRING
+    :param output_format: The format for the output (db or csv).
+    :type output_format: STRING
+    :param dataset_name: The name of the dataset to be saved.
+    :type dataset_name: STRING
+
+    Returns
+    -------
+    :returns: none
+    """
+
+    if output_format == "db":
+        for df, name in zip(data, names):
+            df_to_table(df, os.path.join(output_location, f"{dataset_name}.db"), name)
+    elif output_format == "csv":
+        for i, df in enumerate(data):
+            df.to_csv(os.path.join(output_location, f"{names[i]}.csv"))
+
+    else:
+        raise NotImplementedError(
+            f"Output format {output_format} not recognized. Please choose from the "
+            + "following: db, csv"
+        )
+
+
+#######################################################################
 # Command Line Interface
 def parse_args():
     """
@@ -597,7 +812,8 @@ def parse_args():
         "--mode",
         choices=["sensorlogger", "mgd77", "parser"],
         required=True,
-        help="Type of sensor recording to process. Parser is used to parse NOAA datasets in the mgd77t format into continuous datasets.",
+        help="Type of sensor recording to process. Parser is used to parse NOAA datasets "
+        + "in the mgd77t format into continuous datasets.",
     )
     parser.add_argument(
         "--location",
@@ -663,7 +879,8 @@ def main() -> None:
         process_map[args.mode](args)
     else:
         raise NotImplementedError(
-            f"Parser mode type {args.mode} not recognized. Please choose from the following: sensorlogger, mgd77, parser"
+            f"Parser mode type {args.mode} not recognized. Please choose from the following: "
+            + "sensorlogger, mgd77, parser"
         )
 
 
