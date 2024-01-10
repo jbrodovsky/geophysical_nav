@@ -8,17 +8,21 @@ import argparse
 import multiprocessing
 
 from scipy.stats import norm
-from scipy.io import savemat
-from pandas import DataFrame
+from pandas import DataFrame, concat
 from xarray import DataArray
 from haversine import haversine, Unit
 import numpy as np
 from matplotlib import pyplot as plt
 
 from filterpy.monte_carlo import residual_resample
-from gmt_tool import get_map_point, get_map_section, inflate_bounds
-from tools import load_trackline_data
-from pyins.pyins import earth
+from pyins import earth
+from pyins.sim import generate_imu
+
+from .gmt_tool import get_map_point, get_map_section, inflate_bounds
+from .process_dataset import find_periods
+
+# from .tools import load_trackline_data
+
 
 OVERFLOW = 500
 
@@ -129,10 +133,10 @@ def run_particle_filter(
         if i > 0:
             row = item[1]
             # Propagate
-            u = np.asarray([row["vN"], row["vE"], 0])
-            particles = propagate(particles, u, row["DT"].seconds, noise)
+            u = np.asarray([row["VN"], row["VE"], row["VD"]])
+            particles = propagate(particles, u, row["DT"], noise)
             # Update
-            obs = row["CORR_DEPTH"]
+            obs = row["DEPTH"]
             weights = update_relief(particles, geo_map, obs, measurement_sigma)
             # Resample
             inds = residual_resample(weights)
@@ -146,30 +150,31 @@ def run_particle_filter(
 
 # Simulation functions
 def process_particle_filter(
-    path_to_data: str,
+    data: DataFrame,
     configurations: dict,
-    output_dir: str,
     map_type: str = "relief",
     map_resolution: str = "15s",
-):
+) -> DataFrame:
     """
-    Process the particle filter for a given set of configurations
+    Process a single run of the particle filter. This method provides the neccessary
+    pre-processing to load the map and setup the initial conditions for the particle filter
+    that are then given to run_particle_filter().
     """
-    # Load data
-    data = load_trackline_data(path_to_data)
-    # Process filepath for name
-    path, file = os.path.split(path_to_data)
-    name, ext = os.path.splitext(file)
-    # Load map
-    min_lon = data.LON.min()
-    max_lon = data.LON.max()
-    min_lat = data.LAT.min()
-    max_lat = data.LAT.max()
+
+    min_lon = data["LON"].min()
+    max_lon = data["LON"].max()
+    min_lat = data["LAT"].min()
+    max_lat = data["LAT"].max()
     min_lon, min_lat, max_lon, max_lat = inflate_bounds(
         min_lon, min_lat, max_lon, max_lat, 0.25
     )
     geo_map = get_map_section(
-        min_lon, max_lon, min_lat, max_lat, map_type, map_resolution, name
+        min_lon,
+        max_lon,
+        min_lat,
+        max_lat,
+        map_type,
+        map_resolution,
     )
     # Load initial conditions
     mu = np.asarray([data.iloc[0].LAT, data.iloc[0].LON, 0, 0, 0, 0])
@@ -188,20 +193,46 @@ def process_particle_filter(
 
     n = configurations["n"]
     # Run particle filter
+    # estimates = []
+    # rms_errors = []
+    # try:
+    #    repetitions = configurations["reps"]
+    # except KeyError:
+    #    repetitions = 1
+    # for _ in range(repetitions):
     estimate, rms_error = run_particle_filter(
         mu, cov, n, data, geo_map, noise, measurement_sigma
     )
-    # Validate output path
-    if not os.path.exists(os.path.join(output_dir, name, map_type)):
-        os.makedirs(os.path.join(output_dir, name, map_type))
-    # Plot results
-    fig, ax = plot_map_and_trajectory(geo_map, data)
-    fig.savefig(os.path.join(output_dir, name, map_type, "map_and_trajectory.png"))
-    fig, ax = plot_estimate(geo_map, data, estimate)
-    fig.savefig(os.path.join(output_dir, name, map_type, "estimate.png"))
-    fig, ax = plot_error(data, rms_error)
-    fig.savefig(os.path.join(output_dir, name, map_type, "error.png"))
-    plt.close("all")
+    #    estimates.append(estimate)
+    #    rms_errors.append(rms_error)
+
+    # # Validate output path
+    # if not os.path.exists(os.path.join(output_dir, name, map_type)):
+    #     os.makedirs(os.path.join(output_dir, name, map_type))
+    # # Plot results
+    # fig, ax = plot_map_and_trajectory(geo_map, data)
+    # fig.savefig(os.path.join(output_dir, name, map_type, "map_and_trajectory.png"))
+    # fig, ax = plot_estimate(geo_map, data, estimate)
+    # fig.savefig(os.path.join(output_dir, name, map_type, "estimate.png"))
+    # fig, ax = plot_error(data, rms_error)
+    # fig.savefig(os.path.join(output_dir, name, map_type, "error.png"))
+    # plt.close("all")
+    data[["PF_LAT", "PF_LON", "PF_DEPTH", "PF_VN", "PF_VE", "PF_VD"]] = estimate
+    data["RMSE"] = rms_error
+    return data, geo_map
+
+
+def populate_velocities(data: DataFrame) -> DataFrame:
+    """
+    Populate the velocity columns in the dataframe using the
+    lat, lon, and dt columns.
+    """
+    lla = data.loc[:, ["LAT", "LON"]].values
+    lla = np.hstack((lla, np.zeros((lla.shape[0], 1))))
+    data["DT"] = data.index.to_series().diff().dt.total_seconds().fillna(0)
+    traj, _ = generate_imu(data["DT"].cumsum().values, lla, np.zeros_like(lla))
+    data[["VN", "VE", "VD"]] = traj[["VN", "VE", "VD"]].values
+    return data
 
 
 # Error functions
@@ -288,7 +319,6 @@ def plot_map_and_trajectory(
 def plot_estimate(
     geo_map: DataArray,
     data: DataFrame,
-    estimate: np.array,
     title_str: str = "Particle Filter Estimate",
     title_size: int = 20,
     xlabel_str: str = "Lon (deg)",
@@ -328,7 +358,7 @@ def plot_estimate(
     ax.set_ylabel(ylabel_str, fontsize=ylabel_size)
     ax.set_title(title_str, fontsize=title_size)
 
-    ax.plot(estimate[:, 1], estimate[:, 0], "g.", label="PF Estimate")
+    ax.plot(data.PF_LON, data.PF_LAT, "g.", label="PF Estimate")
     ax.axis("image")
     ax.legend()
     return fig, ax
@@ -337,8 +367,6 @@ def plot_estimate(
 # Plot the particle filter error characteristics
 def plot_error(
     data: DataFrame,
-    rms_error: np.array,
-    res: float = None,
     title_str: str = "Particle Filter Error",
     title_size: int = 20,
     xlabel_str: str = "Time (hours)",
@@ -346,6 +374,7 @@ def plot_error(
     ylabel_str: str = "Error (m)",
     ylabel_size: int = 14,
     max_error: int = 5000,
+    annotations: dict = None,
 ) -> tuple:
     """
     Plot the error characteristics of the particle filter with respect to
@@ -381,14 +410,42 @@ def plot_error(
     """
     # res = haversine((0, 0), (geo_map.lat[1] - geo_map.lat[0], 0), Unit.METERS)
     fig, ax = plt.subplots(1, 1, figsize=(16, 8))
-    time = data.index - data.index[0]
-    if res is not None:
-        ax.plot(
-            time / timedelta(hours=1),
-            np.ones_like(time) * res,
-            label="Pixel Resolution",
-        )
-    ax.plot(time / timedelta(hours=1), rms_error, label="RMSE")
+    time = (data.index - data.index[0]) / timedelta(hours=1)
+
+    ax.plot(time, data.RMSE, label="RMSE")
+
+    if annotations is not None:
+        if annotations["recovery"] is not None:
+            ax.plot(
+                time,
+                np.ones_like(time) * annotations["recovery"],
+                label="Recovery",
+            )
+            # highlight the area undereath the points where the error is less than the pixel resolution
+            ax.fill_between(
+                time,
+                data.RMSE.values,
+                np.ones_like(time) * annotations["recovery"],
+                where=data.RMSE.values < annotations["recovery"],
+                color="blue",
+                alpha=0.25,
+            )
+        if annotations["res"] is not None:
+            ax.plot(
+                time,
+                np.ones_like(time) * annotations["res"],
+                label="Pixel Resolution",
+            )
+            # highlight the area undereath the points where the error is less than the pixel resolution
+            ax.fill_between(
+                time,
+                data.RMSE.values,
+                np.ones_like(time) * annotations["res"],
+                where=data.RMSE.values < annotations["res"],
+                color="green",
+                alpha=0.25,
+            )
+
     # ax.plot(data['TIME'] / timedelta(hours=1), weighted_rmse, label='Weighted RMSE')
     ax.set_xlabel(xlabel_str, fontsize=xlabel_size)
     ax.set_ylabel(ylabel_str, fontsize=ylabel_size)
@@ -396,6 +453,42 @@ def plot_error(
     ax.set_ylim([0, max_error])
     ax.legend()
     return fig, ax
+
+
+def summarize_results(results: DataFrame, threshold: float):
+    under_threshold = results["RMSE"].to_numpy() <= threshold
+    # Default behavior for find_periods is to find transitions from False to True
+    recoveries = find_periods(~under_threshold)
+
+    start = []
+    end = []
+    duration = []
+    average_error = []
+    min_error = []
+    max_error = []
+
+    for recovery in recoveries:
+        start_time = results.index[recovery[0]]
+        end_time = results.index[recovery[1]]
+        if end_time > start_time:
+            start.append(start_time)
+            end.append(end_time)
+            duration.append(end_time - start_time)
+            average_error.append(results[recovery[0] : recovery[1]].RMSE.mean())
+            min_error.append(results[recovery[0] : recovery[1]].RMSE.min())
+            max_error.append(results[recovery[0] : recovery[1]].RMSE.max())
+
+    summary = DataFrame(
+        {
+            "start": start,
+            "end": end,
+            "duration": duration,
+            "average_error": average_error,
+            "min error": min_error,
+            "max error": max_error,
+        }
+    )
+    return summary
 
 
 def parse_args():

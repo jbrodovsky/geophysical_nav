@@ -439,6 +439,7 @@ def parse_tracklines_from_db(
                     type_string += validate_data_type_string(dt)
             else:
                 raise NotImplementedError(f"Data type {type(data_type)} not supported.")
+            # print(f"Processing for data type: {type_string}")
             validated_subsections = split_and_validate_dataset(
                 data,
                 max_time=max_time,
@@ -606,6 +607,8 @@ def split_and_validate_dataset(
     # Drop the rows that contain N/A values for all of CorrDepth, MagTot, MagRes, GraObs, and FreeAir
     # data = data.dropna(axis=1, how="all").copy()
     data = data.dropna(subset=data_columns, how="any", axis=0).copy()
+    if len(data) == 0:
+        return []
     # Rename the columns to be more descriptive
     data = data.rename(columns={"CORR_DEPTH": "DEPTH", "FREEAIR": "GRAV_ANOM"})
 
@@ -705,7 +708,7 @@ def table_to_df(db_path: str, table_name: str):
     """
     with sqlite3.connect(db_path) as conn:
         data = pd.read_sql_query(
-            f"SELECT * FROM {table_name}",
+            f"SELECT * FROM '{table_name}'",
             conn,
             index_col="TIME",
         )
