@@ -1,7 +1,7 @@
 """
 Toolbox for processing raw data collected from the SensorLogger app and the MGD77T format
 as well as tools for saving and organizing the data into a database in either a SQLite
-based .db formate or a folder of .csv files.
+based .db format or a folder of .csv files.
 """
 
 import os
@@ -171,7 +171,9 @@ def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def process_mgd77(location: str) -> None:
+def process_mgd77(
+    location: str,
+) -> None:
     """
     Processes the raw .m77t file(s) from NOAA. May be a single file or a folder.
     If a folder is specified, the function will recursively search through the
@@ -187,14 +189,17 @@ def process_mgd77(location: str) -> None:
     :returns: data: list of dataframes containing the processed data
     :returns: names: list of names of the files
     """
+    data = []
+    names = []
 
-    if os.path.isdir(location):
-        data, names = _process_mgd77_dataset(location)
-    else:
-        filename = location.split("\\")[-1]
-        names = [filename.split(".m77t")[0] + ".csv"]
-        data = pd.read_csv(location, sep="\t", header=0)
-        data = m77t_to_df(data)
+    for root, _, files in os.walk(location):
+        for file in files:
+            if file.endswith(".m77t"):
+                df = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
+                df = m77t_to_df(df)
+                data.append(df)
+                names.append(file.split(".m77t")[0])
+
     return data, names
 
 
@@ -439,6 +444,7 @@ def parse_tracklines_from_db(
                     type_string += validate_data_type_string(dt)
             else:
                 raise NotImplementedError(f"Data type {type(data_type)} not supported.")
+            # print(f"Processing for data type: {type_string}")
             validated_subsections = split_and_validate_dataset(
                 data,
                 max_time=max_time,
@@ -606,6 +612,8 @@ def split_and_validate_dataset(
     # Drop the rows that contain N/A values for all of CorrDepth, MagTot, MagRes, GraObs, and FreeAir
     # data = data.dropna(axis=1, how="all").copy()
     data = data.dropna(subset=data_columns, how="any", axis=0).copy()
+    if len(data) == 0:
+        return []
     # Rename the columns to be more descriptive
     data = data.rename(columns={"CORR_DEPTH": "DEPTH", "FREEAIR": "GRAV_ANOM"})
 
@@ -705,7 +713,7 @@ def table_to_df(db_path: str, table_name: str):
     """
     with sqlite3.connect(db_path) as conn:
         data = pd.read_sql_query(
-            f"SELECT * FROM {table_name}",
+            f"SELECT * FROM '{table_name}'",
             conn,
             index_col="TIME",
         )
@@ -785,10 +793,11 @@ def parse_args():
     Command line interface argument parser.
     """
     parser = argparse.ArgumentParser(
-        prog="SensorLoggerProcessor",
-        description="Post-process the raw datasets collected by the Sensor Logger App",
+        prog="Dataset Processing Tool",
+        description="Pre-process the raw datasets",
     )
-
+    parser.add_argument("--mdg77", action="store_true", help="Process MGD77T datasets")
+    parser.add_argument("--parse", action="store_true", help="Parse datasets mode")
     parser.add_argument(
         "--mode",
         choices=["sensorlogger", "mgd77", "parser"],
@@ -851,18 +860,18 @@ def main() -> None:
     """
     args = parse_args()
 
-    process_map = {
-        "sensorlogger": process_sensorlogger,
-        "mgd77": process_mgd77,
-        "parser": parse_dataset_from_folder,
-    }
-    if args.mode in process_map:
-        process_map[args.mode](args)
-    else:
-        raise NotImplementedError(
-            f"Parser mode type {args.mode} not recognized. Please choose from the following: "
-            + "sensorlogger, mgd77, parser"
-        )
+    # process_map = {
+    #     "sensorlogger": process_sensorlogger,
+    #     "mgd77": process_mgd77,
+    #     "parser": parse_dataset_from_folder,
+    # }
+    # if args.mode in process_map:
+    #     process_map[args.mode](args)
+    # else:
+    #     raise NotImplementedError(
+    #         f"Parser mode type {args.mode} not recognized. Please choose from the following: "
+    #         + "sensorlogger, mgd77, parser"
+    #     )
 
 
 if __name__ == "__main__":

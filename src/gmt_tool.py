@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 import xarray as xr
 from numpy import ndarray
 
-from tools import wrap_to_180
+from .tools import wrap_to_180
 
 
 def get_map_section(
@@ -53,7 +53,9 @@ def get_map_section(
     :returns: xarray.DataArray
 
     """
-    _get_map_section(west_lon, east_lon, south_lat, north_lat, map_type, map_res, output_location)
+    _get_map_section(
+        west_lon, east_lon, south_lat, north_lat, map_type, map_res, output_location
+    )
     out = load_map_file(f"{output_location}.nc")
     if not save:
         os.remove(f"{output_location}.nc")
@@ -78,11 +80,14 @@ def get_map_point(geo_map: xr.DataArray, longitudes, latitudes) -> ndarray:
     """
     Wrapper on DataArray.interp() to query the map and simply get the returned values
     """
+    longitudes = xr.DataArray(longitudes)
+    latitudes = xr.DataArray(latitudes)
     vals = geo_map.interp(lon=longitudes, lat=latitudes)
-    if longitudes.shape == latitudes.shape and longitudes.shape > (1,):
-        return vals.data.diagonal()
-    else:
-        return vals.data
+    # if longitudes.shape == latitudes.shape and longitudes.shape > (1,):
+    #    return vals.data.diagonal()
+    # else:
+    #    return vals.data
+    return vals.data
 
 
 def _get_map_section(
@@ -120,8 +125,11 @@ def _get_map_section(
     else:
         map_name += "_p"
 
-    cmd = f"gmt grdcut @{map_name} -Rd{west_lon}/{east_lon}/{south_lat}/{north_lat} " f"-G{output_location}.nc"
-    print(cmd)
+    cmd = (
+        f"gmt grdcut @{map_name} -Rd{west_lon}/{east_lon}/{south_lat}/{north_lat} "
+        f"-G{output_location}.nc"
+    )
+    # print(cmd)
     out = subprocess.run(
         cmd,
         capture_output=True,
@@ -129,7 +137,7 @@ def _get_map_section(
         check=True,
         shell=True,
     )
-    print(out)
+    # print(out)
     return None
 
 
@@ -197,6 +205,12 @@ def inflate_bounds(min_x, min_y, max_x, max_y, inflation_percent):
     width = max_x - min_x
     height = max_y - min_y
 
+    # Check if the width or height is near zero and add a small amount
+    if width <= 1e-6:
+        width = 0.1
+    if height <= 1e-6:
+        height = 0.1
+
     # Calculate the amount to inflate based on the percentage
     inflate_x = width * inflation_percent
     inflate_y = height * inflation_percent
@@ -237,8 +251,12 @@ def main() -> None:
             "03m, 02m, 01m, 30s, 15s, 03s, 01s"
         ),
     )
-    parser.add_argument("--location", default="./", required=False, help="File location to save output.")
-    parser.add_argument("--name", default="map", required=False, help="Output file name.")
+    parser.add_argument(
+        "--location", default="./", required=False, help="File location to save output."
+    )
+    parser.add_argument(
+        "--name", default="map", required=False, help="Output file name."
+    )
     # add arguements to the parser for west longitude, east longitude, south latitude,
     # and north latitude
     parser.add_argument(
