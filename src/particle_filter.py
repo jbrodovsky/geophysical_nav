@@ -13,6 +13,7 @@ from xarray import DataArray
 from haversine import haversine, Unit
 import numpy as np
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from filterpy.monte_carlo import residual_resample
 from pyins import earth
@@ -129,7 +130,7 @@ def run_particle_filter(
     estimate = [weights @ particles]
     rms_error[0] = rmse(particles, (data.iloc[0].LAT, data.iloc[0].LON))
 
-    for i, item in enumerate(data.iterrows()):
+    for i, item in tqdm(enumerate(data.iterrows())):
         if i > 0:
             row = item[1]
             # Propagate
