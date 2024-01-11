@@ -53,14 +53,14 @@ def main():
     if not os.path.exists(os.path.join(PLOTS_OUTPUT, "errors")):
         os.makedirs(os.path.join(PLOTS_OUTPUT, "errors"))
     print("Begginnig processing")
-    # with mp.Pool(processes=8) as pool:
-    #     pool.starmap(
-    #         multiprocessing_wrapper,
-    #         [(table, config, ANNOTATIONS) for table in bathy_tables],
-    #         chunksize=2,
-    #     )
-    for table in bathy_tables:
-        multiprocessing_wrapper(table, config, ANNOTATIONS)
+    with mp.Pool(processes=8) as pool:
+        pool.starmap(
+            multiprocessing_wrapper,
+            [(table, config, ANNOTATIONS) for table in bathy_tables],
+            chunksize=2,
+        )
+    # for table in bathy_tables:
+    #     multiprocessing_wrapper(table, config, ANNOTATIONS)
 
 
 def multiprocessing_wrapper(table, config, annotations):

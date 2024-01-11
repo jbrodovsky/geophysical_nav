@@ -13,7 +13,6 @@ from xarray import DataArray
 from haversine import haversine, Unit
 import numpy as np
 from matplotlib import pyplot as plt
-from tqdm import tqdm
 
 from filterpy.monte_carlo import residual_resample
 from pyins import earth
@@ -130,7 +129,7 @@ def run_particle_filter(
     estimate = [weights @ particles]
     rms_error[0] = rmse(particles, (data.iloc[0].LAT, data.iloc[0].LON))
 
-    for i, item in tqdm(enumerate(data.iterrows())):
+    for i, item in enumerate(data.iterrows()):
         if i > 0:
             row = item[1]
             # Propagate
@@ -143,10 +142,14 @@ def run_particle_filter(
             inds = residual_resample(weights)
             particles[:] = particles[inds]
             # Calculate estimate and error
-            estimate.append(weights @ particles)
+            estimate_ = weights @ particles
+            estimate.append(estimate_)
             rms_error[i] = rmse(particles, (row.LAT, row.LON))
+            error[i] = haversine(
+                (row.LAT, row.LON), (estimate_[0], estimate_[1]), Unit.METERS
+            )
     estimate = np.asarray(estimate)
-    return estimate, rms_error
+    return estimate, rms_error, error
 
 
 # Simulation functions
@@ -201,7 +204,7 @@ def process_particle_filter(
     # except KeyError:
     #    repetitions = 1
     # for _ in range(repetitions):
-    estimate, rms_error = run_particle_filter(
+    estimate, rms_error, error = run_particle_filter(
         mu, cov, n, data, geo_map, noise, measurement_sigma
     )
     #    estimates.append(estimate)
@@ -220,6 +223,7 @@ def process_particle_filter(
     # plt.close("all")
     data[["PF_LAT", "PF_LON", "PF_DEPTH", "PF_VN", "PF_VE", "PF_VD"]] = estimate
     data["RMSE"] = rms_error
+    data["ERROR"] = error
     return data, geo_map
 
 
@@ -414,7 +418,7 @@ def plot_error(
     time = (data.index - data.index[0]) / timedelta(hours=1)
 
     ax.plot(time, data.RMSE, label="RMSE")
-
+    # ax.plot(time, data.ERROR, "--", label="Error")
     if annotations is not None:
         if annotations["recovery"] is not None:
             ax.plot(
