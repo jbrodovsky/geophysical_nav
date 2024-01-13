@@ -351,8 +351,41 @@ def plot_estimate(
     max_lon = data.LON.max()
     min_lat = data.LAT.min()
     max_lat = data.LAT.max()
-    fig, ax = plt.subplots(1, 1, figsize=(16, 8))
-    ax.contourf(geo_map.lon, geo_map.lat, geo_map.data)
+    fig, ax = plt.subplots(1, 1)  # , figsize=(16, 8))
+    contour = ax.contourf(
+        geo_map.lon, geo_map.lat, geo_map.data, cmap="ocean", levels=50
+    )
+    # Set the color map limits
+    # ax.set_clim([-5000, 0])
+    contour.set_clim([-10000, 0])
+    # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the bottom
+    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (
+        ax.get_ylim()[1] - ax.get_ylim()[0]
+    )
+    if aspect_ratio > 1:
+        cbar = fig.colorbar(
+            contour,
+            ax=ax,
+            orientation="horizontal",
+            # fraction=0.1,
+            # pad=0.05,
+            # aspect=50,
+            # shrink=0.5,
+        )
+        cbar.set_label("Depth (m)")
+
+    else:
+        cbar = fig.colorbar(
+            contour,
+            ax=ax,
+            orientation="vertical",
+            # fraction=0.1,
+            # pad=0.05,
+            # aspect=50,
+            #shrink=0.75,
+        )
+        cbar.set_label("Depth (m)")
+
     ax.plot(data.LON, data.LAT, ".r", label="Truth")
     ax.plot(data.iloc[0].LON, data.iloc[0].LAT, "xk", label="Start")
     ax.plot(data.iloc[-1].LON, data.iloc[-1].LAT, "bo", label="Stop")

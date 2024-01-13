@@ -1,7 +1,13 @@
+"""
+Executable for running the particle filter on bathymetry data
+"""
+
 import json
 import os
 import multiprocessing as mp
 import logging
+
+import matplotlib.pyplot as plt
 
 from src.particle_filter import (
     process_particle_filter,
@@ -12,8 +18,6 @@ from src.particle_filter import (
 )
 from src import process_dataset as pdset
 
-import matplotlib.pyplot as plt
-
 CONFIG_FILE = "config.json"
 PLOTS_OUTPUT = ".db/plots"
 ANNOTATIONS = {"recovery": 1852, "res": 1852 / 4}
@@ -23,6 +27,8 @@ SOURCE_TRAJECTORIES = ".db/parsed.db"
 # Create a logger
 logger = logging.getLogger("bathy_pf")
 logger.setLevel(logging.INFO)
+# Add error to logger level
+
 
 # Create a file handler
 handler = logging.FileHandler("bathypf.log")
@@ -53,14 +59,30 @@ def main():
     if not os.path.exists(os.path.join(PLOTS_OUTPUT, "errors")):
         os.makedirs(os.path.join(PLOTS_OUTPUT, "errors"))
     print("Begginnig processing")
-    with mp.Pool(processes=8) as pool:
+    with mp.Pool(processes=mp.cpu_count()) as pool:
         pool.starmap(
             multiprocessing_wrapper,
             [(table, config, ANNOTATIONS) for table in bathy_tables],
             chunksize=2,
         )
     # for table in bathy_tables:
-    #     multiprocessing_wrapper(table, config, ANNOTATIONS)
+    #    multiprocessing_wrapper(table, config, ANNOTATIONS)
+
+    # Second linear pass to check for memory errors
+    completed_tables = pdset.get_tables(".db/results.db")
+    for table in bathy_tables:
+        if table not in completed_tables:
+            multiprocessing_wrapper(table, config, ANNOTATIONS)
+
+    results_tables = pdset.get_tables(".db/results.db")
+    output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
+    for table in results_tables:
+        summary = summarize_results(table, ".db/results.db")
+        summary.to_csv(
+            output_path,
+            mode="a",
+            header=(not os.path.exists(output_path)),
+        )
 
 
 def multiprocessing_wrapper(table, config, annotations):
@@ -73,7 +95,19 @@ def multiprocessing_wrapper(table, config, annotations):
     logger.info("Loaded table: %s", table)
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
-    results, geo_map = process_particle_filter(df, config)
+    try:
+        results, geo_map = process_particle_filter(df, config)
+    # Catch hdf5 errors
+    except OSError as e:
+        logger.error("Error processing table: %s", table)
+        logger.error(e.with_traceback())
+        # traceback.print_exc(file)
+        return
+    # catch other errors
+    except Exception as e:
+        logger.error("Error processing table: %s", table)
+        logger.error(e.with_traceback())
+        return
     logger.info("%s run complete", table)
     pdset.save_dataset(
         [results],
@@ -84,10 +118,12 @@ def multiprocessing_wrapper(table, config, annotations):
     )
     logger.info("Saved results for table: %s", table)
     fig, _ = plot_estimate(geo_map, results)
+    logger.info("Plotting estimate for table: %s", table)
     fig.savefig(os.path.join(PLOTS_OUTPUT, "estimate", f"{table}_estimate.png"))
     plt.close()
     logger.info("Estimate plot saved for table: %s", table)
     fig, _ = plot_error(results, annotations=annotations)
+    logger.info("Plotting error for table: %s", table)
     fig.savefig(os.path.join(PLOTS_OUTPUT, "errors", f"{table}_error.png"))
     plt.close()
     logger.info("Error plot saved for table: %s", table)
