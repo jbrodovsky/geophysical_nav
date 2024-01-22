@@ -58,31 +58,59 @@ def main():
         os.makedirs(os.path.join(PLOTS_OUTPUT, "estimate"))
     if not os.path.exists(os.path.join(PLOTS_OUTPUT, "errors")):
         os.makedirs(os.path.join(PLOTS_OUTPUT, "errors"))
-    print("Begginnig processing")
+    # print("Begginnig processing")
+    # Get completed tables
+    logger.info("Checking for completed tables")
+    try:
+        completed_tables = pdset.get_tables(".db/results.db")
+        remaining_tables = [
+            table for table in bathy_tables if table not in completed_tables
+        ]
+    except FileNotFoundError:
+        completed_tables = []
+        remaining_tables = bathy_tables
+    logger.info("Found completed tables: %s", completed_tables)
+    logger.info("Found remaining tables: %s", remaining_tables)
+    logger.info("Beginning multiprocessing")
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        pool.starmap(
-            multiprocessing_wrapper,
-            [(table, config, ANNOTATIONS) for table in bathy_tables],
-            chunksize=2,
-        )
-    # for table in bathy_tables:
-    #    multiprocessing_wrapper(table, config, ANNOTATIONS)
+        try:
+            pool.starmap(
+                multiprocessing_wrapper,
+                [(table, config, ANNOTATIONS) for table in remaining_tables],
+                # chunksize=2,
+            )
+        except OSError:
+            logger.error("Error in multiprocessing... probably a memory error")
+        except Exception:
+            logger.error("Error in multiprocessing... general error")
 
+    logger.info("Finished multiprocessing")
+    logger.info("Double checking to make sure all tables are complete")
+    # Get completed tables
+    completed_tables = pdset.get_tables(".db/results.db")
+    remaining_tables = [
+        table for table in bathy_tables if table not in completed_tables
+    ]
+    logger.info("Found remaining tables: %s", remaining_tables)
+    logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
     completed_tables = pdset.get_tables(".db/results.db")
     for table in bathy_tables:
         if table not in completed_tables:
             multiprocessing_wrapper(table, config, ANNOTATIONS)
-
+    logger.info("Summizing results"")
     results_tables = pdset.get_tables(".db/results.db")
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
     for table in results_tables:
-        summary = summarize_results(table, ".db/results.db")
+        table = pdset.table_to_df(".db/results.db", table)
+        summary = summarize_results(table, 1852)
         summary.to_csv(
             output_path,
             mode="a",
             header=(not os.path.exists(output_path)),
         )
+    logger.info("Finished summarizing results. Process complete.")
+    
 
 
 def multiprocessing_wrapper(table, config, annotations):

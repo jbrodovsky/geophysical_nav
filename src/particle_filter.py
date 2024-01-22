@@ -382,7 +382,7 @@ def plot_estimate(
             # fraction=0.1,
             # pad=0.05,
             # aspect=50,
-            #shrink=0.75,
+            # shrink=0.75,
         )
         cbar.set_label("Depth (m)")
 
@@ -493,7 +493,7 @@ def plot_error(
     return fig, ax
 
 
-def summarize_results(results: DataFrame, threshold: float):
+def summarize_results(name: str, results: DataFrame, threshold: float):
     under_threshold = results["RMSE"].to_numpy() <= threshold
     # Default behavior for find_periods is to find transitions from False to True
     recoveries = find_periods(~under_threshold)
@@ -504,11 +504,13 @@ def summarize_results(results: DataFrame, threshold: float):
     average_error = []
     min_error = []
     max_error = []
-
+    names = []
+    initial_time = results.index[0]
     for recovery in recoveries:
-        start_time = results.index[recovery[0]]
-        end_time = results.index[recovery[1]]
+        start_time = results.index[recovery[0]] - initial_time
+        end_time = results.index[recovery[1]] - initial_time
         if end_time > start_time:
+            names.append(name)
             start.append(start_time)
             end.append(end_time)
             duration.append(end_time - start_time)
@@ -518,6 +520,7 @@ def summarize_results(results: DataFrame, threshold: float):
 
     summary = DataFrame(
         {
+            "name": names,
             "start": start,
             "end": end,
             "duration": duration,
