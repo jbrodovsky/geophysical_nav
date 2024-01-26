@@ -117,6 +117,7 @@ def run_particle_filter(
     geo_map: DataArray,
     noise: np.ndarray = np.diag([0.1, 0.01, 0]),
     measurement_sigma: float = 15,
+    measurment_type: str = "DEPTH",
 ):
     """
     Run through an instance of the particle filter
@@ -136,7 +137,7 @@ def run_particle_filter(
             u = np.asarray([row["VN"], row["VE"], row["VD"]])
             particles = propagate(particles, u, row["DT"], noise)
             # Update
-            obs = row["DEPTH"]
+            obs = row[measurment_type]
             weights = update_relief(particles, geo_map, obs, measurement_sigma)
             # Resample
             inds = residual_resample(weights)
@@ -188,14 +189,21 @@ def process_particle_filter(
     noise = np.diag(noise)
     if map_type == "relief":
         measurement_sigma = configurations["bathy_std"]
+        measurment_type = "DEPTH"
+        measurement_bias = configurations["bathy_mean_d"]
     elif map_type == "gravity":
         measurement_sigma = configurations["gravity_std"]
+        measurement_bias = configurations["gravity_mean_d"]
+        measurment_type = "GRAV_ANOM"
     elif map_type == "magnetic":
         measurement_sigma = configurations["magnetic_std"]
+        measurement_bias = configurations["magnetic_mean_d"]
+        measurment_type = "MAG_RES"
     else:
         raise ValueError("Map type not recognized")
 
     n = configurations["n"]
+    data[measurment_type] = data[measurment_type] - measurement_bias
     # Run particle filter
     # estimates = []
     # rms_errors = []
