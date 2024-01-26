@@ -1,13 +1,15 @@
 # Geophysical Navigation
+
 Toolbox for INS aiding via geophysical position feedback. Restructuring my old research repo to work here instead.
 
-**Working notes**
+## Working notes
 
 * Restructured the workflow. Flask app was a nice portfolio project, but in reality all I needed was to use an ssh tunnel to the remote machine
-* New workflow:
-  * Develop locally on laptop and run tests
-  * Configure simulations to run in either a notebook or from the command line
-  * Manually or via git transfer the data files (sql or m77t is up for negotiation, sql binaries are actually smaller, probably don't want to just blindly trust that the sql files aren't tampered with on the internet)
-    * -> Manually transfer results using `scp`
-  * Test trajectory processing locally, run actual experiments on server
+  * Update: old remote machine is out of commission for time being. Can run reasonably quickly on laptop with multiprocessing, best bet is to covert over to a serverless application (leaning Azure)
+* Current workflow:
+  1. Download raw `.m77t` files NOAA
+  2. Using notebook, run the *Preprocess tracklines into sql/df format* section clean up the data formate
+  3. Using notebook, run the *Parse the raw data into tracklines of continuous data collections
+  4. Run particle filter sim (`bathy_pf.py`) to processes the data and run post-processing results
+* Tentative ideal future workflow has steps 1-4 above as serverless functions. Steps 2-3 would run automatically on new uploads of `.m77t` data. Step 4 would run on command.
   
