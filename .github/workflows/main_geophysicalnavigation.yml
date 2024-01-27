@@ -53,7 +53,7 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-function.outputs.webapp-url }}
-
+      
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -70,6 +70,6 @@ jobs:
           app-name: 'GeophysicalNavigation'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5D5A4A8BDBB2452D8F4D30D29681BA26 }}
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE}}
           scm-do-build-during-deployment: true
           enable-oryx-build: true
