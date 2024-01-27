@@ -1,18 +1,17 @@
 """
-Basic Azure Function App
+Basic Azure Function App with HTTP Trigger
 """
 import logging
 
 import azure.functions as func
 
-# app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 @app.route(route="http_trigger")
 def http_trigger(req: func.HttpRequest) -> func.HttpResponse:
     """
-    HTTP trigger function that returns a greeting based on the name in the query string or in the request body.
+    HTTP Trigger Function
     """
     logging.info("Python HTTP trigger function processed a request.")
 
