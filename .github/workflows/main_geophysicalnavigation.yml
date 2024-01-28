@@ -33,10 +33,10 @@ jobs:
           conda activate nav
           conda install pip conda-pack
           pip install -r requirements.txt
-      # - name: Pack environment for deployment
-      #   shell: bash -l {0}
-      #   run: |
-      #     conda pack -n nav -o ./nav_env.tar.gz --ignore-missing-files
+      - name: Pack environment for deployment
+        shell: bash -l {0}
+        run: |
+          conda pack -n nav -o ./nav_env.tar.gz --ignore-missing-files
       # - name: Setup Python version
       #   uses: actions/setup-python@v5
       #   with:
@@ -52,14 +52,14 @@ jobs:
       # 
       # # Optional: Add step to run tests here
       # 
-      # - name: Zip artifact for deployment
-      #   run: zip release.zip ./* -r
-      # 
-      # - name: Upload artifact for deployment job
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: python-app
-      #     path: release.zip
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+      
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: release.zip
           # path: |
           #   release.zip
           #   !venv/
@@ -72,15 +72,16 @@ jobs:
     #   url: ${{ steps.deploy-to-function.outputs.webapp-url }}
       
     steps:
-      # - name: Download artifact from build job
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: python-app
-
-#       # - name: Unzip artifact for deployment
-      #   run: |
-      #     unzip release.zip
-      #     conda-unpack
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+      - name: Unzip artifact for deployment
+        run: |
+          unzip release.zip
+          tar -xzf nav_env.tar.gz -C ./nav
+          source nav/bin/activate
+          conda-unpack
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
