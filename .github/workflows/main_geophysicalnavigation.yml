@@ -27,14 +27,16 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           activate-environment: nav
           environment-file: requirements.yml
-      - shell: bash -l {0}
+      - name: Install dependencies
+        shell: bash -l {0}
         run: |
           conda activate nav
           conda install pip conda-pack
           pip install -r requirements.txt
-          conda info
-          conda list
-          conda pack -n nav -o ./nav_env.tar.gz
+      - name: Pack environment for deployment
+        shell: bash -l {0}
+        run: |
+          conda pack -n nav -o ./nav_env.tar.gz --ignore-missing-files
       # - name: Setup Python version
       #   uses: actions/setup-python@v5
       #   with:
