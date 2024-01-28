@@ -79,7 +79,8 @@ jobs:
       - name: Unzip artifact for deployment
         run: |
           unzip release.zip
-          tar -xzf nav_env.tar.gz -C ./nav
+          mkdir nav
+          tar -xzf nav_env.tar.gz -C nav
           source nav/bin/activate
           conda-unpack
 
