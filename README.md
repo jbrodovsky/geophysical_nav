@@ -4,6 +4,8 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+* Restructured virtual environment maintainer: `pygmt` is now available via `pip`
+  * While I kind of prefer `conda`'s method for virtual environment maintenance, between using `pyproject.toml` files to build C++, GMT availble via `pip`, Azure prefering `pip`, I can't really justify using `conda` right now.
 * Restructured the workflow. Flask app was a nice portfolio project, but in reality all I needed was to use an ssh tunnel to the remote machine
   * Update: old remote machine is out of commission for time being. Can run reasonably quickly on laptop with multiprocessing, best bet is to covert over to a serverless application (leaning Azure)
 * Current workflow:
