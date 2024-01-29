@@ -2,17 +2,30 @@
 # The Python Worker is managed by Azure Functions platform
 # Manually managing azure-functions-worker may cause unexpected issues
 
+# Azure requirementes
 azure-functions
+# Python build requirements
+wheel
+# Particle filter requirements
 filterpy
 haversine
-haversine
-matplotlib
-netcdf4
 numpy
 pandas
-scipy
-tqdm
-xarray
+pytz
+matplotlib
 pygmt
 pytz
+h5py
+# General simulaiton development and prototyping requirements
+tqdm
+notebook
+# Web app requirements
 flask
+# Documentation requirements
+sphinx
+pandoc
+# Testing and linting requirements
+pytest
+pylint
+black
+flake8
