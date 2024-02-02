@@ -16,6 +16,7 @@ matplotlib
 pygmt
 pytz
 h5py
+scipy
 # General simulaiton development and prototyping requirements
 tqdm
 notebook

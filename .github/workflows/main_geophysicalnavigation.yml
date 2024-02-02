@@ -5,10 +5,12 @@
 name: Build and deploy Python project to Azure Function App - GeophysicalNavigation
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  release:
+    types: [created]
+  # push:
+  #   branches:
+  #     - main
+  # workflow_dispatch:
 
 env:
   AZURE_FUNCTIONAPP_NAME: GeophysicalNavigation # set this to your application's name

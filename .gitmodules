@@ -1,0 +1,3 @@
+[submodule "pyins"]
+	path = pyins
+	url = https://github.com/nmayorov/pyins.git

@@ -1,5 +1,7 @@
 .db
 .gpteng
+source_data
+
 
 __azurite_db_blob__.json
 __azurite_db_blob_extent.json
