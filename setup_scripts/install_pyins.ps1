@@ -22,13 +22,13 @@ git clone https://github.com/nmayorov/pyins.git
 # Navigate into the pyins directory
 Set-Location -Path .\pyins
 
-# Install pyins with pip
-Write-Host "Installing pyins"
-pip install .
-
 # Run the tests to ensure everything is working correctly
 Write-Host "Running tests"
 pytest
+
+# Install pyins with pip
+Write-Host "Installing pyins"
+pip install .
 
 # Navigate back to the original directory
 Write-Host "Removing the pyins directory"
