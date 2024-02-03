@@ -2,7 +2,6 @@
 .gpteng
 source_data/
 .venv
-*.m77t
 .logs
 
 GeophysicalNavigation.PublishSettings

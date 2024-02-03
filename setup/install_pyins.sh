@@ -24,13 +24,13 @@ git clone https://github.com/nmayorov/pyins.git
 # Navigate into the pyins directory
 cd pyins
 
-# Run the tests to ensure everything is working correctly
-echo "Running tests"
-pytest
-
 # Install pyins with pip
 echo "Installing pyins"
 pip install .
+
+# Run the tests to ensure everything is working correctly
+echo "Running tests"
+pytest
 
 # Navigate back to the original directory
 echo "Removing the pyins directory"

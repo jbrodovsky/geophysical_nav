@@ -6,6 +6,7 @@ import os
 import sqlite3
 from datetime import timedelta
 from typing import List
+import argparse
 
 import pandas as pd
 
@@ -108,6 +109,8 @@ def save_mgd77_dataset(
     -------
     :returns: none
     """
+    if not os.path.isdir(output_location):
+        os.makedirs(output_location)
 
     if output_format == "db":
         conn = sqlite3.connect(os.path.join(output_location, f"{dataset_name}.db"))
@@ -205,13 +208,13 @@ def parse_trackline_from_file(
     )
     names = [f"{file_name}_{i}" for i in range(len(validated_subsections))]
     # Save off the subsections to CSV files
-    if save:
-        if output_dir is not None and not os.path.isdir(output_dir):
-            os.makedirs(output_dir)
-        if output_dir is None:
-            output_dir = ""
-        for i, df in enumerate(validated_subsections):
-            df.to_csv(os.path.join(output_dir, f"{file_name}_{i}.csv"))
+    # if save:
+    #     if output_dir is not None and not os.path.isdir(output_dir):
+    #         os.makedirs(output_dir)
+    #     if output_dir is None:
+    #         output_dir = ""
+    #     for i, df in enumerate(validated_subsections):
+    #         df.to_csv(os.path.join(output_dir, f"{file_name}_{i}.csv"))
 
     return validated_subsections, names
 
@@ -474,3 +477,37 @@ def split_dataset(df: pd.DataFrame, periods: list) -> list:
         subsection = df.iloc[start : end + 1]  # Add 1 to include the end index
         subsections.append(subsection)
     return subsections
+
+
+def parse_args():
+    """
+    Parse the command line arguments for the MGD77T toolbox.
+    """
+
+    parser = argparse.ArgumentParser(prog="M77T Processing Tool", description="Process MGD77T data.")
+    parser.add_argument(
+        "--location",
+        type=str,
+        help="The file path to the root folder to search for .m77t files.",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="The file path to the root folder to save the output.",
+    )
+    parser.add_argument(
+        "--format",
+        type=str,
+        default="db",
+        help="The format for the output (db or csv).",
+    )
+    args = parser.parse_args()
+    return args
+
+def main():
+    args = parse_args()
+    data, names = process_mgd77(args.location)
+    save_mgd77_dataset(data, names, args.output, args.format)
+
+if __name__ == "__main__":
+    main()
