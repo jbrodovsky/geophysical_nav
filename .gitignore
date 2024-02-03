@@ -2,7 +2,7 @@
 .gpteng
 ./source_data
 .venv
-
+*.m77t
 
 __azurite_db_blob__.json
 __azurite_db_blob_extent.json
