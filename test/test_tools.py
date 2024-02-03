@@ -4,7 +4,7 @@ Unit tests for tools.py
 
 import unittest
 import math
-from tools import (
+from src.geophysical.tools import (
     load_trackline_data,
     haversine_angle,
     wrap_to_pi,

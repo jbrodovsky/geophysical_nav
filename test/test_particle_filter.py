@@ -8,7 +8,7 @@ import unittest
 from haversine import haversine
 from haversine import Unit
 import numpy as np
-from particle_filter import rmse
+from src.geophysical.particle_filter import rmse
 
 
 class TestParticleFilter(unittest.TestCase):

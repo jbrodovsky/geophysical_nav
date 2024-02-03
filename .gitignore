@@ -1,6 +1,7 @@
 .db
 .gpteng
 source_data
+.venv
 
 
 __azurite_db_blob__.json
