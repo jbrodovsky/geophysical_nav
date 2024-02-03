@@ -5,16 +5,16 @@ should be in src/process_dataset.py
 
 import sqlite3
 
-from flask import request, jsonify, Blueprint, render_template
+from flask import Blueprint, jsonify, render_template, request
 from pandas import read_csv, read_sql_query
 from werkzeug.utils import secure_filename
 
 from ..src.process_dataset import (
+    get_parsed_data_summary,
+    get_tables,
     m77t_to_df,
     parse_tracklines_from_db,
     save_dataset,
-    get_tables,
-    get_parsed_data_summary,
 )
 
 up = Blueprint("db", __name__, url_prefix="/db")
@@ -122,9 +122,7 @@ def parse_tracklines():
         ],
     )
     # Save the parsed data to the database
-    save_dataset(
-        data, names, output_location=".db", output_format="db", dataset_name="parsed"
-    )
+    save_dataset(data, names, output_location=".db", output_format="db", dataset_name="parsed")
     summary = get_parsed_data_summary(data, names)
     save_dataset(
         summary,

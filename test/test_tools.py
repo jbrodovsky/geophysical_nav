@@ -2,15 +2,16 @@
 Unit tests for tools.py
 """
 
-import unittest
 import math
+import unittest
+
 from src.geophysical.tools import (
-    load_trackline_data,
     haversine_angle,
-    wrap_to_pi,
+    load_trackline_data,
     wrap_to_2pi,
     wrap_to_180,
     wrap_to_360,
+    wrap_to_pi,
 )
 
 

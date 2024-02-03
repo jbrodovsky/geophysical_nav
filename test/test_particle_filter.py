@@ -5,9 +5,10 @@ Test the particle filter implementation.
 
 
 import unittest
-from haversine import haversine
-from haversine import Unit
+
 import numpy as np
+from haversine import Unit, haversine
+
 from src.geophysical.particle_filter import rmse
 
 
@@ -56,9 +57,7 @@ class TestParticleFilter(unittest.TestCase):
         """
         particles = [(1, 1), (2, 2), (3, 3)]
         truth = (0, 0)
-        expected = np.sqrt(
-            np.mean([haversine(truth, p, Unit.METERS) ** 2 for p in particles])
-        )
+        expected = np.sqrt(np.mean([haversine(truth, p, Unit.METERS) ** 2 for p in particles]))
         self.assertAlmostEqual(rmse(particles, truth), expected, places=5)
 
 

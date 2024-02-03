@@ -5,9 +5,9 @@ Flask-based web application for interacting with the geophysical navigation syst
 import os
 import sqlite3
 
-from flask import Flask, request, jsonify, render_template
-from werkzeug.utils import secure_filename
+from flask import Flask, jsonify, render_template, request
 from pandas import read_csv
+from werkzeug.utils import secure_filename
 
 from src.process_dataset import m77t_to_df
 
@@ -51,9 +51,7 @@ def upload_m77t():
         data = m77t_to_df(data)
         tables = get_tables(".db/tracklines.db")
         if filename not in tables:
-            data.to_sql(
-                filename, sqlite3.connect(".db/tracklines.db"), if_exists="replace"
-            )
+            data.to_sql(filename, sqlite3.connect(".db/tracklines.db"), if_exists="replace")
         else:
             return jsonify({"error": "File already exists"}), 400
 

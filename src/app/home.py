@@ -3,6 +3,7 @@ Home page definition
 """
 
 from flask import Blueprint, render_template
+
 from .db import get_tables
 
 bp = Blueprint("home", __name__)

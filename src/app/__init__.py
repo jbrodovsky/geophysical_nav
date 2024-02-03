@@ -4,8 +4,9 @@ GUI for geophysical navigation
 
 import os
 
-from flask import Flask, render_template, jsonify
-from . import home, db
+from flask import Flask, jsonify, render_template
+
+from . import db, home
 
 
 def create_app(test_config=None):
