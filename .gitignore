@@ -1,6 +1,6 @@
 .db
 .gpteng
-source_data
+./source_data
 .venv
 
 
