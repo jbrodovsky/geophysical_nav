@@ -1,10 +1,11 @@
+import sqlite3
+
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from pandas import read_csv
 from werkzeug.exceptions import abort
+
 from .auth import login_required
 from .db import get_db
-
-from pandas import read_csv
-import sqlite3
 
 # from ..src.process_dataset import m77t_to_df
 
@@ -108,9 +109,7 @@ def update(id):
             flash(error)
         else:
             db = get_db()
-            db.execute(
-                "UPDATE post SET title = ?, body = ?" " WHERE id = ?", (title, body, id)
-            )
+            db.execute("UPDATE post SET title = ?, body = ?" " WHERE id = ?", (title, body, id))
             db.commit()
             return redirect(url_for("blog.index"))
 

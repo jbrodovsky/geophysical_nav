@@ -2,25 +2,24 @@
 Particle filter algorithim and simulation code
 """
 
-from datetime import timedelta
-import os
-import json
 import argparse
+import json
 import multiprocessing
+import os
+from datetime import timedelta
 
-from scipy.stats import norm
-from pandas import DataFrame, concat
-from xarray import DataArray
-from haversine import haversine, Unit
 import numpy as np
-from matplotlib import pyplot as plt
-
 from filterpy.monte_carlo import residual_resample
+from haversine import Unit, haversine
+from matplotlib import pyplot as plt
+from pandas import DataFrame
 from pyins import earth
 from pyins.sim import generate_imu
+from scipy.stats import norm
+from xarray import DataArray
 
-from .gmt_tool import get_map_point, get_map_section, inflate_bounds
-from .process_dataset import find_periods
+from .dataset_toolbox import find_periods
+from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
 
 # from .tools import load_trackline_data
 
@@ -46,9 +45,7 @@ def propagate(
     if not noise_calibration_mode:
         velocity = np.random.multivariate_normal(control, noise, (n,))
     else:
-        velocity = control + np.abs(
-            np.random.multivariate_normal(np.zeros(3), noise, (n,))
-        )
+        velocity = control + np.abs(np.random.multivariate_normal(np.zeros(3), noise, (n,)))
 
     # Depth update
     previous_depth = particles[:, 2]
@@ -56,13 +53,9 @@ def propagate(
     # Latitude update
     previous_lat = particles[:, 0]
     lat_rad = np.deg2rad(previous_lat)
-    r_n, r_e_0, _ = earth.principal_radii(
-        previous_lat, np.zeros_like(previous_lat)
-    )  # pricipal_radii expect degrees
+    r_n, r_e_0, _ = earth.principal_radii(previous_lat, np.zeros_like(previous_lat))  # pricipal_radii expect degrees
     previous_lat = np.deg2rad(previous_lat)
-    lat_rad = previous_lat + 0.5 * dt * (
-        particles[:, 3] / (r_n - previous_depth) + velocity[:, 0] / (r_n - new_depth)
-    )
+    lat_rad = previous_lat + 0.5 * dt * (particles[:, 3] / (r_n - previous_depth) + velocity[:, 0] / (r_n - new_depth))
     # Longitude update
     _, r_e_1, _ = earth.principal_radii(np.rad2deg(lat_rad), np.zeros_like(lat_rad))
     lon_rad = np.deg2rad(particles[:, 1]) + 0.5 * dt * (
@@ -147,9 +140,7 @@ def run_particle_filter(
             estimate_ = weights @ particles
             estimate.append(estimate_)
             rms_error[i] = rmse(particles, (row.LAT, row.LON))
-            error[i] = haversine(
-                (row.LAT, row.LON), (estimate_[0], estimate_[1]), Unit.METERS
-            )
+            error[i] = haversine((row.LAT, row.LON), (estimate_[0], estimate_[1]), Unit.METERS)
     estimate = np.asarray(estimate)
     return estimate, rms_error, error
 
@@ -171,9 +162,7 @@ def process_particle_filter(
     max_lon = data["LON"].max()
     min_lat = data["LAT"].min()
     max_lat = data["LAT"].max()
-    min_lon, min_lat, max_lon, max_lat = inflate_bounds(
-        min_lon, min_lat, max_lon, max_lat, 0.25
-    )
+    min_lon, min_lat, max_lon, max_lat = inflate_bounds(min_lon, min_lat, max_lon, max_lat, 0.25)
     geo_map = get_map_section(
         min_lon,
         max_lon,
@@ -213,9 +202,7 @@ def process_particle_filter(
     # except KeyError:
     #    repetitions = 1
     # for _ in range(repetitions):
-    estimate, rms_error, error = run_particle_filter(
-        mu, cov, n, data, geo_map, noise, measurement_sigma
-    )
+    estimate, rms_error, error = run_particle_filter(mu, cov, n, data, geo_map, noise, measurement_sigma)
     #    estimates.append(estimate)
     #    rms_errors.append(rms_error)
 
@@ -361,16 +348,12 @@ def plot_estimate(
     min_lat = data.LAT.min()
     max_lat = data.LAT.max()
     fig, ax = plt.subplots(1, 1)  # , figsize=(16, 8))
-    contour = ax.contourf(
-        geo_map.lon, geo_map.lat, geo_map.data, cmap="ocean", levels=50
-    )
+    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap="ocean", levels=50)
     # Set the color map limits
     # ax.set_clim([-5000, 0])
     contour.set_clim([-10000, 0])
     # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the bottom
-    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (
-        ax.get_ylim()[1] - ax.get_ylim()[0]
-    )
+    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
     if aspect_ratio > 1:
         cbar = fig.colorbar(
             contour,
@@ -587,11 +570,7 @@ def main():
         process_particle_filter(args.data, config, "./results/", args.type)
     elif os.path.isdir(args.data):
         # Get a list of all CSV files in the directory
-        file_list = [
-            os.path.join(args.data, file)
-            for file in os.listdir(args.data)
-            if file.endswith(".csv")
-        ]
+        file_list = [os.path.join(args.data, file) for file in os.listdir(args.data) if file.endswith(".csv")]
         cores = multiprocessing.cpu_count()
         # Process particle filters in parallel
         with multiprocessing.Pool(processes=cores) as pool:

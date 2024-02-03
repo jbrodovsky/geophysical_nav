@@ -3,21 +3,21 @@ Executable for running the particle filter on bathymetry data
 """
 
 import json
-import os
-import multiprocessing as mp
 import logging
+import multiprocessing as mp
+import os
 
 from matplotlib import pyplot as plt
 from pandas import read_csv, to_timedelta
 
+from src import process_dataset as pdset
 from src.particle_filter import (
-    process_particle_filter,
-    populate_velocities,
     plot_error,
     plot_estimate,
+    populate_velocities,
+    process_particle_filter,
     summarize_results,
 )
-from src import process_dataset as pdset
 
 CONFIG_FILE = "config.json"
 PLOTS_OUTPUT = ".db/plots"
@@ -60,9 +60,7 @@ def main():
     logger.info("Checking for completed tables")
     try:
         completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [
-            table for table in bathy_tables if table not in completed_tables
-        ]
+        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
     except FileNotFoundError:
         completed_tables = []
         remaining_tables = bathy_tables
@@ -85,9 +83,7 @@ def main():
         logger.info("Double checking to make sure all tables are complete")
         # Get completed tables
         completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [
-            table for table in bathy_tables if table not in completed_tables
-        ]
+        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
         logger.info("Found remaining tables: %s", remaining_tables)
     # logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
@@ -106,9 +102,7 @@ def main():
             mode="a",
             header=(not os.path.exists(output_path)),
         )
-    logger.info(
-        "Finished summarizing results. Process complete. Executing post processing."
-    )
+    logger.info("Finished summarizing results. Process complete. Executing post processing.")
 
     post_process_batch(".db/plots/summary.csv", RESULTS_DB)
     return None

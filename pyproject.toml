@@ -3,19 +3,40 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Geophyiscal Navigation Simulator"
+name = "Geophyiscal_Navigation_Simulator"
 version = "0.1.0"
 requires-python = ">=3.11"
 description = "A simulator for geophysical navigation systems"
 readme = "README.md"
-authors = ["James Brodovsky"]
+authors = [{name="James Brodovsky"}]
 
 [project.urls]
 homepage = "https://github.com/jbrodovsky/geophysical_nav"
 
+[project.scripts]
+geonav = "geophysical.sim:main"
+
 [tool.black]
-line-length = 127
+line-length = 128
 target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 128
+extend-ignore = "E203, W503"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+show_error_codes = true
+
+[tool.pytest]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "tests.py", "test.py"]
+python_classes = ["Test*", "*Test"]
+python_functions = ["test_*"]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
