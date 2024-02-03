@@ -4,10 +4,14 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
-* Restructured virtual environment maintainer: `pygmt` is now available via `pip`
-  * While I kind of prefer `conda`'s method for virtual environment maintenance, between using `pyproject.toml` files to build C++, GMT availble via `pip`, Azure prefering `pip`, I can't really justify using `conda` right now.
-* Restructured the workflow. Flask app was a nice portfolio project, but in reality all I needed was to use an ssh tunnel to the remote machine
-  * Update: old remote machine is out of commission for time being. Can run reasonably quickly on laptop with multiprocessing, best bet is to covert over to a serverless application (leaning Azure)
+* Planning and thoughts
+  * Restructured the project to follow more standard Python and PyPI practices.
+    * Using `setuptools` and `pybind11` I can write back-end C++ code if needed and build and install the module using `pip install .`.
+    * `pyins` is still somewhat of a issue since it is not available on PyPI, but I have scripts written to deal with it a the momement, Azure deployment still needs to be dealt with in this manner.
+    * Given Azure's preference for `pip` and `pygmt` now being available via pip, there isn't the functional need for `conda` right now.
+  * Thought process right now is to deliver two things
+    * A set of CLI tools via `project.scripts` in the `pyproject.toml` file that can be built using PIP. Intent for these is local debugging and small scale testing
+    * A serverless web app that provides clound funtionality and hooks for the same functionality but in the cloud. Intent for that is for large-scale processing and testing
 * Current workflow:
   1. Download raw `.m77t` files NOAA
   2. Using notebook, run the *Preprocess tracklines into sql/df format* section clean up the data formate

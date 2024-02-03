@@ -17,6 +17,7 @@ pygmt
 pytz
 h5py
 scipy
+anglewrapper # Will remove some of the stuff from tools
 # General simulaiton development and prototyping requirements
 tqdm
 notebook

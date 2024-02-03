@@ -9,7 +9,9 @@ from argparse import ArgumentParser
 import xarray as xr
 from numpy import ndarray
 
-from .tools import wrap_to_180
+# from .tools import wrap_to_180
+
+from anglewrapper import wrap
 
 
 def get_map_section(
@@ -53,9 +55,7 @@ def get_map_section(
     :returns: xarray.DataArray
 
     """
-    _get_map_section(
-        west_lon, east_lon, south_lat, north_lat, map_type, map_res, output_location
-    )
+    _get_map_section(west_lon, east_lon, south_lat, north_lat, map_type, map_res, output_location)
     out = load_map_file(f"{output_location}.nc")
     if not save:
         os.remove(f"{output_location}.nc")
@@ -104,8 +104,8 @@ def _get_map_section(
     that is called when running the module. The public method with the same name calls this function
     to act as the low-level interface.
     """
-    west_lon = wrap_to_180(west_lon)
-    east_lon = wrap_to_180(east_lon)
+    west_lon = wrap.to_180(west_lon)
+    east_lon = wrap.to_180(east_lon)
     # assert that the west longitude is less than the east longitude
     assert west_lon < east_lon, "West longitude must be less than east longitude."
     # Validate map type and construct GMT map name to call via grdcut
@@ -125,10 +125,8 @@ def _get_map_section(
     else:
         map_name += "_p"
 
-    cmd = (
-        f"gmt grdcut @{map_name} -Rd{west_lon}/{east_lon}/{south_lat}/{north_lat} "
-        f"-G{output_location}.nc"
-    )
+    # TODO: Convert this to PyGMT
+    cmd = f"gmt grdcut @{map_name} -Rd{west_lon}/{east_lon}/{south_lat}/{north_lat} " f"-G{output_location}.nc"
     # print(cmd)
     out = subprocess.run(
         cmd,
@@ -251,12 +249,8 @@ def main() -> None:
             "03m, 02m, 01m, 30s, 15s, 03s, 01s"
         ),
     )
-    parser.add_argument(
-        "--location", default="./", required=False, help="File location to save output."
-    )
-    parser.add_argument(
-        "--name", default="map", required=False, help="Output file name."
-    )
+    parser.add_argument("--location", default="./", required=False, help="File location to save output.")
+    parser.add_argument("--name", default="map", required=False, help="Output file name.")
     # add arguements to the parser for west longitude, east longitude, south latitude,
     # and north latitude
     parser.add_argument(
