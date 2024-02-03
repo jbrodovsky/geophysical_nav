@@ -1,8 +1,12 @@
 .db
 .gpteng
-./source_data
+source_data/
 .venv
 *.m77t
+.logs
+
+GeophysicalNavigation.PublishSettings
+
 
 __azurite_db_blob__.json
 __azurite_db_blob_extent.json
@@ -148,4 +152,3 @@ __blobstorage__
 __queuestorage__
 __azurite_db*__.json
 .python_packages
-GeophysicalNavigation.PublishSettings
