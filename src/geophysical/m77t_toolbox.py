@@ -200,7 +200,7 @@ def parse_trackline_from_file(
     )
     # get the filename without the extension
     file_name = os.path.splitext(os.path.basename(filepath))[0]
-    validated_subsections = split_and_validate_dataset(
+    validated_subsections = _split_and_validate_dataset(
         data,
         max_time=max_time,
         max_delta_t=max_delta_t,
@@ -246,7 +246,7 @@ def parse_tracklines_from_db(
             else:
                 raise NotImplementedError(f"Data type {type(data_type)} not supported.")
             # print(f"Processing for data type: {type_string}")
-            validated_subsections = split_and_validate_dataset(
+            validated_subsections = _split_and_validate_dataset(
                 data,
                 max_time=max_time,
                 max_delta_t=max_delta_t,
@@ -379,7 +379,7 @@ def _get_measurement_statistics(measurement: pd.Series) -> tuple:
 
 
 # General  parsing
-def split_and_validate_dataset(
+def _split_and_validate_dataset(
     data: pd.DataFrame,
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
@@ -388,11 +388,14 @@ def split_and_validate_dataset(
 ) -> list:
     """
     Split the dataset into periods of continuous data and validate the subsections.
+    data_types should be a validated string of the form "DGM" where D is depth, G is gravity,
+    and M is magnetic.
     """
-
     data_columns = []
+
     if data_types is None:
         data_types = ["DGM"]
+
     if "D" in data_types:
         data_columns.append("CORR_DEPTH")
     if "G" in data_types:
@@ -402,6 +405,7 @@ def split_and_validate_dataset(
 
     columns_to_copy = ["LAT", "LON"]
     columns_to_copy.extend(data_columns)
+
     data = data[columns_to_copy].copy()
 
     # Drop the rows that contain N/A values for all of CorrDepth, MagTot, MagRes, GraObs, and FreeAir
@@ -504,10 +508,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def main():
     args = parse_args()
     data, names = process_mgd77(args.location)
     save_mgd77_dataset(data, names, args.output, args.format)
+
 
 if __name__ == "__main__":
     main()
