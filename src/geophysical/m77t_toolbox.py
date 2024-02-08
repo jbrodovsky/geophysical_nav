@@ -6,11 +6,10 @@ import os
 import sqlite3
 from datetime import timedelta
 from typing import List
-import argparse
 
 import pandas as pd
 
-from .db_tools import get_tables, table_to_df, save_dataset
+from .db_tools import get_tables, table_to_df
 
 
 # --- MGD77T Processing ------------------------------------------------------
@@ -493,74 +492,36 @@ def split_dataset(df: pd.DataFrame, periods: list) -> list:
     return subsections
 
 
-def mgd77_to_sql(source_data_location: str, output_location: str):
-    """
-    Convert MGD77T data to a SQLite database.
-    """
-    # Check and see if the output_location directory exists
-    if not os.path.exists(output_location):
-        os.makedirs(output_location)
-
-    # Check to see if the database exists
-    if not os.path.exists(f"{output_location}/tracklines.db"):
-        tables = []
-    else:
-        tables = get_tables(f"{output_location}/tracklines.db")
-
-    for root, _, files in os.walk(source_data_location):
-        for file in files:
-            if file.endswith(".m77t"):
-                # check to see if the file has already been processed
-                filename = os.path.splitext(file)[0]
-                if filename not in tables:
-                    print("Processing file: " + file)
-                    data = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
-                    data = m77t_to_df(data)
-                    save_dataset(
-                        [data],
-                        [filename],
-                        output_location=output_location,
-                        output_format="db",
-                        dataset_name="tracklines",
-                    )
-                else:
-                    print("Skipping file: " + file + " (already processed)")
-
-
-def parse_args():
-    """
-    Parse the command line arguments for the MGD77T toolbox.
-    """
-
-    parser = argparse.ArgumentParser(prog="M77T Processing Tool", description="Process MGD77T data.")
-    parser.add_argument(
-        "--location",
-        type=str,
-        help="The file path to the root folder to search for .m77t files.",
-    )
-    parser.add_argument(
-        "--output",
-        type=str,
-        help="The file path to the root folder to save the output.",
-    )
-    parser.add_argument(
-        "--format",
-        type=str,
-        default="db",
-        help="The format for the output (db or csv).",
-    )
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    """
-    MAIN
-    """
-    args = parse_args()
-    data, names = process_mgd77(args.location)
-    save_mgd77_dataset(data, names, args.output, args.format)
-
-
-if __name__ == "__main__":
-    main()
+# def mgd77_to_sql(source_data_location: str, output_location: str):
+#     """
+#     Convert MGD77T data to a SQLite database.
+#     """
+#     # Check and see if the output_location directory exists
+#     if not os.path.exists(output_location):
+#         os.makedirs(output_location)
+#
+#     # Check to see if the database exists
+#     if not os.path.exists(f"{output_location}/tracklines.db"):
+#         tables = []
+#     else:
+#         tables = get_tables(f"{output_location}/tracklines.db")
+#
+#     for root, _, files in os.walk(source_data_location):
+#         for file in files:
+#             if file.endswith(".m77t"):
+#                 # check to see if the file has already been processed
+#                 filename = os.path.splitext(file)[0]
+#                 if filename not in tables:
+#                     print("Processing file: " + file)
+#                     data = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
+#                     data = m77t_to_df(data)
+#                     save_dataset(
+#                         [data],
+#                         [filename],
+#                         output_location=output_location,
+#                         output_format="db",
+#                         dataset_name="tracklines",
+#                     )
+#                 else:
+#                     print("Skipping file: " + file + " (already processed)")
+#

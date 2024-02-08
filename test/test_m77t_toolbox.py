@@ -142,20 +142,43 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", "gravity", "mag"]), ["D", "G", "M"])
         self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", ["gravity", "mag"]]), ["D", "GM"])
 
-    # def test_get_parsed_data_summary(self):
-    #     """
-    #     Test that the parsed data summary can be retrieved.
-    #     """
-    #     data, names = m77t_toolbox.process_mgd77("./test")
-    #     data = m77t_toolbox.split_and_validate_dataset(data, data_types=["depth", "mag", "grav"])
-    #     summary = m77t_toolbox.get_parsed_data_summary(data, names)
-    #     self.assertIsInstance(summary, DataFrame)
-    #     self.assertNotEqual(len(summary), 0)
-    #     data_original = data[0]
-    #     print(data_original.columns)
-    #     data = data_original.drop(columns=["DEPTH"])
-    #     self.assertRaises(KeyError, m77t_toolbox.get_parsed_data_summary, [data], names)
-    #     data = data_original.drop(columns=["GRAV_ANOM"])
-    #     self.assertRaises(KeyError, m77t_toolbox.get_parsed_data_summary, [data], names)
-    #     data = data_original.drop(columns=["MAG_RES"])
-    #     self.assertRaises(KeyError, m77t_toolbox.get_parsed_data_summary, [data], names)
+    def test_get_parsed_data_summary(self):
+        """
+        Test that the parsed data summary can be retrieved.
+        """
+
+        df1 = DataFrame(
+            {
+                "DEPTH": [1, 2, 3, 4, 5],
+                "GRAV_ANOM": [6, 7, 8, 9, 10],
+                "MAG_RES": [11, 12, 13, 14, 15],
+                "LAT": [16, 17, 18, 19, 20],
+                "LON": [21, 22, 23, 24, 25],
+                "TIME": [26, 27, 28, 29, 30],
+            }
+        )
+        df2 = DataFrame(
+            {
+                "DEPTH": [1, 2, 3, 4, 5],
+                "GRAV_ANOM": [6, 7, 8, 9, 10],
+                "MAG_RES": [11, 12, 13, 14, 15],
+                "LAT": [16, 17, 18, 19, 20],
+                "LON": [21, 22, 23, 24, 25],
+                "TIME": [26, 27, 28, 29, 30],
+            }
+        )
+
+        summary = m77t_toolbox.get_parsed_data_summary([df1, df2], ["track1", "track2"])
+        self.assertIsInstance(summary, DataFrame)
+        self.assertNotEqual(len(summary), 0)
+        df1 = df1.drop(columns=["DEPTH", "GRAV_ANOM", "MAG_RES"])
+        summary = m77t_toolbox.get_parsed_data_summary([df1], ["track1"])
+        self.assertTrue(summary["depth_mean"].isna().all())
+        self.assertTrue(summary["depth_std"].isna().all())
+        self.assertTrue(summary["depth_range"].isna().all())
+        self.assertTrue(summary["grav_mean"].isna().all())
+        self.assertTrue(summary["grav_std"].isna().all())
+        self.assertTrue(summary["grav_range"].isna().all())
+        self.assertTrue(summary["mag_mean"].isna().all())
+        self.assertTrue(summary["mag_std"].isna().all())
+        self.assertTrue(summary["mag_range"].isna().all())

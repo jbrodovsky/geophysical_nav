@@ -3,7 +3,6 @@ Toolbox module. Contains utility functions for accessing and manipulating geophy
 """
 
 import os
-from argparse import ArgumentParser
 
 import numpy as np
 import xarray as xr
@@ -94,7 +93,7 @@ def load_map_file(filepath: str) -> xr.DataArray:
         raise FileNotFoundError(f"File not found: {filepath}")
     try:
         return xr.load_dataarray(filepath)
-    except Exception as e:
+    except FileNotFoundError as e:
         print(e)
         raise e
 
@@ -226,81 +225,3 @@ def inflate_bounds(min_x, min_y, max_x, max_y, inflation_percent):
     new_max_y = max_y + inflate_y
 
     return new_min_x, new_min_y, new_max_x, new_max_y
-
-
-def main() -> None:
-    """
-    Command line tool for accessing GMT maps.
-    """
-
-    parser = ArgumentParser(
-        prog="GMT Map Access Tool",
-        description="A light weight wrapper for accesssing GMT maps via Python.",
-    )
-    parser.add_argument(
-        "--type",
-        default="relief",
-        choices=["relief", "gravity", "grav", "magnetic", "mag"],
-        required=True,
-        help="Map type to load.",
-    )
-    parser.add_argument(
-        "--res",
-        default="02m",
-        required=False,
-        help=(
-            "Map resolution code. Available resolutions depend on the map selected.\nGravity:"
-            "\t01d, 30m, 20m, 15m, 10m, 06m, 05m, 04m, 03m, 02m, 01m\nMagnetic:\t01d, 30m, 20m, "
-            "15m, 10m, 06m, 05m, 04m, 03m, 02m\nRelief:\t01d, 30m, 20m, 15m, 10m, 06m, 05m, 04m, "
-            "03m, 02m, 01m, 30s, 15s, 03s, 01s"
-        ),
-    )
-    parser.add_argument("--location", default="./", required=False, help="File location to save output.")
-    parser.add_argument("--name", default="map", required=False, help="Output file name.")
-    # add arguements to the parser for west longitude, east longitude, south latitude,
-    # and north latitude
-    parser.add_argument(
-        "--west",
-        default=-180,
-        type=float,
-        required=True,
-        help="West longitude in degrees +/-180.",
-    )
-    parser.add_argument(
-        "--east",
-        default=180,
-        type=float,
-        required=True,
-        help="East longitude in degrees +/-180.",
-    )
-    parser.add_argument(
-        "--south",
-        default=-90,
-        type=float,
-        required=True,
-        help="South latitude in degrees +/-90.",
-    )
-    parser.add_argument(
-        "--north",
-        default=90,
-        type=float,
-        required=True,
-        help="North latitude in degrees +/-90.",
-    )
-
-    args = parser.parse_args()
-    print(args)
-    # _get_map_section(
-    #     args.west,
-    #     args.east,
-    #     args.south,
-    #     args.north,
-    #     args.type,
-    #     args.res,
-    #     f"{args.location}/{args.name}",
-    # )
-    return None
-
-
-if __name__ == "__main__":
-    main()

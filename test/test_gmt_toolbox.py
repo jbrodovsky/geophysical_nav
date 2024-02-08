@@ -6,6 +6,7 @@ import unittest
 import os
 
 from xarray import DataArray
+from numpy import ndarray
 
 from src.geophysical import gmt_toolbox
 
@@ -21,14 +22,17 @@ class TestGMTToolbox(unittest.TestCase):
         """
         min_x, min_y, max_x, max_y = 0, 0, 2, 2
         section = gmt_toolbox.get_map_section(min_x, max_x, min_y, max_y)
+        gmt_toolbox.save_map_file(section, "./test_map/test.nc")
         gmt_toolbox.save_map_file(section, "./test.nc")
 
     def tearDown(self):
         """
         Tear down the test environment data.
         """
-        if os.path.exists("test.nc"):
-            os.remove("test.nc")
+        if os.path.exists("./test_map/test.nc"):
+            os.remove("./test_map/test.nc")
+        if os.path.exists("./test.nc"):
+            os.remove("./test.nc")
 
     def test_inflate_bounds(self):
         """
@@ -133,3 +137,24 @@ class TestGMTToolbox(unittest.TestCase):
         section = gmt_toolbox.get_map_section(min_x, max_x, min_y, max_y)
         gmt_toolbox.save_map_file(section, "./test.nc")
         self.assertTrue(os.path.exists("./test.nc"))
+        gmt_toolbox.save_map_file(section, "./test_map/test.nc")
+        self.assertTrue(os.path.exists("./test_map/test.nc"))
+
+    def test_load_map_file(self):
+        """
+        Try to load ./test.nc and check if it is a DataArray.
+        """
+        section = gmt_toolbox.load_map_file("./test_map/test.nc")
+        self.assertIsInstance(section, DataArray)
+        self.assertIsNotNone(section.shape)
+        self.assertIsNotNone(section.coords)
+        self.assertRaises(FileNotFoundError, gmt_toolbox.load_map_file, "./tester.nc")
+
+    def test_get_map_point(self):
+        """
+        Test the get_map_point function.
+        """
+        min_x, min_y, max_x, max_y = 0, 0, 2, 2
+        section = gmt_toolbox.get_map_section(min_x, max_x, min_y, max_y)
+        point = gmt_toolbox.get_map_point(section, 1, 1)
+        self.assertIsInstance(point, ndarray)
