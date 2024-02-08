@@ -3,12 +3,9 @@
 Test the particle filter implementation.
 """
 
-
 import unittest
-
 import numpy as np
 from haversine import Unit, haversine
-
 from src.geophysical.particle_filter import rmse
 
 

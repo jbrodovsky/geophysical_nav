@@ -6,6 +6,7 @@ and provide a more robust and flexible simulation environment.
 
 
 def main():
+    """MAIN CLI"""
     print("Hello world, this is the geophysical navigation simulation module.")
 
 

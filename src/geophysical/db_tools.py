@@ -8,9 +8,7 @@ import sqlite3
 import pandas as pd
 
 
-##############################################################################
-### Database Utility Functions ###############################################
-##############################################################################
+# --- Database Utility Functions
 def get_tables(db_path: str):
     """
     Get the names of all tables in a database.

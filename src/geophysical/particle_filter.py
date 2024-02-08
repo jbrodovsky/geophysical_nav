@@ -345,28 +345,29 @@ def plot_estimate(
         The figure object
     """
 
-    CMAP = "ocean"
-    CLIM = [-10000, 0]
-    CLABEL = "Depth (m)"
+    cmap = "ocean"
+    clim = [-10000, 0]
+    clabel = "Depth (m)"
     if measurment_type == "gravity":
-        CMAP = "coolwarm"
-        CLIM = [-100, 100]
-        CLABEL = "Gravity Anomaly (mGal)"
+        cmap = "coolwarm"
+        clim = [-100, 100]
+        clabel = "Gravity Anomaly (mGal)"
     elif measurment_type == "magnetic":
-        CMAP = "PiYG"
-        CLIM = [-100, 100]
-        CLABEL = "Magnetic Anomaly (nT)"
+        cmap = "PiYG"
+        clim = [-100, 100]
+        clabel = "Magnetic Anomaly (nT)"
 
     min_lon = data.LON.min()
     max_lon = data.LON.max()
     min_lat = data.LAT.min()
     max_lat = data.LAT.max()
     fig, ax = plt.subplots(1, 1)  # , figsize=(16, 8))
-    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap=CMAP, levels=50)
+    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap=cmap, levels=50)
     # Set the color map limits
     # ax.set_clim([-5000, 0])
-    contour.set_clim(CLIM)
-    # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the bottom
+    contour.set_clim(clim)
+    # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the
+    # bottom
     aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
     if aspect_ratio > 1:
         cbar = fig.colorbar(
@@ -378,7 +379,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.5,
         )
-        cbar.set_label(CLABEL)
+        cbar.set_label(clabel)
 
     else:
         cbar = fig.colorbar(
@@ -390,7 +391,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.75,
         )
-        cbar.set_label(CLABEL)
+        cbar.set_label(clabel)
 
     ax.plot(data.LON, data.LAT, ".r", label="Truth")
     ax.plot(data.iloc[0].LON, data.iloc[0].LAT, "xk", label="Start")
@@ -500,6 +501,9 @@ def plot_error(
 
 
 def summarize_results(name: str, results: DataFrame, threshold: float):
+    """
+    Used to generate a text file that summarizes the results.
+    """
     under_threshold = results["RMSE"].to_numpy() <= threshold
     # Default behavior for find_periods is to find transitions from False to True
     recoveries = find_periods(~under_threshold)

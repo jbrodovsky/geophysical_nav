@@ -94,7 +94,9 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertTrue(os.path.exists("./test/db/tracklines.db"))
         m77t_toolbox.save_mgd77_dataset(data, names, "./test/csv", "csv", "tracklines")
         self.assertTrue(os.path.exists(f"./test/csv/{names[0]}.csv"))
-        self.assertRaises(NotImplementedError, m77t_toolbox.save_mgd77_dataset, data, names, "./test", "json", "tracklines")
+        self.assertRaises(
+            NotImplementedError, m77t_toolbox.save_mgd77_dataset, data, names, "./test", "json", "tracklines"
+        )
 
     def test_parse_trackline_from_file(self):
         """
@@ -110,7 +112,7 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the trackline can be parsed from a database.
         """
-        tracklines, names = m77t_toolbox.parse_tracklines_from_db(
+        tracklines, _ = m77t_toolbox.parse_tracklines_from_db(
             "./test/db/tracklines.db", data_types=["depth", ["mag", "grav"]]
         )
         self.assertNotEqual(len(tracklines), 0)
@@ -125,6 +127,7 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the data type string can be validated.
         """
+        self.assertIsInstance(m77t_toolbox.validate_data_type_string("all"), str)
         self.assertEqual(m77t_toolbox.validate_data_type_string("all"), "DGM")
         self.assertEqual(m77t_toolbox.validate_data_type_string("relief"), "D")
         self.assertEqual(m77t_toolbox.validate_data_type_string("depth"), "D")
@@ -134,6 +137,10 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertEqual(m77t_toolbox.validate_data_type_string("grav"), "G")
         self.assertEqual(m77t_toolbox.validate_data_type_string("gravity"), "G")
         self.assertRaises(NotImplementedError, m77t_toolbox.validate_data_type_string, "other")
+
+        self.assertIsInstance(m77t_toolbox.validate_data_type_string(["depth", "mag"]), list)
+        self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", "gravity", "mag"]), ["D", "G", "M"])
+        self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", ["gravity", "mag"]]), ["D", "GM"])
 
     # def test_get_parsed_data_summary(self):
     #     """

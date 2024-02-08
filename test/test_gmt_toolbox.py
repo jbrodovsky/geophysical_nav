@@ -36,7 +36,9 @@ class TestGMTToolbox(unittest.TestCase):
         """
         min_x, min_y, max_x, max_y = 0, 0, 10, 10
         inflation_percent = 0.1
-        new_min_x, new_min_y, new_max_x, new_max_y = gmt_toolbox.inflate_bounds(min_x, min_y, max_x, max_y, inflation_percent)
+        new_min_x, new_min_y, new_max_x, new_max_y = gmt_toolbox.inflate_bounds(
+            min_x, min_y, max_x, max_y, inflation_percent
+        )
         self.assertEqual(new_min_x, -1)
         self.assertEqual(new_min_y, -1)
         self.assertEqual(new_max_x, 11)
@@ -131,4 +133,3 @@ class TestGMTToolbox(unittest.TestCase):
         section = gmt_toolbox.get_map_section(min_x, max_x, min_y, max_y)
         gmt_toolbox.save_map_file(section, "./test.nc")
         self.assertTrue(os.path.exists("./test.nc"))
-

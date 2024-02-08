@@ -289,6 +289,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    print(args)
     # _get_map_section(
     #     args.west,
     #     args.east,
