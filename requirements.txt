@@ -28,7 +28,7 @@ sphinx
 pandoc
 # Testing and linting requirements
 pytest
+pytest-cov
 pylint
 black
 flake8
-pytest-cov
