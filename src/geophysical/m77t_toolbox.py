@@ -144,7 +144,7 @@ def save_mgd77_dataset(
 
 
 ##############################################################################
-### Dataset Parsing ##########################################################
+# Dataset Parsing ############################################################
 ##############################################################################
 # MGD77T parsing from a folder of .csv
 # def parse_dataset_from_folder(args):
@@ -177,8 +177,6 @@ def parse_trackline_from_file(
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
-    save: bool = False,
-    output_dir: str = None,
 ) -> list:
     """
     Parse a single trackline dataset csv into periods of continuous data.
@@ -236,17 +234,8 @@ def parse_tracklines_from_db(
     for table in tables:
         print(f"Processing: {table}")
         data = table_to_df(db_path, table)
-        # TODO: #26 Refactor validate_data_type_string to use a wrapper that can accept either a string or list
-        for data_type in data_types:
-            if isinstance(data_type, str):
-                type_string = validate_data_type_string(data_type)
-            elif isinstance(data_type, list):
-                type_string = ""
-                for dt in data_type:
-                    type_string += validate_data_type_string(dt)
-            else:
-                raise NotImplementedError(f"Data type {type(data_type)} not supported.")
-            # print(f"Processing for data type: {type_string}")
+        data_types = validate_data_type_string(data_types)
+        for type_string in data_types:
             validated_subsections = _split_and_validate_dataset(
                 data,
                 max_time=max_time,
@@ -261,7 +250,37 @@ def parse_tracklines_from_db(
     return parsed, parsed_names
 
 
-def validate_data_type_string(data_type: str) -> str:
+# validate data type string should be able to accept either a string or a list and the return a variable of the same type
+def validate_data_type_string(data_types: List[str]) -> List[str]:
+    """
+    Checks for valid data type strings and standardizes the input.
+    `data_types` should be a string or list of strings where each string is
+    one of the following: "relief", "depth", "bathy", "mag", "magnetic", "grav", "gravity"
+
+    Return behavior is dependent on the input type:
+    - If a string is passed in, the function will return a string
+    - If a list of lists is passed in, the function will return a list
+
+    Parameters
+    -----------
+    :param data_types: the data types to validate
+    :type data_types: List[str]
+
+    :returns: List[str]
+    """
+    out_d_type = type(data_types)
+    if out_d_type == str:
+        return _validate_data_type_string(data_types)
+    if out_d_type == list:
+        types = []
+        for data_type in data_types:
+            types.append(validate_data_type_string(data_type))
+        types = ["".join(dtype) for dtype in types]
+        return types
+    raise NotImplementedError(f"Data type {out_d_type} not supported.")
+
+
+def _validate_data_type_string(data_type: str) -> str:
     """
     Checks for valid data type strings and standardizes the input
     """
@@ -285,8 +304,8 @@ def validate_data_type_string(data_type: str) -> str:
         "gravity",
     ):
         raise NotImplementedError(
-            f"Data type {data_type} not recognized. Please choose from the following: "
-            + "relief, depth, bathy, mag, magnetic, grav, gravity"
+            f"Data type {data_type} not recognized. Please choose from the following: relief, depth, bathy, mag,"
+            + "magnetic, grav, gravity"
         )
     return valid_string
 
@@ -545,6 +564,9 @@ def parse_args():
 
 
 def main():
+    """
+    MAIN
+    """
     args = parse_args()
     data, names = process_mgd77(args.location)
     save_mgd77_dataset(data, names, args.output, args.format)
