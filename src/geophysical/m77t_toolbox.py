@@ -205,15 +205,6 @@ def parse_trackline_from_file(
         min_duration=min_duration,
     )
     names = [f"{file_name}_{i}" for i in range(len(validated_subsections))]
-    # Save off the subsections to CSV files
-    # if save:
-    #     if output_dir is not None and not os.path.isdir(output_dir):
-    #         os.makedirs(output_dir)
-    #     if output_dir is None:
-    #         output_dir = ""
-    #     for i, df in enumerate(validated_subsections):
-    #         df.to_csv(os.path.join(output_dir, f"{file_name}_{i}.csv"))
-
     return validated_subsections, names
 
 
@@ -250,7 +241,6 @@ def parse_tracklines_from_db(
     return parsed, parsed_names
 
 
-# validate data type string should be able to accept either a string or a list and the return a variable of the same type
 def validate_data_type_string(data_types: List[str]) -> List[str]:
     """
     Checks for valid data type strings and standardizes the input.
