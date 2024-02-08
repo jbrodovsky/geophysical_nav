@@ -10,7 +10,7 @@ import argparse
 
 import pandas as pd
 
-from .db_tools import get_tables, table_to_df
+from .db_tools import get_tables, table_to_df, save_dataset
 
 
 # --- MGD77T Processing ------------------------------------------------------
@@ -236,6 +236,7 @@ def parse_tracklines_from_db(
     for table in tables:
         print(f"Processing: {table}")
         data = table_to_df(db_path, table)
+        # TODO: #26 Refactor validate_data_type_string to use a wrapper that can accept either a string or list
         for data_type in data_types:
             if isinstance(data_type, str):
                 type_string = validate_data_type_string(data_type)
@@ -481,6 +482,40 @@ def split_dataset(df: pd.DataFrame, periods: list) -> list:
         subsection = df.iloc[start : end + 1]  # Add 1 to include the end index
         subsections.append(subsection)
     return subsections
+
+
+def mgd77_to_sql(source_data_location: str, output_location: str):
+    """
+    Convert MGD77T data to a SQLite database.
+    """
+    # Check and see if the output_location directory exists
+    if not os.path.exists(output_location):
+        os.makedirs(output_location)
+
+    # Check to see if the database exists
+    if not os.path.exists(f"{output_location}/tracklines.db"):
+        tables = []
+    else:
+        tables = get_tables(f"{output_location}/tracklines.db")
+
+    for root, _, files in os.walk(source_data_location):
+        for file in files:
+            if file.endswith(".m77t"):
+                # check to see if the file has already been processed
+                filename = os.path.splitext(file)[0]
+                if filename not in tables:
+                    print("Processing file: " + file)
+                    data = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
+                    data = m77t_to_df(data)
+                    save_dataset(
+                        [data],
+                        [filename],
+                        output_location=output_location,
+                        output_format="db",
+                        dataset_name="tracklines",
+                    )
+                else:
+                    print("Skipping file: " + file + " (already processed)")
 
 
 def parse_args():
