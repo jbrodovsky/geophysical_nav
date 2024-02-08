@@ -4,13 +4,10 @@ Toolbox module. Contains utility functions for accessing and manipulating geophy
 
 import os
 from argparse import ArgumentParser
-from datetime import timedelta
 
 import numpy as np
 import xarray as xr
 from anglewrapper import wrap
-from haversine import Unit, haversine
-from pandas import read_csv, to_timedelta
 from pygmt.datasets import (
     load_earth_free_air_anomaly,
     load_earth_magnetic_anomaly,

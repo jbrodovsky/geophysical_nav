@@ -18,10 +18,8 @@ from pyins.sim import generate_imu
 from scipy.stats import norm
 from xarray import DataArray
 
-from .dataset_toolbox import find_periods
+from .m77t_toolbox import find_periods
 from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
-
-# from .tools import load_trackline_data
 
 
 OVERFLOW = 500
@@ -202,7 +200,9 @@ def process_particle_filter(
     # except KeyError:
     #    repetitions = 1
     # for _ in range(repetitions):
-    estimate, rms_error, error = run_particle_filter(mu, cov, n, data, geo_map, noise, measurement_sigma)
+    estimate, rms_error, error = run_particle_filter(
+        mu, cov, n, data, geo_map, noise, measurement_sigma, measurment_type=measurment_type
+    )
     #    estimates.append(estimate)
     #    rms_errors.append(rms_error)
 
@@ -326,6 +326,7 @@ def plot_estimate(
     xlabel_size: int = 14,
     ylabel_str: str = "Lat (deg)",
     ylabel_size: int = 14,
+    measurment_type: str = "depth",
 ):
     """
     Plot the particle filter estimate and the trajectory two dimensionally on the map.
@@ -343,15 +344,28 @@ def plot_estimate(
     fig : Figure
         The figure object
     """
+
+    CMAP = "ocean"
+    CLIM = [-10000, 0]
+    CLABEL = "Depth (m)"
+    if measurment_type == "gravity":
+        CMAP = "coolwarm"
+        CLIM = [-100, 100]
+        CLABEL = "Gravity Anomaly (mGal)"
+    elif measurment_type == "magnetic":
+        CMAP = "PiYG"
+        CLIM = [-100, 100]
+        CLABEL = "Magnetic Anomaly (nT)"
+
     min_lon = data.LON.min()
     max_lon = data.LON.max()
     min_lat = data.LAT.min()
     max_lat = data.LAT.max()
     fig, ax = plt.subplots(1, 1)  # , figsize=(16, 8))
-    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap="ocean", levels=50)
+    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap=CMAP, levels=50)
     # Set the color map limits
     # ax.set_clim([-5000, 0])
-    contour.set_clim([-10000, 0])
+    contour.set_clim(CLIM)
     # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the bottom
     aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
     if aspect_ratio > 1:
@@ -364,7 +378,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.5,
         )
-        cbar.set_label("Depth (m)")
+        cbar.set_label(CLABEL)
 
     else:
         cbar = fig.colorbar(
@@ -376,7 +390,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.75,
         )
-        cbar.set_label("Depth (m)")
+        cbar.set_label(CLABEL)
 
     ax.plot(data.LON, data.LAT, ".r", label="Truth")
     ax.plot(data.iloc[0].LON, data.iloc[0].LAT, "xk", label="Start")

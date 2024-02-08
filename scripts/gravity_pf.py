@@ -1,5 +1,5 @@
 """
-Executable for running the particle filter on bathymetry data
+Executable for running the particle filter on gravimetric data
 """
 
 import json
@@ -10,27 +10,29 @@ import os
 from matplotlib import pyplot as plt
 from pandas import read_csv, to_timedelta
 
-from src import process_dataset as pdset
-from src.particle_filter import (
+from src.geophysical import db_tools as db
+from src.geophysical.particle_filter import (
     plot_error,
     plot_estimate,
     populate_velocities,
     process_particle_filter,
     summarize_results,
 )
-
-CONFIG_FILE = "config.json"
-PLOTS_OUTPUT = ".db/plots"
-ANNOTATIONS = {"recovery": 1852, "res": 1852 / 4}
+# Potential CLI inputs
+CONFIG_FILE = "./scripts/config.json"
 SOURCE_TRAJECTORIES = ".db/parsed.db"
-RESULTS_DB = ".db/results.db"
+DATA_TYPE = "gravity"
+ANNOTATIONS = {"recovery": 1852, "res": 1852}
+
+PLOTS_OUTPUT = f".db/plots_{DATA_TYPE}"
+RESULTS_DB = ".db/results_{DATA_TYPE}.db"
 
 ### LOGGER SETUP ##############################################################
 # Create a logger
-logger = logging.getLogger("bathy_pf")
+logger = logging.getLogger(f"{DATA_TYPE}_pf")
 logger.setLevel(logging.INFO)
 # Create a file handler
-handler = logging.FileHandler("bathypf.log")
+handler = logging.FileHandler(f"{DATA_TYPE}pf.log")
 handler.setLevel(logging.INFO)
 # Create a logging format
 formatter = logging.Formatter("%(asctime)s || %(message)s")
@@ -44,10 +46,14 @@ def main():
     Main function
     """
     logger.info("=========================================")
-    logger.info("Beginning new run of bathy_pf.py")
-    tables = pdset.get_tables(SOURCE_TRAJECTORIES)
-    bathy_tables = [table for table in tables if "_D_" in table]
-    logger.info("Found tables: %s", bathy_tables)
+    logger.info(f"Beginning new run of {DATA_TYPE}_pf.py")
+    tables = db.get_tables(SOURCE_TRAJECTORIES)
+
+    # Validate data type string
+    
+
+    gravity_tables = [table for table in tables if "_G_" in table]
+    logger.info("Found tables: %s", gravity_tables)
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         config = json.load(f)
     logger.info("Loaded config file: %s", CONFIG_FILE)
@@ -59,11 +65,11 @@ def main():
     # Get completed tables
     logger.info("Checking for completed tables")
     try:
-        completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
+        completed_tables = db.get_tables(RESULTS_DB)
+        remaining_tables = [table for table in gravity_tables if table not in completed_tables]
     except FileNotFoundError:
         completed_tables = []
-        remaining_tables = bathy_tables
+        remaining_tables = gravity_tables
     while remaining_tables:  # empty list check would be not remaining_tables
         logger.info("Found completed tables: %s", completed_tables)
         logger.info("Found remaining tables: %s", remaining_tables)
@@ -77,25 +83,25 @@ def main():
                 )
             except OSError:
                 logger.error("Error in multiprocessing... probably a memory error")
-            except Exception:
-                logger.error("Error in multiprocessing... general error")
+            # except Exception:
+            #     logger.error("Error in multiprocessing... general error")
         logger.info("Finished multiprocessing")
         logger.info("Double checking to make sure all tables are complete")
         # Get completed tables
-        completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
+        completed_tables = db.get_tables(RESULTS_DB)
+        remaining_tables = [table for table in gravity_tables if table not in completed_tables]
         logger.info("Found remaining tables: %s", remaining_tables)
-    # logger.info("Beginning second linear pass")
+    logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
-    # completed_tables = pdset.get_tables(RESULTS_DB)
-    # for table in bathy_tables:
-    #     if table not in completed_tables:
-    #         multiprocessing_wrapper(table, config, ANNOTATIONS)
+    completed_tables = db.get_tables(RESULTS_DB)
+    for table in gravity_tables:
+        if table not in completed_tables:
+            multiprocessing_wrapper(table, config, ANNOTATIONS)
     logger.info("Summizing results")
-    results_tables = pdset.get_tables(RESULTS_DB)
+    results_tables = db.get_tables(RESULTS_DB)
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
     for table in results_tables:
-        df = pdset.table_to_df(RESULTS_DB, table)
+        df = db.table_to_df(RESULTS_DB, table)
         summary = summarize_results(table, df, 1852)
         summary.to_csv(
             output_path,
@@ -111,7 +117,7 @@ def main():
 def post_process_batch(
     summary_file: str,
     results_db: str,
-    output_location: str = ".db/plots/summary.txt",
+    output_location: str = ".db/plots_gravity/summary.txt",
     pixel_resolution: float = 452,
 ) -> None:
     """
@@ -133,7 +139,7 @@ def post_process_batch(
     :returns: None
 
     """
-    results_tables = pdset.get_tables(results_db)
+    results_tables = db.get_tables(results_db)
     # Load and pre-process the summary file
     summary = read_csv(
         summary_file,
@@ -230,12 +236,12 @@ def multiprocessing_wrapper(table, config, annotations):
     """
 
     logger.info("Starting processing for table: %s", table)
-    df = pdset.table_to_df(SOURCE_TRAJECTORIES, table)
+    df = db.table_to_df(SOURCE_TRAJECTORIES, table)
     logger.info("Loaded table: %s", table)
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
     try:
-        results, geo_map = process_particle_filter(df, config)
+        results, geo_map = process_particle_filter(df, config, map_type="gravity", map_resolution="01m")
     # Catch hdf5 errors
     except OSError as e:
         logger.error("Error processing table: %s", table)
@@ -243,17 +249,17 @@ def multiprocessing_wrapper(table, config, annotations):
         # traceback.print_exc(file)
         return
     # catch other errors
-    except Exception as e:
-        logger.error("Error processing table: %s", table)
-        logger.error(e.with_traceback())
-        return
+    # except Exception as e:
+    #     logger.error("Error processing table: %s", table)
+    #     logger.error(e.with_traceback())
+    #     return
     logger.info("%s run complete", table)
-    pdset.save_dataset(
+    db.save_dataset(
         [results],
         [table],
         output_location=".db",
         output_format="db",
-        dataset_name="results",
+        dataset_name="results_gravity",
     )
     logger.info("Saved results for table: %s", table)
     fig, _ = plot_estimate(geo_map, results)
