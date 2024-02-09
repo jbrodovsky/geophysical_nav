@@ -14,7 +14,7 @@ authors = [{name="James Brodovsky"}]
 homepage = "https://github.com/jbrodovsky/geophysical_nav"
 
 [project.scripts]
-geonav = "geophysical.sim:main"
+pf_ols = "geophysical.open_loop_sim:main"
 
 [tool.black]
 line-length = 120

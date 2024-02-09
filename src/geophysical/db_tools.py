@@ -13,7 +13,11 @@ def get_tables(db_path: str):
     """
     Get the names of all tables in a database.
     """
-    conn = sqlite3.connect(db_path)
+    try:
+        conn = sqlite3.connect(db_path)
+    except sqlite3.OperationalError as e:
+        raise e
+
     cursor = conn.cursor()
 
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -33,13 +37,16 @@ def table_to_df(db_path: str, table_name: str):
     around pandas.read_sql_query that specifies the default data format for
     each column.
     """
-    with sqlite3.connect(db_path) as conn:
-        data = pd.read_sql_query(
-            f"SELECT * FROM '{table_name}'",
-            conn,
-            index_col="TIME",
-        )
-        data.index = pd.to_datetime(data.index)
+    try:
+        with sqlite3.connect(db_path) as conn:
+            data = pd.read_sql_query(
+                f"SELECT * FROM '{table_name}'",
+                conn,
+                index_col="TIME",
+            )
+            data.index = pd.to_datetime(data.index)
+    except sqlite3.OperationalError as e:
+        raise e
 
     return data
 
@@ -56,13 +63,11 @@ def df_to_table(df: pd.DataFrame, db_path: str, table_name: str) -> None:
                 table_name,
                 conn,
                 if_exists="replace",
-                index=True,
-                index_label="TIME",
+                # index=True,
+                # index_label="TIME",
             )
     except sqlite3.OperationalError as e:
-        print(e)
-
-    return None
+        raise e
 
 
 def save_dataset(
@@ -93,14 +98,14 @@ def save_dataset(
     -------
     :returns: none
     """
-
+    if not os.path.exists(output_location):
+        os.makedirs(output_location)
     if output_format == "db":
         for df, name in zip(data, names):
             df_to_table(df, os.path.join(output_location, f"{dataset_name}.db"), name)
     elif output_format == "csv":
         for i, df in enumerate(data):
             df.to_csv(os.path.join(output_location, f"{names[i]}.csv"))
-
     else:
         raise NotImplementedError(
             f"Output format {output_format} not recognized. Please choose from the " + "following: db, csv"

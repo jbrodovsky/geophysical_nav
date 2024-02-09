@@ -112,7 +112,6 @@ def main():
     logger.info("Finished summarizing results. Process complete. Executing post processing.")
 
     post_process_batch(f"{PLOTS_OUTPUT}/summary.csv", RESULTS_DB)
-    return None
 
 
 def post_process_batch(
@@ -159,7 +158,6 @@ def post_process_batch(
     summary["num"] = summary["Unnamed: 0"]
     summary = summary.drop(columns=["Unnamed: 0"])
     summary["start"] = to_timedelta(summary["start"])
-    summary["end"] = to_timedelta(summary["end"])
     summary["duration"] = to_timedelta(summary["duration"])
 
     # Get pixel level results
@@ -241,13 +239,15 @@ def write_summary_data_file(
         f.write(f"Maximum error     {pixel['average_error'].max()}\n")
 
 
-def multiprocessing_wrapper(table, config, annotations):
+def processing_wrapper(
+    table: str, config: dict, annotations: dict, source_trajectories_location: str, output_plots_location: str
+) -> None:
     """
     multiprocessing wrapper for process_particle_filter
     """
 
     logger.info("Starting processing for table: %s", table)
-    df = table_to_df(SOURCE_TRAJECTORIES, table)
+    df = table_to_df(source_trajectories_location, table)
     logger.info("Loaded table: %s", table)
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
@@ -273,14 +273,14 @@ def multiprocessing_wrapper(table, config, annotations):
         dataset_name="results_gravity",
     )
     logger.info("Saved results for table: %s", table)
-    fig, _ = plot_estimate(geo_map, results)
+    fig, _ = plot_estimate(geo_map, results, measurment_type=config["measurment_type"])
     logger.info("Plotting estimate for table: %s", table)
-    fig.savefig(os.path.join(PLOTS_OUTPUT, "estimate", f"{table}_estimate.png"))
+    fig.savefig(os.path.join(output_plots_location, "estimate", f"{table}_estimate.png"))
     plt.close()
     logger.info("Estimate plot saved for table: %s", table)
     fig, _ = plot_error(results, annotations=annotations)
     logger.info("Plotting error for table: %s", table)
-    fig.savefig(os.path.join(PLOTS_OUTPUT, "errors", f"{table}_error.png"))
+    fig.savefig(os.path.join(output_plots_location, "errors", f"{table}_error.png"))
     plt.close()
     logger.info("Error plot saved for table: %s", table)
     logger.info("Finished processing for table: %s", table)
