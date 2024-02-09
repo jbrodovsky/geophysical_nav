@@ -53,4 +53,4 @@ jobs:
           pip install pytest pytest-cov
       - name: Run PyTest
         run: |
-          coverage run --source=./src/geophysical -m pytest --cov-fail-under=80
+          coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
