@@ -91,7 +91,7 @@ def update_relief(
     w[np.isnan(w)] = 1e-16
     if np.any(np.isnan(w)):
         print("NAN elements found")
-        w[np.isnana(w)] = 1e-16
+        w[np.isnan(w)] = 1e-16
 
     w_sum = np.nansum(w)
     try:
@@ -192,31 +192,11 @@ def process_particle_filter(
 
     n = configurations["n"]
     data[measurment_type] = data[measurment_type] - measurement_bias
-    # Run particle filter
-    # estimates = []
-    # rms_errors = []
-    # try:
-    #    repetitions = configurations["reps"]
-    # except KeyError:
-    #    repetitions = 1
-    # for _ in range(repetitions):
+
     estimate, rms_error, error = run_particle_filter(
         mu, cov, n, data, geo_map, noise, measurement_sigma, measurment_type=measurment_type
     )
-    #    estimates.append(estimate)
-    #    rms_errors.append(rms_error)
 
-    # # Validate output path
-    # if not os.path.exists(os.path.join(output_dir, name, map_type)):
-    #     os.makedirs(os.path.join(output_dir, name, map_type))
-    # # Plot results
-    # fig, ax = plot_map_and_trajectory(geo_map, data)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "map_and_trajectory.png"))
-    # fig, ax = plot_estimate(geo_map, data, estimate)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "estimate.png"))
-    # fig, ax = plot_error(data, rms_error)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "error.png"))
-    # plt.close("all")
     data[["PF_LAT", "PF_LON", "PF_DEPTH", "PF_VN", "PF_VE", "PF_VD"]] = estimate
     data["RMSE"] = rms_error
     data["ERROR"] = error
@@ -230,7 +210,8 @@ def populate_velocities(data: DataFrame) -> DataFrame:
     """
     lla = data.loc[:, ["LAT", "LON"]].values
     lla = np.hstack((lla, np.zeros((lla.shape[0], 1))))
-    data["DT"] = data.index.to_series().diff().dt.total_seconds().fillna(0)
+    if "DT" not in data.columns:
+        data["DT"] = data.index.to_series().diff().dt.total_seconds().fillna(0)
     traj, _ = generate_imu(data["DT"].cumsum().values, lla, np.zeros_like(lla))
     data[["VN", "VE", "VD"]] = traj[["VN", "VE", "VD"]].values
     return data
@@ -251,7 +232,7 @@ def weighted_rmse(particles, weights, truth):
     Weighted root mean square error calculation
     """
     diffs = [haversine(truth, (p[0], p[1]), Unit.METERS) for p in particles]
-    diffs = np.asarray(diffs) * weights
+    diffs = np.asarray(diffs) @ weights
     return np.sqrt(diffs**2)
 
 
@@ -540,67 +521,3 @@ def summarize_results(name: str, results: DataFrame, threshold: float):
         }
     )
     return summary
-
-
-def parse_args():
-    """
-    Command line interface specifications
-    """
-    parser = argparse.ArgumentParser(description="Particle Filter")
-    parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        help="Path to the particle filter configuration file",
-        default="./config.json",
-    )
-    parser.add_argument(
-        "-d",
-        "--data",
-        type=str,
-        help="Path to the data file or folder containing data files",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="Path to the output directory",
-        default="./results/",
-    )
-    parser.add_argument(
-        "-t",
-        "--type",
-        type=str,
-        help="Type of map to use",
-        default="relief",
-    )
-    return parser.parse_args()
-
-
-def main():
-    """
-    Main function
-    """
-    args = parse_args()
-    config = json.load(open(args.config, "r", encoding="utf-8"))
-    # Check to see if the data is a file or a folder
-    if os.path.isfile(args.data):
-        process_particle_filter(args.data, config, "./results/", args.type)
-    elif os.path.isdir(args.data):
-        # Get a list of all CSV files in the directory
-        file_list = [os.path.join(args.data, file) for file in os.listdir(args.data) if file.endswith(".csv")]
-        cores = multiprocessing.cpu_count()
-        # Process particle filters in parallel
-        with multiprocessing.Pool(processes=cores) as pool:
-            pool.starmap(
-                process_particle_filter,
-                [(file, config, "./results/", args.type) for file in file_list],
-            )
-            pool.close()
-            pool.join()
-    else:
-        raise ValueError("Data path not recognized")
-
-
-if __name__ == "__main__":
-    main()
