@@ -79,7 +79,7 @@ def main():
         with mp.Pool(processes=mp.cpu_count()) as pool:
             try:
                 pool.starmap(
-                    multiprocessing_wrapper,
+                    processing_wrapper,
                     [(table, config, ANNOTATIONS) for table in remaining_tables],
                 )
             except OSError:
@@ -97,7 +97,7 @@ def main():
     completed_tables = get_tables(RESULTS_DB)
     for table in gravity_tables:
         if table not in completed_tables:
-            multiprocessing_wrapper(table, config, ANNOTATIONS)
+            processing_wrapper(table, config, ANNOTATIONS)
     logger.info("Summizing results")
     results_tables = get_tables(RESULTS_DB)
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
