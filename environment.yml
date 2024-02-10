@@ -1,0 +1,29 @@
+name: nav
+channels:
+  - defaults
+  - conda-forge
+  - Microsoft
+dependencies:
+  - python==3.11
+  # linting
+  - black
+  - flake8
+  - pylint
+  # Testing
+  - pytest
+  - pytest-cov
+  # Documentation requirements
+  - sphinx
+  - pandoc
+  # Particle filter
+  - filterpy
+  - numpy
+  - pandas
+  - pytz
+  - haversine
+  - pygmt
+  # Plotting
+  - matplotlib
+  # web app
+  - flask
+prefix: /home/james/miniconda3/envs/nav

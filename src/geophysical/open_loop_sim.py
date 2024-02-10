@@ -97,7 +97,7 @@ def main():
     completed_tables = get_tables(RESULTS_DB)
     for table in gravity_tables:
         if table not in completed_tables:
-            processing_wrapper(table, config, ANNOTATIONS)
+            processing_wrapper(table, config, ANNOTATIONS, "", "")
     logger.info("Summizing results")
     results_tables = get_tables(RESULTS_DB)
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
@@ -167,7 +167,7 @@ def post_process_batch(
     write_summary_data_file(output_location, results_tables, summary, pixel, first)
 
 
-def _check_for_missing_tables(source_tables: list[DataFrame], test_tables: list[DataFrame]) -> int:
+def _check_for_missing_tables(source_tables: list[DataFrame], test_tables: DataFrame) -> int:
     """
     Check to see if tables from the source are missing from the test tables.
     """

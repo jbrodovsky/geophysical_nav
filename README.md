@@ -9,6 +9,9 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
     * Using `setuptools` and `pybind11` I can write back-end C++ code if needed and build and install the module using `pip install .`.
     * `pyins` is still somewhat of a issue since it is not available on PyPI, but I have scripts written to deal with it a the momement, Azure deployment still needs to be dealt with in this manner.
     * Given Azure's preference for `pip` and `pygmt` now being available via pip, there isn't the functional need for `conda` right now.
+      * Addendum: `pygmt` still only works properly with a `conda` install. Can manage a conda environment for Azure Functions by developing the app in a container.
+      * Azure functions works perfectly fine when manually run from the command line within a `conda` environment: `func host start`.
+      * Manual launch and conda environments seems to block the debugger
   * Thought process right now is to deliver two things
     * A set of CLI tools via `project.scripts` in the `pyproject.toml` file that can be built using PIP. Intent for these is local debugging and small scale testing
     * A serverless web app that provides clound funtionality and hooks for the same functionality but in the cloud. Intent for that is for large-scale processing and testing

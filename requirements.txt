@@ -6,30 +6,6 @@
 azure-functions
 # Python build requirements
 wheel
-# Particle filter requirements
-filterpy
-haversine
-numpy
-pandas
-pytz
-matplotlib
-pygmt
-pytz
-h5py
-scipy
+# Particle filter
 anglewrapper 
 python-ins
-# General simulaiton development and prototyping requirements
-tqdm
-notebook
-# Web app requirements
-flask
-# Documentation requirements
-sphinx
-pandoc
-# Testing and linting requirements
-pytest
-pytest-cov
-pylint
-black
-flake8
