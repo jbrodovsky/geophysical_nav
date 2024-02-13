@@ -27,6 +27,7 @@ jobs:
           python -m pip install -r requirements-dev.txt
       - name: Format and lint
         run: |
+          conda init --all
           conda activate base
           # Autoformat with black
           black .
@@ -51,7 +52,7 @@ jobs:
           python-version: 3.11
       - name: Install additional pip dependencies
         run: |
-          conda info
+          conda init --all
           conda activate base
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
