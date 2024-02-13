@@ -17,7 +17,6 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: nav
           environment-file: environment.yml
           python-version: 3.11
       - name: Install additional pip dependencies
@@ -45,7 +44,6 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: nav
           environment-file: environment.yml
           python-version: 3.11
       - name: Install additional pip dependencies
