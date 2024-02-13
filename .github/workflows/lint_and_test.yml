@@ -18,8 +18,14 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: true
+          auto-update-conda: true
           environment-file: environment.yml
           python-version: 3.11
+      - name: Conda Info
+          shell: bash -el {0}
+          run: | 
+            conda info
+            conda list
       - name: Install additional pip dependencies
         run: |
           python -m pip install --upgrade pip
@@ -44,12 +50,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Python
+        - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: true
+          auto-update-conda: true
           environment-file: environment.yml
           python-version: 3.11
+      - name: Conda Info
+          shell: bash -el {0}
+          run: | 
+            conda info
+            conda list
       - name: Install additional pip dependencies
         run: |
           conda init --all
