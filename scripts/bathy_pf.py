@@ -25,7 +25,7 @@ ANNOTATIONS = {"recovery": 1852, "res": 1852 / 4}
 SOURCE_TRAJECTORIES = ".db/parsed.db"
 RESULTS_DB = ".db/results.db"
 
-### LOGGER SETUP ##############################################################
+# --- LOGGER SETUP ##############################################################
 # Create a logger
 logger = logging.getLogger("bathy_pf")
 logger.setLevel(logging.INFO)

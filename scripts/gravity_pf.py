@@ -18,6 +18,7 @@ from src.geophysical.particle_filter import (
     process_particle_filter,
     summarize_results,
 )
+
 # Potential CLI inputs
 CONFIG_FILE = "./scripts/config.json"
 SOURCE_TRAJECTORIES = ".db/parsed.db"
@@ -27,7 +28,7 @@ ANNOTATIONS = {"recovery": 1852, "res": 1852}
 PLOTS_OUTPUT = f".db/plots_{DATA_TYPE}"
 RESULTS_DB = ".db/results_{DATA_TYPE}.db"
 
-### LOGGER SETUP ##############################################################
+# --- LOGGER SETUP ##############################################################
 # Create a logger
 logger = logging.getLogger(f"{DATA_TYPE}_pf")
 logger.setLevel(logging.INFO)
@@ -50,7 +51,6 @@ def main():
     tables = db.get_tables(SOURCE_TRAJECTORIES)
 
     # Validate data type string
-    
 
     gravity_tables = [table for table in tables if "_G_" in table]
     logger.info("Found tables: %s", gravity_tables)
