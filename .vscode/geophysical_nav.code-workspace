@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen",
+		"python.condaPath": "/home/james/miniconda3/bin",
+		"python.pythonPath": "/home/james/miniconda3/envs/nav",
+	}
+}

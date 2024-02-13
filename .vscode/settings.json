@@ -11,7 +11,4 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.condaPath": "/home/james/miniconda3/bin",
-    "python.pythonPath": "/home/james/miniconda3/envs/nav",
-
 }
