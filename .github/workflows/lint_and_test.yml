@@ -21,16 +21,11 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
           python-version: 3.11
-      - name: Conda Info
-        shell: bash -el {0}
-        run: | 
-          conda info
-          conda list
-      - name: Install additional pip dependencies
+      - name: Install additional dependencies
         run: |
+          conda install black flake8 pylint pytest pytest-cov
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install -r requirements-dev.txt
+          python -m pip install anglewrapper python-ins
       - name: Format and lint
         run: |
           conda info
@@ -56,17 +51,11 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
           python-version: 3.11
-      - name: Conda Info
-        shell: bash -el {0}
-        run: | 
-          which python
-          which python3
-          conda env list
-      # - name: Install additional pip dependencies
-      #   run: |
-      #     python3 -m pip install --upgrade pip
-      #     python3 -m pip install -r requirements.txt
-      #     python3 -m pip install -r requirements-dev.txt
-      # - name: Run PyTest
-      #   run: |
-      #     coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
+      - name: Install additional dependencies
+        run: |
+          conda install black flake8 pylint pytest pytest-cov
+          python -m pip install --upgrade pip
+          python -m pip install anglewrapper python-ins
+      - name: Run PyTest
+        run: |
+          coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
