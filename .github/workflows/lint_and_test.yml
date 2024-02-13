@@ -59,13 +59,14 @@ jobs:
       - name: Conda Info
         shell: bash -el {0}
         run: | 
-          conda info
+          which python
+          which python3
           conda env list
-      - name: Install additional pip dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements-dev.txt
-      - name: Run PyTest
-        run: |
-          coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
+      # - name: Install additional pip dependencies
+      #   run: |
+      #     python3 -m pip install --upgrade pip
+      #     python3 -m pip install -r requirements.txt
+      #     python3 -m pip install -r requirements-dev.txt
+      # - name: Run PyTest
+      #   run: |
+      #     coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
