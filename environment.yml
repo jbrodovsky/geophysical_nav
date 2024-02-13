@@ -6,15 +6,15 @@ channels:
 dependencies:
   - python==3.11
   # linting
-  - black
-  - flake8
-  - pylint
+  # - black
+  # - flake8
+  # - pylint
   # Testing
-  - pytest
-  - pytest-cov
+  # - pytest
+  # - pytest-cov
   # Documentation requirements
-  - sphinx
-  - pandoc
+  # - sphinx
+  # - pandoc
   # Particle filter
   - filterpy
   - numpy

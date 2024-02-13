@@ -15,16 +15,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          activate-environment: nav
+          environment-file: environment.yml
           python-version: 3.11
-
-      - name: Install dependencies
+      - name: Install additional pip dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest flake8 black
-
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
       - name: Format and lint
         run: |
           # Autoformat with black
@@ -43,14 +43,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          activate-environment: nav
+          environment-file: environment.yml
           python-version: 3.11
-      - name: Install dependencies
+      - name: Install additional pip dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
       - name: Run PyTest
         run: |
           coverage run --source=./src/geophysical -m pytest --cov-fail-under=60
