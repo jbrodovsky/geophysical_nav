@@ -7,13 +7,13 @@ import sqlite3
 from datetime import timedelta
 from typing import List
 
-import pandas as pd
+from pandas import DataFrame, Series, Timedelta, read_csv, to_datetime
 
-from .db_tools import get_tables, table_to_df
+# TODO: #44 Refactor this module to only be concerned with m77t and pandas DataFrames, to/from sql should be in db_tools
 
 
 # --- MGD77T Processing ------------------------------------------------------
-def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
+def m77t_to_df(data: DataFrame) -> DataFrame:
     """
     Formats a data frame from the raw .m77t input into a more useful representation.
     The time data is foramtted to a Python `datetime` object and used as the new
@@ -36,7 +36,7 @@ def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
     datetimes = dates.astype(str) + times.astype(str)
     timezones.index = datetimes.index
     datetimes += timezones.astype(str)
-    datetimes = pd.to_datetime(datetimes, format="%Y%m%d%H%M%z")
+    datetimes = to_datetime(datetimes, format="%Y%m%d%H%M%z")
     data.index = datetimes
     data = data[["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]]
     # Clean up the rest of the data frame
@@ -50,197 +50,69 @@ def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def process_mgd77(location: str) -> None:
-    """
-    Processes the raw .m77t file(s) from NOAA. May be a single file or a folder.
-    If a folder is specified, the function will recursively search through the
-    folder to find all .m77t files.
-
-    Parameters
-    ----------
-    :param location: The file path to the root folder to search.
-    :type location: STRING
-
-    Returns
-    -------
-    :returns: data: list of dataframes containing the processed data
-    :returns: names: list of names of the files
-    """
-    data = []
-    names = []
-
-    for root, _, files in os.walk(location):
-        for file in files:
-            if file.endswith(".m77t"):
-                df = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
-                df = m77t_to_df(df)
-                data.append(df)
-                names.append(file.split(".m77t")[0])
-
-    return data, names
-
-
-def save_mgd77_dataset(
-    data: list[pd.DataFrame],
-    names: list[str],
-    output_location: str,
-    output_format: str = "db",
-    dataset_name: str = "tracklines",
-) -> None:
-    """
-    Used to save the processed MGD77T data. Data is either saved to a folder as
-    .csv or to a single .db file. Default is .db.
-
-    Parameters
-    ----------
-    :param data: list of dataframes containing the processed data
-    :type data: list of pandas.DataFrame
-    :param names: list of names of the files
-    :type names: list of strings
-    :param output_location: The file path to the root folder to search.
-    :type output_location: STRING
-    :param output_format: The format for the output (db or csv).
-    :type output_format: STRING
-    :param dataset_name: The name of the dataset to be saved.
-    :type dataset_name: STRING
-
-    Returns
-    -------
-    :returns: none
-    """
-    if not os.path.isdir(output_location):
-        os.makedirs(output_location)
-
-    if output_format == "db":
-        conn = sqlite3.connect(os.path.join(output_location, f"{dataset_name}.db"))
-        with sqlite3.connect(os.path.join(output_location, f"{dataset_name}.db")) as conn:
-            for i, df in enumerate(data):
-                df.to_sql(
-                    names[i],
-                    conn,
-                    if_exists="replace",
-                    index=True,
-                    index_label="TIME",
-                    dtype={
-                        "TIME": "TIMESTAMP",
-                        "LAT": "FLOAT",
-                        "LON": "FLOAT",
-                        "CORR_DEPTH": "FLOAT",
-                        "MAG_TOT": "FLOAT",
-                        "MAG_RES": "FLOAT",
-                        "GRA_OBS": "FLOAT",
-                        "FREEAIR": "FLOAT",
-                    },
-                )
-    elif output_format == "csv":
-        for i, df in enumerate(data):
-            df.to_csv(os.path.join(output_location, names[i] + ".csv"))
-
-    else:
-        raise NotImplementedError(
-            f"Output format {output_format} not recognized. Please choose from the " + "following: db, csv"
-        )
-
-
-##############################################################################
-# Dataset Parsing ############################################################
-##############################################################################
-# MGD77T parsing from a folder of .csv
-# def parse_dataset_from_folder(args):
-#     """
-#     Recursively search through a given folder to find .csv files. When found,
-#     read them into memory using parse_trackline, processes them, and then save as a
-#     .csv to the location specified by `output_path`.
-#     """
-#     if args.format == "csv":
-#         file_paths = _search_folder(args.location, "*.csv")
-#         print("Found the following source files:")
-#         print("\n".join(file_paths))
-#         for file_path in file_paths:
-#             filename = os.path.split(file_path)[-1]
-#             print(f"Processing: {filename}")
-#             parse_trackline_from_file(
-#                 file_path,
-#                 save=True,
-#                 output_dir=args.output,
-#                 max_time=timedelta(minutes=args.max_time),
-#                 max_delta_t=timedelta(minutes=args.max_delta_t),
-#                 min_duration=timedelta(minutes=args.min_duration),
-#             )
-#         # data_out.to_csv(f"{output_path}/{name}.csv")
-#         # data_out.to_csv(os.path.join(args.output, f"{name}.csv"))
-
-
 def parse_trackline_from_file(
     filepath: str,
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
+    data_types: List[str] = None,
 ) -> list:
     """
     Parse a single trackline dataset csv into periods of continuous data.
     """
-    data = pd.read_csv(
-        filepath,
-        header=0,
-        index_col=0,
-        parse_dates=True,
-        dtype={
-            "LAT": float,
-            "LON": float,
-            "CORR_DEPTH": float,
-            "MAG_TOT": float,
-            "MAG_RES": float,
-            "GRA_OBS": float,
-            "FREEAIR": float,
-        },
-    )
+    try:
+        data = read_csv(filepath, delimiter="\t", header=0)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"File {filepath} not found.") from exc
+    try:
+        data = m77t_to_df(data)
+    except KeyError as exc:
+        raise NotImplementedError("File does not contain the expected columns. Please only use .m77t files.") from exc
     # get the filename without the extension
     file_name = os.path.splitext(os.path.basename(filepath))[0]
-    validated_subsections = _split_and_validate_dataset(
+    validated_subsections, names = parse_tracklines(
         data,
         max_time=max_time,
         max_delta_t=max_delta_t,
         min_duration=min_duration,
+        track_name=file_name,
+        data_types=data_types,
     )
-    names = [f"{file_name}_{i}" for i in range(len(validated_subsections))]
     return validated_subsections, names
 
 
-# MGD77T parsing from a database
-def parse_tracklines_from_db(
-    db_path: str,
+def parse_tracklines(
+    # db_path: str,
+    data: DataFrame,
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
     data_types: List[str] = None,
-) -> tuple[list : pd.DataFrame, list:str]:
+    track_name: str = "parsed",
+) -> tuple[list:DataFrame, list:str]:
     """
-    Parse a trackline database into periods of continuous data.
+    Parse a trackline into periods of continuous data.
     """
-    tables = get_tables(db_path)
+    # tables = get_tables(db_path)
     parsed = []
     parsed_names = []
-    for table in tables:
-        print(f"Processing: {table}")
-        data = table_to_df(db_path, table)
-        data_types = validate_data_type_string(data_types)
-        for type_string in data_types:
-            validated_subsections = _split_and_validate_dataset(
-                data,
-                max_time=max_time,
-                max_delta_t=max_delta_t,
-                min_duration=min_duration,
-                data_types=type_string,
-            )
-            new_names = [f"{table}_{type_string}_{i}" for i in range(len(validated_subsections))]
-            parsed.extend(validated_subsections)
-            parsed_names.extend(new_names)
+    data_types = validate_data_type_string(data_types)
+    for type_string in data_types:
+        validated_subsections = _split_and_validate_dataset(
+            data,
+            max_time=max_time,
+            max_delta_t=max_delta_t,
+            min_duration=min_duration,
+            data_types=type_string,
+        )
+        new_names = [f"{track_name}_{type_string}_{i}" for i in range(len(validated_subsections))]
+        parsed.extend(validated_subsections)
+        parsed_names.extend(new_names)
 
     return parsed, parsed_names
 
 
-def validate_data_type_string(data_types: List[str]) -> List[str]:
+def validate_data_type_string(data_types: List[str]) -> list[str]:
     """
     Checks for valid data type strings and standardizes the input.
     `data_types` should be a string or list of strings where each string is
@@ -299,13 +171,13 @@ def _validate_data_type_string(data_type: str) -> str:
     return valid_string
 
 
-def get_parsed_data_summary(data: list[pd.DataFrame], names: list[str]) -> pd.DataFrame:
+def get_parsed_data_summary(data: list[DataFrame], names: list[str]) -> DataFrame:
     """
     For each dataframe in data, calculate the following: start time, end time, duration,
     starting latitude and longitude, ending latitude and longitude, and number of data
     points.
     """
-    summary = pd.DataFrame(
+    summary = DataFrame(
         columns=[
             "num_points",
             "start_time",
@@ -377,7 +249,7 @@ def get_parsed_data_summary(data: list[pd.DataFrame], names: list[str]) -> pd.Da
     return summary
 
 
-def _get_measurement_statistics(measurement: pd.Series) -> tuple:
+def _get_measurement_statistics(measurement: Series) -> tuple:
     """
     Calculate the mean, standard deviation, and number of data points for a given measurement.
     """
@@ -389,7 +261,7 @@ def _get_measurement_statistics(measurement: pd.Series) -> tuple:
 
 # General  parsing
 def _split_and_validate_dataset(
-    data: pd.DataFrame,
+    data: DataFrame,
     max_time: timedelta = timedelta(minutes=10),
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
@@ -433,7 +305,7 @@ def _split_and_validate_dataset(
         min_duration = timedelta(minutes=min_duration)
 
     # Split the dataset into periods of continuous data collection
-    data["DT"] = data.index.to_series().diff().fillna(pd.Timedelta(seconds=0))
+    data["DT"] = data.index.to_series().diff().fillna(Timedelta(seconds=0))
     data.loc[data.index[0], "DT"] = timedelta(seconds=0)
     inds = (data["DT"] > max_time).to_list()
     subsets = find_periods(inds)
@@ -481,7 +353,7 @@ def find_periods(mask) -> list:
     return periods
 
 
-def split_dataset(df: pd.DataFrame, periods: list) -> list:
+def split_dataset(df: DataFrame, periods: list) -> list:
     """
     Split a dataframe into subsections based on the given periods.
     """
@@ -490,38 +362,3 @@ def split_dataset(df: pd.DataFrame, periods: list) -> list:
         subsection = df.iloc[start : end + 1]  # Add 1 to include the end index
         subsections.append(subsection)
     return subsections
-
-
-# def mgd77_to_sql(source_data_location: str, output_location: str):
-#     """
-#     Convert MGD77T data to a SQLite database.
-#     """
-#     # Check and see if the output_location directory exists
-#     if not os.path.exists(output_location):
-#         os.makedirs(output_location)
-#
-#     # Check to see if the database exists
-#     if not os.path.exists(f"{output_location}/tracklines.db"):
-#         tables = []
-#     else:
-#         tables = get_tables(f"{output_location}/tracklines.db")
-#
-#     for root, _, files in os.walk(source_data_location):
-#         for file in files:
-#             if file.endswith(".m77t"):
-#                 # check to see if the file has already been processed
-#                 filename = os.path.splitext(file)[0]
-#                 if filename not in tables:
-#                     print("Processing file: " + file)
-#                     data = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
-#                     data = m77t_to_df(data)
-#                     save_dataset(
-#                         [data],
-#                         [filename],
-#                         output_location=output_location,
-#                         output_format="db",
-#                         dataset_name="tracklines",
-#                     )
-#                 else:
-#                     print("Skipping file: " + file + " (already processed)")
-#
