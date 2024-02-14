@@ -21,3 +21,33 @@ def haversine_angle(origin: tuple, destination: tuple) -> float:
     y = np.cos(origin[0]) * np.sin(destination[0]) - np.sin(origin[0]) * np.cos(destination[0]) * np.cos(d_lon)
     heading = np.rad2deg(np.arctan2(x, y))
     return heading
+
+
+def process_mgd77(location: str) -> None:
+    """
+    Processes the raw .m77t file(s) from NOAA. May be a single file or a folder.
+    If a folder is specified, the function will recursively search through the
+    folder to find all .m77t files.
+
+    Parameters
+    ----------
+    :param location: The file path to the root folder to search.
+    :type location: STRING
+
+    Returns
+    -------
+    :returns: data: list of dataframes containing the processed data
+    :returns: names: list of names of the files
+    """
+    data = []
+    names = []
+
+    for root, _, files in os.walk(location):
+        for file in files:
+            if file.endswith(".m77t"):
+                df = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
+                df = m77t_to_df(df)
+                data.append(df)
+                names.append(file.split(".m77t")[0])
+
+    return data, names

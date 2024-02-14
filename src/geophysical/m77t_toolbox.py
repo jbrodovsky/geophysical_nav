@@ -11,6 +11,8 @@ import pandas as pd
 
 from .db_tools import get_tables, table_to_df
 
+# TODO: #44 Refactor this module to only be concerned with m77t and pandas DataFrames, to/from sql should be in db_tools
+
 
 # --- MGD77T Processing ------------------------------------------------------
 def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
@@ -48,36 +50,6 @@ def m77t_to_df(data: pd.DataFrame) -> pd.DataFrame:
     data = data.loc[~data.index.duplicated(keep="last")]
 
     return data
-
-
-def process_mgd77(location: str) -> None:
-    """
-    Processes the raw .m77t file(s) from NOAA. May be a single file or a folder.
-    If a folder is specified, the function will recursively search through the
-    folder to find all .m77t files.
-
-    Parameters
-    ----------
-    :param location: The file path to the root folder to search.
-    :type location: STRING
-
-    Returns
-    -------
-    :returns: data: list of dataframes containing the processed data
-    :returns: names: list of names of the files
-    """
-    data = []
-    names = []
-
-    for root, _, files in os.walk(location):
-        for file in files:
-            if file.endswith(".m77t"):
-                df = pd.read_csv(os.path.join(root, file), delimiter="\t", header=0)
-                df = m77t_to_df(df)
-                data.append(df)
-                names.append(file.split(".m77t")[0])
-
-    return data, names
 
 
 def save_mgd77_dataset(
@@ -240,7 +212,7 @@ def parse_tracklines_from_db(
     return parsed, parsed_names
 
 
-def validate_data_type_string(data_types: List[str]) -> List[str]:
+def validate_data_type_string(data_types: List[str]) -> list[str]:
     """
     Checks for valid data type strings and standardizes the input.
     `data_types` should be a string or list of strings where each string is
