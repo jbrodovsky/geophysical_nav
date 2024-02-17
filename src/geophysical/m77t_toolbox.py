@@ -9,7 +9,7 @@ from typing import List
 
 import pandas as pd
 
-from .db_tools import get_tables, table_to_df
+from db_tools import get_tables, table_to_df
 
 
 # --- MGD77T Processing ------------------------------------------------------
