@@ -9,7 +9,7 @@ from typing import List
 
 from pandas import DataFrame, Series, Timedelta, read_csv, to_datetime
 
-# TODO: #44 Refactor this module to only be concerned with m77t and pandas DataFrames, to/from sql should be in db_tools
+from db_tools import get_tables, table_to_df
 
 
 # --- MGD77T Processing ------------------------------------------------------
