@@ -3,13 +3,10 @@ Library for interacting with the M77T data format.
 """
 
 import os
-import sqlite3
 from datetime import timedelta
 from typing import List
 
 from pandas import DataFrame, Series, Timedelta, read_csv, to_datetime
-
-from db_tools import get_tables, table_to_df
 
 
 # --- MGD77T Processing ------------------------------------------------------
