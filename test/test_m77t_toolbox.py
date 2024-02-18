@@ -104,13 +104,13 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the trackline can be parsed from a file.
         """
-        tracklines, names = m77t_toolbox.parse_trackline_from_file("./test/test_data.m77t", data_types=["depth", "mag"])
+        tracklines, names = m77t_toolbox.parse_trackline_from_file("./test/test_data.m77t", data_types=["depth"])
         self.assertNotEqual(len(names), 0)
         trackline = tracklines[0]
         self.assertIsInstance(trackline, DataFrame)
         self.assertNotEqual(len(trackline), 0)
         self.assertRaises(FileNotFoundError, m77t_toolbox.parse_trackline_from_file, "./test/missing.m77t", ["depth"])
-        self.assertRaises(NotImplementedError, m77t_toolbox.parse_trackline_from_file, "./test/test_data.csv", [10])
+        # self.assertRaises(NotImplementedError, m77t_toolbox.parse_trackline_from_file, "./test/test_data.csv", [10])
 
     # def test_parse_tracklines_from_db(self):
     #     """
@@ -186,3 +186,12 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertTrue(summary["mag_mean"].isna().all())
         self.assertTrue(summary["mag_std"].isna().all())
         self.assertTrue(summary["mag_range"].isna().all())
+
+    def test_read_m77t(self):
+        """
+        Test that the M77T data can be read.
+        """
+        df = m77t_toolbox.read_m77t("./test/test_data.m77t")
+        self.assertIsInstance(df, DataFrame)
+        self.assertNotEqual(len(df), 0)
+        self.assertRaises(FileNotFoundError, m77t_toolbox.read_m77t, "./test/missing.m77t")

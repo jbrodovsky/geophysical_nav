@@ -10,6 +10,17 @@ from pandas import DataFrame, Series, Timedelta, read_csv, to_datetime
 
 
 # --- MGD77T Processing ------------------------------------------------------
+def read_m77t(filepath: str) -> DataFrame:
+    """
+    Read in a .m77t file and return the data as a Pandas DataFrame.
+    """
+    try:
+        data = read_csv(filepath, delimiter="\t", header=0)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"File {filepath} not found.") from exc
+    return data
+
+
 def m77t_to_df(data: DataFrame) -> DataFrame:
     """
     Formats a data frame from the raw .m77t input into a more useful representation.
@@ -57,14 +68,8 @@ def parse_trackline_from_file(
     """
     Parse a single trackline dataset csv into periods of continuous data.
     """
-    try:
-        data = read_csv(filepath, delimiter="\t", header=0)
-    except FileNotFoundError as exc:
-        raise FileNotFoundError(f"File {filepath} not found.") from exc
-    try:
-        data = m77t_to_df(data)
-    except KeyError as exc:
-        raise NotImplementedError("File does not contain the expected columns. Please only use .m77t files.") from exc
+    data = read_m77t(filepath)
+    data = m77t_to_df(data)
     # get the filename without the extension
     file_name = os.path.splitext(os.path.basename(filepath))[0]
     validated_subsections, names = parse_tracklines(
