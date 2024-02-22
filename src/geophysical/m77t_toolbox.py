@@ -64,7 +64,7 @@ def parse_trackline_from_file(
     max_delta_t: timedelta = timedelta(minutes=2),
     min_duration: timedelta = timedelta(minutes=60),
     data_types: List[str] = None,
-) -> list:
+) -> tuple[list:DataFrame, list:str]:
     """
     Parse a single trackline dataset csv into periods of continuous data.
     """
