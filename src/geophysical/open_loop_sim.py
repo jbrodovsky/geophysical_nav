@@ -12,8 +12,8 @@ import os
 from matplotlib import pyplot as plt
 from pandas import read_csv, to_timedelta, DataFrame
 
-from db_tools import get_tables, save_dataset, table_to_df
-from particle_filter import (
+from .db_tools import get_tables, save_dataset, table_to_df
+from .particle_filter import (
     plot_error,
     plot_estimate,
     populate_velocities,
