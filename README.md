@@ -4,6 +4,12 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 14 May 2024
+
+So I'm going back to school full time or having this be a part of my greater ARL research, but I'm going back to simpler yet somewhat less elegant approach. Instead of focusing on a cloud based implementation I'm going to implement a local database and "server-lite" approach where I can develop the code on any machine, then pull down the most recent version from `main` and run it on a separate computer in potentially a headless fashion.
+
+### Old notes
+
 * Planning and thoughts
   * Restructured the project to follow more standard Python and PyPI practices.
     * Using `setuptools` and `pybind11` I can write back-end C++ code if needed and build and install the module using `pip install .`.
@@ -14,7 +20,7 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
       * Manual launch and conda environments seems to block the debugger
   * Thought process right now is to deliver two things
     * A set of CLI tools via `project.scripts` in the `pyproject.toml` file that can be built using PIP. Intent for these is local debugging and small scale testing
-    * A serverless web app that provides clound funtionality and hooks for the same functionality but in the cloud. Intent for that is for large-scale processing and testing
+    * A serverless web app that provides cloud functionality and hooks for the same functionality but in the cloud. Intent for that is for large-scale processing and testing
 * Current workflow:
   1. Download raw `.m77t` files NOAA
   2. Using notebook, run the *Preprocess tracklines into sql/df format* section clean up the data formate
