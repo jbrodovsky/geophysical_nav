@@ -4,9 +4,9 @@ Library for interacting with the M77T data format.
 
 import os
 from datetime import timedelta
-from typing import List
+from typing import List, Optional
 
-from sqlalchemy import create_engine, Table, Column, Integer, Float, String, MetaData, DateTime, ForeignKey
+from sqlalchemy import DateTime, Float, Integer, MetaData, String, ForeignKey
 from numpy import zeros_like, hstack, rad2deg, deg2rad, cos, sin, arctan2
 from pandas import DataFrame, Series, Timedelta, read_csv, to_datetime, concat, read_sql_table
 from pyins.sim import generate_imu
