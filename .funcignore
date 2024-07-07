@@ -6,3 +6,7 @@ __queuestorage__
 local.settings.json
 test
 .venv
+.db
+.mypy_cache
+source_data
+*.log

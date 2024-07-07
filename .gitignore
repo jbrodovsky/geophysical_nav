@@ -1,6 +1,12 @@
 .db
 .gpteng
-.vscode
+source_data/
+.venv
+.logs
+
+GeophysicalNavigation.PublishSettings
+
+
 __azurite_db_blob__.json
 __azurite_db_blob_extent.json
 __azurite_db_queue__.json
@@ -8,7 +14,7 @@ __azurite_db_queue_extent__.json
 __azurite_db_table__.json
 gmt.history
 Geophysicalnavigation.PublishSettings
-
+source_data
 #####
 # Byte-compiled / optimized / DLL files
 __pycache__/

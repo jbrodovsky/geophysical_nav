@@ -1,0 +1,65 @@
+name: Run general CI linting and testing for Python
+
+on:
+  push:
+    branches: 
+      - "main"
+  pull_request:
+    branches: 
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+          auto-update-conda: true
+          environment-file: environment.yml
+          python-version: 3.11
+      - name: Install additional dependencies
+        shell: bash -l {0}
+        run: |
+          conda install black flake8 pylint pytest pytest-cov
+          python -m pip install --upgrade pip
+          python -m pip install anglewrapper python-ins
+      - name: Format and lint
+        shell: bash -l {0}
+        run: |
+          conda info
+          # Autoformat with black
+          black .
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          # lint with pylint
+          pylint src test --fail-under=8.5 || exit 1
+
+  test:
+    runs-on: ubuntu-latest
+    #needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+          auto-update-conda: true
+          environment-file: environment.yml
+          python-version: 3.11
+      - name: Install additional dependencies
+        shell: bash -l {0}
+        run: |
+          conda install black flake8 pylint pytest pytest-cov
+          python -m pip install --upgrade pip
+          python -m pip install anglewrapper python-ins
+      - name: Run PyTest
+        shell: bash -l {0}
+        run: |
+          coverage run --source=./src/geophysical -m pytest --cov-fail-under=60

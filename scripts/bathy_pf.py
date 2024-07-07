@@ -3,29 +3,29 @@ Executable for running the particle filter on bathymetry data
 """
 
 import json
-import os
-import multiprocessing as mp
 import logging
+import multiprocessing as mp
+import os
 
 from matplotlib import pyplot as plt
 from pandas import read_csv, to_timedelta
 
-from src.particle_filter import (
-    process_particle_filter,
-    populate_velocities,
+from src.geophysical import db_tools as db
+from src.geophysical.particle_filter import (
     plot_error,
     plot_estimate,
+    populate_velocities,
+    process_particle_filter,
     summarize_results,
 )
-from src import process_dataset as pdset
 
-CONFIG_FILE = "config.json"
+CONFIG_FILE = "./scripts/config.json"
 PLOTS_OUTPUT = ".db/plots"
 ANNOTATIONS = {"recovery": 1852, "res": 1852 / 4}
 SOURCE_TRAJECTORIES = ".db/parsed.db"
 RESULTS_DB = ".db/results.db"
 
-### LOGGER SETUP ##############################################################
+# --- LOGGER SETUP ##############################################################
 # Create a logger
 logger = logging.getLogger("bathy_pf")
 logger.setLevel(logging.INFO)
@@ -45,7 +45,7 @@ def main():
     """
     logger.info("=========================================")
     logger.info("Beginning new run of bathy_pf.py")
-    tables = pdset.get_tables(SOURCE_TRAJECTORIES)
+    tables = db.get_tables(SOURCE_TRAJECTORIES)
     bathy_tables = [table for table in tables if "_D_" in table]
     logger.info("Found tables: %s", bathy_tables)
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -59,10 +59,8 @@ def main():
     # Get completed tables
     logger.info("Checking for completed tables")
     try:
-        completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [
-            table for table in bathy_tables if table not in completed_tables
-        ]
+        completed_tables = db.get_tables(RESULTS_DB)
+        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
     except FileNotFoundError:
         completed_tables = []
         remaining_tables = bathy_tables
@@ -84,31 +82,27 @@ def main():
         logger.info("Finished multiprocessing")
         logger.info("Double checking to make sure all tables are complete")
         # Get completed tables
-        completed_tables = pdset.get_tables(RESULTS_DB)
-        remaining_tables = [
-            table for table in bathy_tables if table not in completed_tables
-        ]
+        completed_tables = db.get_tables(RESULTS_DB)
+        remaining_tables = [table for table in bathy_tables if table not in completed_tables]
         logger.info("Found remaining tables: %s", remaining_tables)
     # logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
-    # completed_tables = pdset.get_tables(RESULTS_DB)
+    # completed_tables = db.get_tables(RESULTS_DB)
     # for table in bathy_tables:
     #     if table not in completed_tables:
     #         multiprocessing_wrapper(table, config, ANNOTATIONS)
     logger.info("Summizing results")
-    results_tables = pdset.get_tables(RESULTS_DB)
+    results_tables = db.get_tables(RESULTS_DB)
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
     for table in results_tables:
-        df = pdset.table_to_df(RESULTS_DB, table)
+        df = db.table_to_df(RESULTS_DB, table)
         summary = summarize_results(table, df, 1852)
         summary.to_csv(
             output_path,
             mode="a",
             header=(not os.path.exists(output_path)),
         )
-    logger.info(
-        "Finished summarizing results. Process complete. Executing post processing."
-    )
+    logger.info("Finished summarizing results. Process complete. Executing post processing.")
 
     post_process_batch(".db/plots/summary.csv", RESULTS_DB)
     return None
@@ -139,7 +133,7 @@ def post_process_batch(
     :returns: None
 
     """
-    results_tables = pdset.get_tables(results_db)
+    results_tables = db.get_tables(results_db)
     # Load and pre-process the summary file
     summary = read_csv(
         summary_file,
@@ -236,7 +230,7 @@ def multiprocessing_wrapper(table, config, annotations):
     """
 
     logger.info("Starting processing for table: %s", table)
-    df = pdset.table_to_df(SOURCE_TRAJECTORIES, table)
+    df = db.table_to_df(SOURCE_TRAJECTORIES, table)
     logger.info("Loaded table: %s", table)
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
@@ -254,7 +248,7 @@ def multiprocessing_wrapper(table, config, annotations):
         logger.error(e.with_traceback())
         return
     logger.info("%s run complete", table)
-    pdset.save_dataset(
+    db.save_dataset(
         [results],
         [table],
         output_location=".db",

@@ -1,27 +1,21 @@
 """
 Particle filter algorithim and simulation code
 """
+
 from datetime import timedelta
-import os
-import json
-import argparse
-import multiprocessing
 
-from scipy.stats import norm
-from pandas import DataFrame, concat
-from xarray import DataArray
-from haversine import haversine, Unit
 import numpy as np
-from matplotlib import pyplot as plt
-
 from filterpy.monte_carlo import residual_resample
+from haversine import Unit, haversine
+from matplotlib import pyplot as plt
+from pandas import DataFrame
 from pyins import earth
 from pyins.sim import generate_imu
+from scipy.stats import norm
+from xarray import DataArray
 
-from .gmt_tool import get_map_point, get_map_section, inflate_bounds
-from .process_dataset import find_periods
-
-# from .tools import load_trackline_data
+from .m77t_toolbox import find_periods
+from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
 
 
 OVERFLOW = 500
@@ -45,9 +39,7 @@ def propagate(
     if not noise_calibration_mode:
         velocity = np.random.multivariate_normal(control, noise, (n,))
     else:
-        velocity = control + np.abs(
-            np.random.multivariate_normal(np.zeros(3), noise, (n,))
-        )
+        velocity = control + np.abs(np.random.multivariate_normal(np.zeros(3), noise, (n,)))
 
     # Depth update
     previous_depth = particles[:, 2]
@@ -55,13 +47,9 @@ def propagate(
     # Latitude update
     previous_lat = particles[:, 0]
     lat_rad = np.deg2rad(previous_lat)
-    r_n, r_e_0, _ = earth.principal_radii(
-        previous_lat, np.zeros_like(previous_lat)
-    )  # pricipal_radii expect degrees
+    r_n, r_e_0, _ = earth.principal_radii(previous_lat, np.zeros_like(previous_lat))  # pricipal_radii expect degrees
     previous_lat = np.deg2rad(previous_lat)
-    lat_rad = previous_lat + 0.5 * dt * (
-        particles[:, 3] / (r_n - previous_depth) + velocity[:, 0] / (r_n - new_depth)
-    )
+    lat_rad = previous_lat + 0.5 * dt * (particles[:, 3] / (r_n - previous_depth) + velocity[:, 0] / (r_n - new_depth))
     # Longitude update
     _, r_e_1, _ = earth.principal_radii(np.rad2deg(lat_rad), np.zeros_like(lat_rad))
     lon_rad = np.deg2rad(particles[:, 1]) + 0.5 * dt * (
@@ -99,7 +87,7 @@ def update_relief(
     w[np.isnan(w)] = 1e-16
     if np.any(np.isnan(w)):
         print("NAN elements found")
-        w[np.isnana(w)] = 1e-16
+        w[np.isnan(w)] = 1e-16
 
     w_sum = np.nansum(w)
     try:
@@ -146,9 +134,7 @@ def run_particle_filter(
             estimate_ = weights @ particles
             estimate.append(estimate_)
             rms_error[i] = rmse(particles, (row.LAT, row.LON))
-            error[i] = haversine(
-                (row.LAT, row.LON), (estimate_[0], estimate_[1]), Unit.METERS
-            )
+            error[i] = haversine((row.LAT, row.LON), (estimate_[0], estimate_[1]), Unit.METERS)
     estimate = np.asarray(estimate)
     return estimate, rms_error, error
 
@@ -170,9 +156,7 @@ def process_particle_filter(
     max_lon = data["LON"].max()
     min_lat = data["LAT"].min()
     max_lat = data["LAT"].max()
-    min_lon, min_lat, max_lon, max_lat = inflate_bounds(
-        min_lon, min_lat, max_lon, max_lat, 0.25
-    )
+    min_lon, min_lat, max_lon, max_lat = inflate_bounds(min_lon, min_lat, max_lon, max_lat, 0.25)
     geo_map = get_map_section(
         min_lon,
         max_lon,
@@ -204,31 +188,11 @@ def process_particle_filter(
 
     n = configurations["n"]
     data[measurment_type] = data[measurment_type] - measurement_bias
-    # Run particle filter
-    # estimates = []
-    # rms_errors = []
-    # try:
-    #    repetitions = configurations["reps"]
-    # except KeyError:
-    #    repetitions = 1
-    # for _ in range(repetitions):
-    estimate, rms_error, error = run_particle_filter(
-        mu, cov, n, data, geo_map, noise, measurement_sigma
-    )
-    #    estimates.append(estimate)
-    #    rms_errors.append(rms_error)
 
-    # # Validate output path
-    # if not os.path.exists(os.path.join(output_dir, name, map_type)):
-    #     os.makedirs(os.path.join(output_dir, name, map_type))
-    # # Plot results
-    # fig, ax = plot_map_and_trajectory(geo_map, data)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "map_and_trajectory.png"))
-    # fig, ax = plot_estimate(geo_map, data, estimate)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "estimate.png"))
-    # fig, ax = plot_error(data, rms_error)
-    # fig.savefig(os.path.join(output_dir, name, map_type, "error.png"))
-    # plt.close("all")
+    estimate, rms_error, error = run_particle_filter(
+        mu, cov, n, data, geo_map, noise, measurement_sigma, measurment_type=measurment_type
+    )
+
     data[["PF_LAT", "PF_LON", "PF_DEPTH", "PF_VN", "PF_VE", "PF_VD"]] = estimate
     data["RMSE"] = rms_error
     data["ERROR"] = error
@@ -242,7 +206,8 @@ def populate_velocities(data: DataFrame) -> DataFrame:
     """
     lla = data.loc[:, ["LAT", "LON"]].values
     lla = np.hstack((lla, np.zeros((lla.shape[0], 1))))
-    data["DT"] = data.index.to_series().diff().dt.total_seconds().fillna(0)
+    if "DT" not in data.columns:
+        data["DT"] = data.index.to_series().diff().dt.total_seconds().fillna(0)
     traj, _ = generate_imu(data["DT"].cumsum().values, lla, np.zeros_like(lla))
     data[["VN", "VE", "VD"]] = traj[["VN", "VE", "VD"]].values
     return data
@@ -263,7 +228,7 @@ def weighted_rmse(particles, weights, truth):
     Weighted root mean square error calculation
     """
     diffs = [haversine(truth, (p[0], p[1]), Unit.METERS) for p in particles]
-    diffs = np.asarray(diffs) * weights
+    diffs = np.asarray(diffs) @ weights
     return np.sqrt(diffs**2)
 
 
@@ -338,6 +303,7 @@ def plot_estimate(
     xlabel_size: int = 14,
     ylabel_str: str = "Lat (deg)",
     ylabel_size: int = 14,
+    measurment_type: str = "depth",
 ):
     """
     Plot the particle filter estimate and the trajectory two dimensionally on the map.
@@ -355,21 +321,31 @@ def plot_estimate(
     fig : Figure
         The figure object
     """
+
+    cmap = "ocean"
+    clim = [-10000, 0]
+    clabel = "Depth (m)"
+    if measurment_type == "gravity":
+        cmap = "coolwarm"
+        clim = [-100, 100]
+        clabel = "Gravity Anomaly (mGal)"
+    elif measurment_type == "magnetic":
+        cmap = "PiYG"
+        clim = [-100, 100]
+        clabel = "Magnetic Anomaly (nT)"
+
     min_lon = data.LON.min()
     max_lon = data.LON.max()
     min_lat = data.LAT.min()
     max_lat = data.LAT.max()
     fig, ax = plt.subplots(1, 1)  # , figsize=(16, 8))
-    contour = ax.contourf(
-        geo_map.lon, geo_map.lat, geo_map.data, cmap="ocean", levels=50
-    )
+    contour = ax.contourf(geo_map.lon, geo_map.lat, geo_map.data, cmap=cmap, levels=50)
     # Set the color map limits
     # ax.set_clim([-5000, 0])
-    contour.set_clim([-10000, 0])
-    # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the bottom
-    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (
-        ax.get_ylim()[1] - ax.get_ylim()[0]
-    )
+    contour.set_clim(clim)
+    # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the
+    # bottom
+    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
     if aspect_ratio > 1:
         cbar = fig.colorbar(
             contour,
@@ -380,7 +356,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.5,
         )
-        cbar.set_label("Depth (m)")
+        cbar.set_label(clabel)
 
     else:
         cbar = fig.colorbar(
@@ -392,7 +368,7 @@ def plot_estimate(
             # aspect=50,
             # shrink=0.75,
         )
-        cbar.set_label("Depth (m)")
+        cbar.set_label(clabel)
 
     ax.plot(data.LON, data.LAT, ".r", label="Truth")
     ax.plot(data.iloc[0].LON, data.iloc[0].LAT, "xk", label="Start")
@@ -502,6 +478,9 @@ def plot_error(
 
 
 def summarize_results(name: str, results: DataFrame, threshold: float):
+    """
+    Used to generate a text file that summarizes the results.
+    """
     under_threshold = results["RMSE"].to_numpy() <= threshold
     # Default behavior for find_periods is to find transitions from False to True
     recoveries = find_periods(~under_threshold)
@@ -538,71 +517,3 @@ def summarize_results(name: str, results: DataFrame, threshold: float):
         }
     )
     return summary
-
-
-def parse_args():
-    """
-    Command line interface specifications
-    """
-    parser = argparse.ArgumentParser(description="Particle Filter")
-    parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        help="Path to the particle filter configuration file",
-        default="./config.json",
-    )
-    parser.add_argument(
-        "-d",
-        "--data",
-        type=str,
-        help="Path to the data file or folder containing data files",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="Path to the output directory",
-        default="./results/",
-    )
-    parser.add_argument(
-        "-t",
-        "--type",
-        type=str,
-        help="Type of map to use",
-        default="relief",
-    )
-    return parser.parse_args()
-
-
-def main():
-    """
-    Main function
-    """
-    args = parse_args()
-    config = json.load(open(args.config, "r", encoding="utf-8"))
-    # Check to see if the data is a file or a folder
-    if os.path.isfile(args.data):
-        process_particle_filter(args.data, config, "./results/", args.type)
-    elif os.path.isdir(args.data):
-        # Get a list of all CSV files in the directory
-        file_list = [
-            os.path.join(args.data, file)
-            for file in os.listdir(args.data)
-            if file.endswith(".csv")
-        ]
-        cores = multiprocessing.cpu_count()
-        # Process particle filters in parallel
-        with multiprocessing.Pool(processes=cores) as pool:
-            pool.starmap(
-                process_particle_filter,
-                [(file, config, "./results/", args.type) for file in file_list],
-            )
-            pool.close()
-            pool.join()
-    else:
-        raise ValueError("Data path not recognized")
-
-
-if __name__ == "__main__":
-    main()
