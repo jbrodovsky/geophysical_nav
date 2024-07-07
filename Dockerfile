@@ -1,22 +1,24 @@
-# To enable ssh & remote debugging on app service change the base image to the one below
-FROM mcr.microsoft.com/azure-functions/python:4-python3.11-appservice
+# For more information, please refer to https://aka.ms/vscode-docker-python
+# FROM python:3-slim
+FROM continuumio/miniconda3
 
-ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+# Keeps Python from generating .pyc files in the container
+# ENV PYTHONDONTWRITEBYTECODE=1
 
-COPY requirements.txt /requirements.txt
-COPY environment.yml /environment.yml
-# RUN pip install -r /requirements.txt
+# Turns off buffering for easier container logging
+# ENV PYTHONUNBUFFERED=1
 
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py311_23.11.0-1-Linux-x86_64.sh -O conda-install.sh && \
-    chmod 755 conda-install.sh && \
-    sh conda-install.sh -b -p $HOME/miniconda && \
-    rm -f conda-install.sh
+# Install pip requirements
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
 
-ENV PATH="${HOME}/miniconda/bin:${PATH}"
+WORKDIR /app
+COPY . /app
 
-RUN conda init bash && \
-    conda env update --name base --file /environment.yml && \
-    pip install -r /requirements.txt
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
 
-COPY . /home/site/wwwroot
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+CMD ["python", "function_app.py"]
