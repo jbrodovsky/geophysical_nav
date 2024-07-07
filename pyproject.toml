@@ -18,7 +18,7 @@ pf_ols = "geophysical.open_loop_sim:main"
 
 [tool.black]
 line-length = 120
-target-version = ['py311']
+target-version = ['py312']
 
 [tool.isort]
 profile = "black"
@@ -30,9 +30,8 @@ extend-ignore = "E203, W503"
 [tool.pylint]
 max-line-length = 120
 
-
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 ignore_missing_imports = true
 show_error_codes = true
 

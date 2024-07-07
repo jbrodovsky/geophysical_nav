@@ -6,15 +6,16 @@ channels:
 dependencies:
   - python==3.11
   # linting
-  # - black
-  # - flake8
-  # - pylint
+  - black
+  - flake8
+  - pylint
+  - mypy
   # Testing
-  # - pytest
-  # - pytest-cov
+  - pytest
+  - pytest-cov
   # Documentation requirements
-  # - sphinx
-  # - pandoc
+  - sphinx
+  - pandoc
   # Particle filter
   - filterpy
   - numpy
@@ -24,6 +25,9 @@ dependencies:
   - pygmt
   # Plotting
   - matplotlib
-  # web app
-  - flask
-prefix: /home/james/miniconda3/envs/nav
+  # Data handling
+  - sqlite
+  - sqlalchemy
+  # Misc
+  - notebook
+  - tqdm
