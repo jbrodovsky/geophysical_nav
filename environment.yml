@@ -4,7 +4,12 @@ channels:
   - conda-forge
   - Microsoft
 dependencies:
-  - python==3.11
+  - python
+  # building and speed
+  - setuptools
+  - wheel
+  - mypyc
+  - numba
   # linting
   - black
   - flake8
@@ -31,3 +36,4 @@ dependencies:
   # Misc
   - notebook
   - tqdm
+  

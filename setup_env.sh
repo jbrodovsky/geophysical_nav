@@ -18,8 +18,9 @@ fi
 
 # Create the environment for the project
 echo "Creating the environment for the project..."
-conda env create -f environment.yml
+conda env create --file environment.yml --name geonav
 conda init bash
-conda activate nav
+conda activate geonav
 echo "Installing addtional PIP-only packages..."
-python -m pip install requirements.txt
+python -m pip install -r requirements.txt
+conda update --all -y
