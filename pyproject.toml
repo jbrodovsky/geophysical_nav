@@ -1,20 +1,18 @@
 [build-system]
-requires = ["setuptools", "wheel", "mypyc"]
+requires = ["setuptools", "wheel", "mypy", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "Geophyiscal_Navigation_Simulator"
 version = "0.1.0"
-requires-python = ">=3.11"
-description = "A simulator for geophysical navigation systems"
+requires-python = ">=3.12"
+description = "A simulator and database manager for geophysical navigation systems"
 readme = "README.md"
 authors = [{name="James Brodovsky"}]
 
+
 [project.urls]
 homepage = "https://github.com/jbrodovsky/geophysical_nav"
-
-[project.scripts]
-pf_ols = "geophysical.open_loop_sim:main"
 
 [tool.black]
 line-length = 120
@@ -34,6 +32,13 @@ max-line-length = 120
 python_version = "3.12"
 ignore_missing_imports = true
 show_error_codes = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+files=["src/ctest/fib.py"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["ctest", "geophysical"]
 
 [tool.pytest]
 testpaths = ["tests"]
