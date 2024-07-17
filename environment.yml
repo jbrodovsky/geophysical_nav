@@ -4,18 +4,17 @@ channels:
   - conda-forge
   - Microsoft
 dependencies:
-  - python
+  - python=3.11
   # building and speed
   - build
   - setuptools
   - wheel
-  - mypyc
+  - mypy
   - numba
   # linting
   - black
   - flake8
   - pylint
-  - mypy
   # Testing
   - pytest
   - pytest-cov

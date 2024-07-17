@@ -1,20 +1,22 @@
 """
-Particle filter algorithim and simulation code
+Particle filter algorithm and simulation code
 """
 
 from datetime import timedelta
 
 import numpy as np
 from filterpy.monte_carlo import residual_resample
-from haversine import Unit, haversine
+from haversine import Unit, haversine, haversine_vector
 from matplotlib import pyplot as plt
-from pandas import DataFrame
+from numpy.typing import NDArray
+from numpy import float64
+from pandas import DataFrame, concat
 from pyins import earth
 from pyins.sim import generate_imu
 from scipy.stats import norm
 from xarray import DataArray
 
-from .m77t_toolbox import find_periods
+from .m77t_toolbox import find_periods, calculate_bearing_vector
 from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
 
 
@@ -197,6 +199,8 @@ def process_particle_filter(
     data["RMSE"] = rms_error
     data["ERROR"] = error
     return data, geo_map
+
+
 
 
 def populate_velocities(data: DataFrame) -> DataFrame:
