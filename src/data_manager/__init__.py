@@ -36,57 +36,11 @@ Data should be stored in a database with the following schema:
         - mag_res: float (residual magnetic field measurement of the data point)
         - gra_obs: float (observed gravity measurement of the data point)
         - freeair: float (free air gravity anomaly measurement of the data point)
-
-    - estimates (table containing the estimated state values from simulating the trajectories)
-        - id: int (primary key, unique identifier)
-        - trajectory_id: int (foreign key to the trajectories table)
-        - timestamp: datetime (timestamp of the data point)
-        - lat: float (lat of the data point)
-        - lon: float (lon of the data point)
-        - altitude: float (altitude of the data point)
-        - roll: float (roll of the data point)
-        - pitch: float (pitch of the data point)
-        - heading: float (heading of the data point)
-        - position_error_2d: float (2D position error of the data point)
-        - position_error_3d: float (3D position error of the data point)
-        - position_confidence_2d: float (2D position confidence of the data point)
-        - position_confidence_3d: float (3D position confidence of the data point)
-        - roll_error: float (roll error of the data point)
-        - pitch_error: float (pitch error of the data point)
-        - heading_error: float (heading error of the data point)
-
-    - Result (summary table containing the results of the trajectory simulation)
-        - id: int (primary key, unique identifier)
-        - trajectory_id: int (foreign key to the trajectories table)
-        - minimum_position_error_2d: float (minimum 2D position error of the trajectory)
-        - maximum_position_error_2d: float (maximum 2D position error of the trajectory)
-        - average_position_error_2d: float (average 2D position error of the trajectory)
-        - minimum_position_error_3d: float (minimum 3D position error of the trajectory)
-        - maximum_position_error_3d: float (maximum 3D position error of the trajectory)
-        - average_position_error_3d: float (average 3D position error of the trajectory)
-        - minimum_position_confidence_2d: float (minimum 2D position confidence of the trajectory)
-        - maximum_position_confidence_2d: float (maximum 2D position confidence of the trajectory)
-        - average_position_confidence_2d: float (average 2D position confidence of the trajectory)
-        - minimum_position_confidence_3d: float (minimum 3D position confidence of the trajectory)
-        - maximum_position_confidence_3d: float (maximum 3D position confidence of the trajectory)
-        - average_position_confidence_3d: float (average 3D position confidence of the trajectory)
-        - minimum_roll_error: float (minimum roll error of the trajectory)
-        - maximum_roll_error: float (maximum roll error of the trajectory)
-        - average_roll_error: float (average roll error of the trajectory)
-        - minimum_pitch_error: float (minimum pitch error of the trajectory)
-        - maximum_pitch_error: float (maximum pitch error of the trajectory)
-        - average_pitch_error: float (average pitch error of the trajectory)
-        - minimum_heading_error: float (minimum heading error of the trajectory)
-        - maximum_heading_error: float (maximum heading error of the trajectory)
-        - average_heading_error: float (average heading error of the trajectory)
-        - drift_2d: float (total accumulated error in 2D position per distance traveled)
-        - drift_3d: float (total accumulated error in 3D position per distance traveled)
-
 """
 
 from datetime import datetime
-from typing import List
 
+import h5py
 from haversine import haversine_vector, Unit
 from numpy import column_stack, ndarray, nan_to_num
 from pandas import DataFrame, read_sql
@@ -271,7 +225,44 @@ class DatabaseManager:
 
     def get_all_trajectories(self) -> DataFrame:
         """Get all trajectories from the database."""
-        # Read the trajectory table from the database and return it as a DataFrame
         with Session(bind=self.engine) as session:
             query: Query[Trajectory] = session.query(_entity=Trajectory)
             return read_sql(sql=query.statement, con=self.engine)
+
+
+def write_results_to_file(filename: str, configuration: dict, summary: DataFrame, results: list[DataFrame]) -> None:
+    """Writes the results of a simulation to a hdf5 file"""
+
+    # Create an HDF5 file
+    with h5py.File(name=f"{filename}.hdf5", mode="w") as f:
+        # Store the dictionary as attributes of a group
+        config_group: h5py.Group = f.create_group(name="config")
+        for key, value in configuration.items():
+            config_group.attrs[key] = value
+
+        # Store the main results DataFrame
+        summary.to_hdf(path_or_buf="simulation_results.hdf5", key="summary", mode="a")
+
+        # Store each DataFrame in the list of DataFrames in separate groups
+        f.create_group(name="results")
+        for i, df in enumerate(iterable=results):
+            df.to_hdf(path_or_buf=f"{filename}.hdf5", key=f"results/result_{i}", mode="a")
+
+
+def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
+    """Reads the results of a simulation from a hdf5 file"""
+
+    # Open the HDF5 file
+    with h5py.File(name=filename, mode="r") as f:
+        # Read the configuration from the attributes of the group
+        config: dict = dict(f["config"].attrs.items())
+
+        # Read the main results DataFrame
+        summary: DataFrame = f["summary"].to_pandas()
+
+        # Read each DataFrame in the list of DataFrames from separate groups
+        results: list[DataFrame] = []
+        for i in range(len(f["results"])):
+            results.append(f[f"results/result_{i}"].to_pandas())
+
+        return config, summary, results
