@@ -16,7 +16,7 @@ from pyins.sim import generate_imu
 from scipy.stats import norm
 from xarray import DataArray
 
-from .m77t_toolbox import find_periods, calculate_bearing_vector
+from ..data_manager.m77t import find_periods, calculate_bearing_vector
 from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
 
 

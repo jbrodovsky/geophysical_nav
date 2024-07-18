@@ -8,7 +8,7 @@ import os
 
 from pandas import DataFrame, read_csv
 
-from src.geophysical import m77t_toolbox
+from src.data_manager import m77t
 
 
 class TestM77TToolbox(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestM77TToolbox(unittest.TestCase):
         """
         # data, names = m77t_toolbox.process_mgd77("./test")
         df = read_csv("./test/test_data.m77t", delimiter="\t", header=0)
-        self.df = m77t_toolbox.m77t_to_df(df)
+        self.df = m77t.m77t_to_df(df)
         self.df.to_csv("./test/test_data.csv", index=False)
 
     def tearDown(self):
@@ -40,26 +40,26 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the M77T toolbox can be imported.
         """
-        self.assertTrue(m77t_toolbox)
+        self.assertTrue(m77t)
 
     def test_find_periods(self):
         """
         Test that the periods can be found.
         """
-        self.assertTrue(m77t_toolbox.find_periods)
-        self.assertEqual(m77t_toolbox.find_periods([1, 0, 0, 1, 0]), [(1, 2), (4, 4)])
-        self.assertEqual(m77t_toolbox.find_periods([0, 0, 0, 0, 0]), [(0, 4)])
-        self.assertEqual(m77t_toolbox.find_periods([1, 1, 1, 1, 1]), [])
-        self.assertEqual(m77t_toolbox.find_periods([1, 0, 0, 1, 0, 0, 1]), [(1, 2), (4, 5)])
+        self.assertTrue(m77t.find_periods)
+        self.assertEqual(m77t.find_periods([1, 0, 0, 1, 0]), [(1, 2), (4, 4)])
+        self.assertEqual(m77t.find_periods([0, 0, 0, 0, 0]), [(0, 4)])
+        self.assertEqual(m77t.find_periods([1, 1, 1, 1, 1]), [])
+        self.assertEqual(m77t.find_periods([1, 0, 0, 1, 0, 0, 1]), [(1, 2), (4, 5)])
 
     def test_split_dataset(self):
         """
         Test that the dataset can be split.
         """
-        self.assertTrue(m77t_toolbox.split_dataset)
+        self.assertTrue(m77t.split_dataset)
         df = DataFrame({"a": [1, 2, 3, 4, 5], "b": [6, 7, 8, 9, 10]})
         periods = [(0, 2), (3, 4)]
-        splits = m77t_toolbox.split_dataset(df, periods)
+        splits = m77t.split_dataset(df, periods)
         self.assertEqual(len(splits[0]), 3)
 
     def test_m77t_to_df(self):
@@ -67,7 +67,7 @@ class TestM77TToolbox(unittest.TestCase):
         Test that the M77T data can be converted to a DataFrame.
         """
         df_in = read_csv("./test/test_data.m77t", delimiter="\t", header=0)
-        df_out = m77t_toolbox.m77t_to_df(df_in)
+        df_out = m77t.m77t_to_df(df_in)
         self.assertIsInstance(df_out, DataFrame)
         self.assertIn("LAT", df_out.columns)
         self.assertIn("LON", df_out.columns)
@@ -104,12 +104,12 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the trackline can be parsed from a file.
         """
-        tracklines, names = m77t_toolbox.parse_trackline_from_file("./test/test_data.m77t", data_types=["depth"])
+        tracklines, names = m77t.parse_trackline_from_file("./test/test_data.m77t", data_types=["depth"])
         self.assertNotEqual(len(names), 0)
         trackline = tracklines[0]
         self.assertIsInstance(trackline, DataFrame)
         self.assertNotEqual(len(trackline), 0)
-        self.assertRaises(FileNotFoundError, m77t_toolbox.parse_trackline_from_file, "./test/missing.m77t", ["depth"])
+        self.assertRaises(FileNotFoundError, m77t.parse_trackline_from_file, "./test/missing.m77t", ["depth"])
         # self.assertRaises(NotImplementedError, m77t_toolbox.parse_trackline_from_file, "./test/test_data.csv", [10])
 
     # def test_parse_tracklines_from_db(self):
@@ -131,20 +131,20 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the data type string can be validated.
         """
-        self.assertIsInstance(m77t_toolbox.validate_data_type_string("all"), str)
-        self.assertEqual(m77t_toolbox.validate_data_type_string("all"), "DGM")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("relief"), "D")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("depth"), "D")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("bathy"), "D")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("mag"), "M")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("magnetic"), "M")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("grav"), "G")
-        self.assertEqual(m77t_toolbox.validate_data_type_string("gravity"), "G")
-        self.assertRaises(NotImplementedError, m77t_toolbox.validate_data_type_string, "other")
+        self.assertIsInstance(m77t.validate_data_type_string("all"), str)
+        self.assertEqual(m77t.validate_data_type_string("all"), "DGM")
+        self.assertEqual(m77t.validate_data_type_string("relief"), "D")
+        self.assertEqual(m77t.validate_data_type_string("depth"), "D")
+        self.assertEqual(m77t.validate_data_type_string("bathy"), "D")
+        self.assertEqual(m77t.validate_data_type_string("mag"), "M")
+        self.assertEqual(m77t.validate_data_type_string("magnetic"), "M")
+        self.assertEqual(m77t.validate_data_type_string("grav"), "G")
+        self.assertEqual(m77t.validate_data_type_string("gravity"), "G")
+        self.assertRaises(NotImplementedError, m77t.validate_data_type_string, "other")
 
-        self.assertIsInstance(m77t_toolbox.validate_data_type_string(["depth", "mag"]), list)
-        self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", "gravity", "mag"]), ["D", "G", "M"])
-        self.assertEqual(m77t_toolbox.validate_data_type_string(["depth", ["gravity", "mag"]]), ["D", "GM"])
+        self.assertIsInstance(m77t.validate_data_type_string(["depth", "mag"]), list)
+        self.assertEqual(m77t.validate_data_type_string(["depth", "gravity", "mag"]), ["D", "G", "M"])
+        self.assertEqual(m77t.validate_data_type_string(["depth", ["gravity", "mag"]]), ["D", "GM"])
 
     def test_get_parsed_data_summary(self):
         """
@@ -172,11 +172,11 @@ class TestM77TToolbox(unittest.TestCase):
             }
         )
 
-        summary = m77t_toolbox.get_parsed_data_summary([df1, df2], ["track1", "track2"])
+        summary = m77t.get_parsed_data_summary([df1, df2], ["track1", "track2"])
         self.assertIsInstance(summary, DataFrame)
         self.assertNotEqual(len(summary), 0)
         df1 = df1.drop(columns=["DEPTH", "GRAV_ANOM", "MAG_RES"])
-        summary = m77t_toolbox.get_parsed_data_summary([df1], ["track1"])
+        summary = m77t.get_parsed_data_summary([df1], ["track1"])
         self.assertTrue(summary["depth_mean"].isna().all())
         self.assertTrue(summary["depth_std"].isna().all())
         self.assertTrue(summary["depth_range"].isna().all())
@@ -191,7 +191,7 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the M77T data can be read.
         """
-        df = m77t_toolbox.read_m77t("./test/test_data.m77t")
+        df = m77t.read_m77t("./test/test_data.m77t")
         self.assertIsInstance(df, DataFrame)
         self.assertNotEqual(len(df), 0)
-        self.assertRaises(FileNotFoundError, m77t_toolbox.read_m77t, "./test/missing.m77t")
+        self.assertRaises(FileNotFoundError, m77t.read_m77t, "./test/missing.m77t")

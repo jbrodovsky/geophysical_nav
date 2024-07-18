@@ -89,9 +89,10 @@ from typing import List
 
 from haversine import haversine_vector, Unit
 from numpy import column_stack, ndarray, nan_to_num
-from pandas import DataFrame
+from pandas import DataFrame, read_sql
 from sqlalchemy import Boolean, Engine, Float, ForeignKey, Integer, String, create_engine, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy.orm.query import Query
 
 
 class Base(DeclarativeBase):
@@ -265,15 +266,12 @@ class DatabaseManager:
     def get_trajectory(self, trajectory_id: int) -> DataFrame:
         """Get a trajectory from the database"""
         with Session(bind=self.engine) as session:
-            data: List[Data] = session.query(Data).filter(Data.trajectory_id == trajectory_id).all()
-            return DataFrame(data=data)
+            query: Query[Data] = session.query(_entity=Data).filter(Data.trajectory_id == trajectory_id)
+            return read_sql(sql=query.statement, con=self.engine)
 
     def get_all_trajectories(self) -> DataFrame:
         """Get all trajectories from the database."""
         # Read the trajectory table from the database and return it as a DataFrame
         with Session(bind=self.engine) as session:
-            trajectories: List[Trajectory] = session.query(Trajectory).all()
-            data: DataFrame = DataFrame()
-            for trajectory in trajectories:
-                data.append(trajectory.to_table_row())
-            return DataFrame(data=data)
+            query: Query[Trajectory] = session.query(_entity=Trajectory)
+            return read_sql(sql=query.statement, con=self.engine)
