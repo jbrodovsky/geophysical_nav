@@ -7,12 +7,12 @@
 # --- NOT ----
 # ./builder.sh OR bash builder.sh
 
-source ~/.bashrc
-conda activate geonav
-python -m build
+rm -r dist
+rm -r sdist
+rm -r build
 
+python -m build
 # find the .whl file under ./dist
 WHL_FILE=$(find ./dist -name "*.whl")
-
 # install the .whl file
 python -m pip install $WHL_FILE --force-reinstall

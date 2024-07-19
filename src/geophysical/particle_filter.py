@@ -8,17 +8,16 @@ import numpy as np
 from filterpy.monte_carlo import residual_resample
 from haversine import Unit, haversine, haversine_vector
 from matplotlib import pyplot as plt
-from numpy.typing import NDArray
 from numpy import float64
+from numpy.typing import NDArray
 from pandas import DataFrame, concat
 from pyins import earth
 from pyins.sim import generate_imu
 from scipy.stats import norm
 from xarray import DataArray
 
-from ..data_manager.m77t import find_periods, calculate_bearing_vector
+from ..data_manager.m77t import calculate_bearing_vector, find_periods
 from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
-
 
 OVERFLOW = 500
 
@@ -199,8 +198,6 @@ def process_particle_filter(
     data["RMSE"] = rms_error
     data["ERROR"] = error
     return data, geo_map
-
-
 
 
 def populate_velocities(data: DataFrame) -> DataFrame:

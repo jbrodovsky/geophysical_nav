@@ -2,11 +2,11 @@
 Test the GMT Toolbox module.
 """
 
-import unittest
 import os
+import unittest
 
-from xarray import DataArray
 from numpy import ndarray
+from xarray import DataArray
 
 from src.geophysical import gmt_toolbox
 

@@ -38,15 +38,31 @@ Data should be stored in a database with the following schema:
         - freeair: float (free air gravity anomaly measurement of the data point)
 """
 
+import argparse
 from datetime import datetime
+import os
+from typing import Any
 
 import h5py
-from haversine import haversine_vector, Unit
-from numpy import column_stack, ndarray, nan_to_num
+from haversine import Unit, haversine_vector
+from numpy import column_stack, nan_to_num, ndarray
 from pandas import DataFrame, read_sql
-from sqlalchemy import Boolean, Engine, Float, ForeignKey, Integer, String, create_engine, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Engine,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    create_engine,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.orm.query import Query
+from tqdm import tqdm
+
+# from m77t import process_m77t_file
+from data_managment.m77t import process_m77t_file
 
 
 class Base(DeclarativeBase):
@@ -71,7 +87,7 @@ class Trajectory(Base):
     freeair: Mapped[bool] = mapped_column(Boolean)
     points: Mapped[int] = mapped_column(Integer)
 
-    def to_table_row(self):
+    def to_table_row(self) -> dict[str, Any]:
         """Converts the Trajectory object to a table row for use with a Pandas DataFrame"""
         return {
             "ID": self.id,
@@ -119,7 +135,7 @@ class Data(Base):
     gra_obs: Mapped[float] = mapped_column(Float, nullable=True)
     freeair: Mapped[float] = mapped_column(Float, nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Data {self.id}>: {self.timestamp}"
 
 
@@ -144,8 +160,8 @@ class DatabaseManager:
     def insert_trajectory(self, trajectory: DataFrame, name: str) -> int:
         """Insert a trajectory into the database"""
         distances: ndarray[float] = haversine_vector(
-            array1=column_stack(tup=[trajectory["lat"], trajectory["lon"]]),
-            array2=column_stack(tup=[trajectory["lat"].shift(periods=1), trajectory["lon"].shift(periods=1)]),
+            array1=column_stack(tup=(trajectory["lat"], trajectory["lon"])),
+            array2=column_stack(tup=(trajectory["lat"].shift(periods=1), trajectory["lon"].shift(periods=1))),
             unit=Unit.METERS,
         )
 
@@ -220,13 +236,13 @@ class DatabaseManager:
     def get_trajectory(self, trajectory_id: int) -> DataFrame:
         """Get a trajectory from the database"""
         with Session(bind=self.engine) as session:
-            query: Query[Data] = session.query(_entity=Data).filter(Data.trajectory_id == trajectory_id)
+            query: Query[Data] = session.query(Data).filter(Data.trajectory_id == trajectory_id)
             return read_sql(sql=query.statement, con=self.engine)
 
     def get_all_trajectories(self) -> DataFrame:
         """Get all trajectories from the database."""
         with Session(bind=self.engine) as session:
-            query: Query[Trajectory] = session.query(_entity=Trajectory)
+            query: Query[Trajectory] = session.query(Trajectory)
             return read_sql(sql=query.statement, con=self.engine)
 
 
@@ -266,3 +282,89 @@ def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
             results.append(f[f"results/result_{i}"].to_pandas())
 
         return config, summary, results
+
+
+def main() -> None:
+    """
+    Command line tool interface for the database manager. Finds, reads, parses, and stores .m77t files into a
+    SQLite database.
+    Takes three arguments:
+        1. Source file path; should either be a .m77t file or a folder containing .m77t file(s).
+        2. Output file path to where the database file will be saved.
+        3. Time interval to parse for continuous data collections should be a number in seconds.
+    """
+
+    parser = argparse.ArgumentParser(prog="Database Manager", description="This is a tool to convert .m77t files into continuous source INS trajectories and measurements.")
+    parser.add_argument("--source", type=str, help="Source file path", required=True)
+    parser.add_argument("--output", type=str, help="Output file path", required=True)
+    parser.add_argument("--interval", type=int, help="Time interval in seconds to parse for continuous data collections", required=True)
+
+    args: argparse.Namespace = parser.parse_args()
+
+    print("Confirming parameters:")
+    print(f"Source: {args.source}")
+    print(f"Output: {args.output}")
+    print(f"Interval: {args.interval}")
+    # Confirm the parameters: press y to continue
+    if input("Continue? (y/n): ") != "y":
+        return
+    # Parse the filepath and filename from args.output
+    filepath: str = os.path.split(args.output)[0]
+    filename: str = os.path.split(args.output)[1]
+
+    # If folder does not exist, create it
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
+
+    dbmgr = DatabaseManager(source=os.path.join(filepath, filename))
+
+    # Get a list of .m77t files as specified by the source path
+    # (names:list[str], trajectories: list[DataFrame])
+    data: tuple[list[str], list[DataFrame]] = _get_m77t_files(source=args.source, interval=args.interval)
+    names: list[str] = data[0]
+    trajectories: list[DataFrame] = data[1]
+    # data = zip(names, trajectories)
+    i: int = -1
+    if len(names) == 1:
+        print(f"Inserting trajectories from {names[0]} into database")
+        for trajectory in tqdm(trajectories[0]):
+            i = dbmgr.insert_trajectory(trajectory=trajectory, name=names[0])
+            # print(f"Inserted trajectory with ID: {i}")
+
+    else:
+        for name in names:
+            print(f"Inserting trajectories from {name} into database")
+            for traj in tqdm(trajectories):
+                i = dbmgr.insert_trajectory(trajectory=traj, name=name)
+                # print(f"Inserted trajectory with ID: {i}")
+
+
+def _get_m77t_files(source: str, interval: int) -> tuple[list[str], list[DataFrame]]:
+    # If the source is a folder, get all .m77t files in the folder
+    names: list[str] = []
+    trajectories: list[DataFrame] = []
+    if os.path.isdir(source):
+        for root, dir, files in os.walk(source):
+            for file in files:
+                if file.endswith(".m77t"):
+                    print(f"Found: {file} at {os.path.join(root, file)}")
+                    # dbmgr.add_data(os.path.join(root, file))
+                    names.append(file.split(".")[0])
+                    parsed: list[DataFrame] = process_m77t_file(
+                        filepath=os.path.join(root, file), max_time_delta=interval
+                    )
+                    trajectories.append(parsed)
+    else:
+        # get file name from the filepath
+        assert source.split(".")[-1] == "m77t", "Source file must be a .m77t file"
+        rootfile: tuple[str, str]= os.path.split(source)
+        filepath: str = rootfile[0]
+        filename: str = rootfile[1]
+        print(f"Found: {filename} at {os.path.join(filepath, filename)}")
+        names.append(os.path.split(source)[1].split(".")[0])
+        trajectories.append(process_m77t_file(filepath=source, max_time_delta=interval))
+    return names, trajectories
+
+
+if __name__ == "__main__":
+    main()

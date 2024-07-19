@@ -2,8 +2,8 @@
 Test module for getting used to mypyc
 """
 
-import time
 import sys
+import time
 
 
 def fib(n: int) -> int:
@@ -22,4 +22,3 @@ def main(n: int) -> None:
 if __name__ == "__main__":
     # take a command line input arguement for n that will be passed to main() and fib(n)
     main(int(sys.argv[1]))
-

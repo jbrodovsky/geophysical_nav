@@ -2,9 +2,9 @@
 Test the M77T toolbox implementation.
 """
 
-import unittest
-import shutil
 import os
+import shutil
+import unittest
 
 from pandas import DataFrame, read_csv
 
