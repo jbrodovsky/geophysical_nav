@@ -2,14 +2,12 @@
 Library for interacting with the M77T data format.
 """
 
-import os
-from datetime import timedelta
 from typing import List, Tuple
 
 from haversine import Unit, haversine_vector
 from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like
 from numpy.typing import NDArray
-from pandas import DataFrame, Series, Timedelta, concat, read_csv, to_datetime
+from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index
 from pyins.sim import generate_imu
 
 
@@ -19,7 +17,7 @@ def read_m77t(filepath: str) -> DataFrame:
     Read in a .m77t file and return the data as a Pandas DataFrame.
     """
     try:
-        data = read_csv(filepath, delimiter="\t", header=0)
+        data: DataFrame = read_csv(filepath, delimiter="\t", header=0)
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"File {filepath} not found.") from exc
     return data
@@ -39,17 +37,17 @@ def m77t_to_df(data: DataFrame) -> DataFrame:
     :returns: the time indexed and down sampled data frame.
     """
     data = data.dropna(subset=["TIME"])
-    # Reformate date, time, and timezone data from dataframe to propoer Python datetime
-    dates = data["DATE"].astype(int)
-    times = (data["TIME"].astype(float)).apply(int)
-    timezones = data["TIMEZONE"].astype(int)
+    # Reformat date, time, and timezone data from dataframe to propoer Python datetime
+    dates: Series = data["DATE"].astype(int)
+    times: Series = (data["TIME"].astype(float)).apply(int)
+    timezones: Series = data["TIMEZONE"].astype(int)
     timezones = timezones.apply(lambda tz: f"+{tz:02}00" if tz >= 0 else f"{tz:02}00")
     times = times.apply(lambda time_int: f"{time_int // 100:02d}{time_int % 100:02d}")
-    datetimes = dates.astype(str) + times.astype(str)
+    datetimes: Series = dates.astype(str) + times.astype(str)
     timezones.index = datetimes.index
     datetimes += timezones.astype(str)
     datetimes = to_datetime(datetimes, format="%Y%m%d%H%M%z")
-    data.index = datetimes
+    data.index = Index(datetimes)
     data = data[["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]]
     # Rename "CORR_DEPTH" to "DEPTH"
     data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
@@ -129,7 +127,7 @@ def create_trajectory(df: DataFrame) -> DataFrame:
 
     ins = ins.assign(depth=depths, gra_obs=grav, freeair=grav_anom, mag_tot=mags, mag_res=mag_anom)
     # shift all column names of INS to lowercase
-    ins.columns = [col.lower() for col in ins.columns]
+    ins.columns = Index(data=[col.lower() for col in ins.columns])
     return ins
 
 
@@ -207,13 +205,19 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     points_rad: NDArray[float64] = column_stack(tup=(lat_rad, lon_rad))
     bearings: NDArray[float64] = calculate_bearing_vector(coords1=points_rad[:-1, :], coords2=points_rad[1:, :])
 
+    vel_north: NDArray[float64] = vel * cos(deg2rad(bearings))
+    vel_east: NDArray[float64] = vel * sin(deg2rad(bearings))
+    vel_down: NDArray[float64] = zeros_like(vel)
+
+    vel_ned: NDArray[float64] = column_stack(tup=(vel_north, vel_east, vel_down))
+
     lla: NDArray[float64] = column_stack((lat, lon, zeros_like(lat)))
     rph: NDArray[float64] = column_stack(tup=(zeros_like(bearings), zeros_like(bearings), bearings))
 
     time: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(value=0).to_numpy()
     time = time.cumsum()
 
-    out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph)
+    out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph, velocity_n=vel_ned)
     traj: DataFrame = out[0]
     imu: DataFrame = out[1]
     traj = traj.drop(columns=["VN", "VE", "VD"])

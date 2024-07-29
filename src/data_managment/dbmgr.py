@@ -294,10 +294,15 @@ def main() -> None:
         3. Time interval to parse for continuous data collections should be a number in seconds.
     """
 
-    parser = argparse.ArgumentParser(prog="Database Manager", description="This is a tool to convert .m77t files into continuous source INS trajectories and measurements.")
+    parser = argparse.ArgumentParser(
+        prog="Database Manager",
+        description="This is a tool to convert .m77t files into continuous source INS trajectories and measurements.",
+    )
     parser.add_argument("--source", type=str, help="Source file path", required=True)
     parser.add_argument("--output", type=str, help="Output file path", required=True)
-    parser.add_argument("--interval", type=int, help="Time interval in seconds to parse for continuous data collections", required=True)
+    parser.add_argument(
+        "--interval", type=int, help="Time interval in seconds to parse for continuous data collections", required=True
+    )
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -332,9 +337,9 @@ def main() -> None:
             # print(f"Inserted trajectory with ID: {i}")
 
     else:
-        for name in names:
+        for i, name in enumerate(names):
             print(f"Inserting trajectories from {name} into database")
-            for traj in tqdm(trajectories):
+            for traj in tqdm(trajectories[i]):
                 i = dbmgr.insert_trajectory(trajectory=traj, name=name)
                 # print(f"Inserted trajectory with ID: {i}")
 
@@ -357,7 +362,7 @@ def _get_m77t_files(source: str, interval: int) -> tuple[list[str], list[DataFra
     else:
         # get file name from the filepath
         assert source.split(".")[-1] == "m77t", "Source file must be a .m77t file"
-        rootfile: tuple[str, str]= os.path.split(source)
+        rootfile: tuple[str, str] = os.path.split(source)
         filepath: str = rootfile[0]
         filename: str = rootfile[1]
         print(f"Found: {filename} at {os.path.join(filepath, filename)}")
