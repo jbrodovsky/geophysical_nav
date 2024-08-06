@@ -8,7 +8,7 @@ import unittest
 
 from pandas import DataFrame, read_csv
 
-from src.data_manager import m77t
+from src.data_managment import m77t
 
 
 class TestM77TToolbox(unittest.TestCase):
