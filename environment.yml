@@ -4,37 +4,46 @@ channels:
   - conda-forge
   - Microsoft
 dependencies:
-  - python
+  - python=3.11
+  # Standard base scientific packages
+  - numpy
+  - scipy
+  - pandas
+  - pandas-stubs
   # building and speed
   - build
   - setuptools
   - wheel
-  - mypyc
+  - mypy
   - numba
   # linting
   - black
   - flake8
   - pylint
-  - mypy
   # Testing
   - pytest
   - pytest-cov
-  # Documentation requirements
+  # Documentation
   - sphinx
-  - pandoc
+  # Plotting tools
+  - matplotlib
+  - seaborn
   # Particle filter
   - filterpy
-  - numpy
-  - pandas
   - pytz
   - haversine
   - pygmt
-  # Plotting
-  - matplotlib
+  # Interactive tools
+  - ipython
+  - notebook
+  - jupyter
   # Data handling
   - sqlite
   - sqlalchemy
+  - sqlalchemy2-stubs
+  - hdf5
+  - h5py
+  - netcdf4
   # Misc
-  - notebook
   - tqdm
   

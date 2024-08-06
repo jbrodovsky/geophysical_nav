@@ -6,19 +6,19 @@ Test the particle filter implementation.
 import unittest
 
 import numpy as np
+from haversine import Unit, haversine
 from pandas import DataFrame
 
-from haversine import Unit, haversine
+from src.geophysical.gmt_toolbox import get_map_point, get_map_section
 from src.geophysical.particle_filter import (
-    rmse,
-    weighted_rmse,
-    propagate,
-    update_relief,
-    run_particle_filter,
-    process_particle_filter,
     populate_velocities,
+    process_particle_filter,
+    propagate,
+    rmse,
+    run_particle_filter,
+    update_relief,
+    weighted_rmse,
 )
-from src.geophysical.gmt_toolbox import get_map_section, get_map_point
 
 
 class TestParticleFilter(unittest.TestCase):

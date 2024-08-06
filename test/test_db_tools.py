@@ -4,12 +4,12 @@ Test DB tools
 
 import os
 import shutil
-import unittest
 import sqlite3 as sql
+import unittest
 
 from pandas import DataFrame
 
-from src.geophysical.db_tools import get_tables, table_to_df, df_to_table, save_dataset
+from src.geophysical.db_tools import df_to_table, get_tables, save_dataset, table_to_df
 
 
 class TestDBTools(unittest.TestCase):

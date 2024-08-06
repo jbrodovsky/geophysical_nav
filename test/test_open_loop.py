@@ -3,10 +3,12 @@ Test cases for open_loop_sim.py
 """
 
 import os
-import unittest
 import sqlite3 as sql
-from src.geophysical import open_loop_sim as ols
+import unittest
+
 from pandas import DataFrame
+
+from src.geophysical import open_loop_sim as ols
 
 
 class TestOpenLoopSim(unittest.TestCase):

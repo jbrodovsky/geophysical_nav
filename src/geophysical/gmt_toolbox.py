@@ -34,7 +34,7 @@ def get_map_section(
     :type west_lon: float
     :param east_lon: East longitude value in degrees.
     :type east_lon: float
-    :param south_lat: South latitude value in degrees.
+    :param south_lat: South latitude value in degsubsectionsrees.
     :type south_lat: float
     :param north_lat: North latitude value in degrees.
     :type north_lat: float

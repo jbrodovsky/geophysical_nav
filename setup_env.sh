@@ -5,8 +5,9 @@
 # --- NOT ----
 # ./setup_env.sh OR bash setup_env.sh
 
-# Set up the environment for the project by checking to see if miniconda is installed and if so activate the base environment and create the environment for the project
-# If miniconda is not installed, install it and create the environment for the project
+# Set up the environment for the project by checking to see if miniconda is installed and if so activate the
+# base environment and create the environment for the project. If miniconda is not installed, install it and
+# create the environment for the project
 
 # Check if miniconda is installed
 if ! command -v conda &> /dev/null

@@ -10,7 +10,7 @@ import multiprocessing as mp
 import os
 
 from matplotlib import pyplot as plt
-from pandas import read_csv, to_timedelta, DataFrame
+from pandas import DataFrame, read_csv, to_timedelta
 
 from .db_tools import get_tables, save_dataset, table_to_df
 from .particle_filter import (

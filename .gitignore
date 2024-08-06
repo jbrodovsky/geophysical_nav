@@ -2,6 +2,9 @@
 .venv
 .logs
 gmt.history
+source_data
+*.zip
+
 # C extensions
 *.so
 *.pyc
