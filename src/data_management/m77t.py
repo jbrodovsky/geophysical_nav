@@ -51,9 +51,6 @@ def m77t_to_df(data: DataFrame) -> DataFrame:
     data = data[["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]]
     # Rename "CORR_DEPTH" to "DEPTH"
     data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
-    # Clean up the rest of the data frame
-    # data = data.dropna(axis=1, how="all")
-    # data = data.dropna(axis=0, how="any")
     # Sort the DataFrame by the index
     data = data.sort_index()
     # Remove duplicate index values

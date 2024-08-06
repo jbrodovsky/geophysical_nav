@@ -8,7 +8,7 @@ import unittest
 
 from pandas import DataFrame, read_csv
 
-from src.data_managment import m77t
+from src.data_managementt import m77t
 
 
 class TestM77TToolbox(unittest.TestCase):
@@ -78,28 +78,6 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertIn("FREEAIR", df_out.columns)
         self.assertNotEqual(len(df_out), 0)
 
-    # def test_process_mgd77(self):
-    #     """
-    #     Test that the MGD77 data can be processed.
-    #     """
-    #     data, names = m77t_toolbox.process_mgd77("./test")
-    #     self.assertNotEqual(len(data), 0)
-    #     self.assertIn("test_data", names)
-
-    # def test_save_mgd77_dataset(self):
-    #     """
-    #     Test that the MGD77 dataset can be saved.
-    #     """
-    #     data, names = m77t_toolbox.process_mgd77("./test")
-    #     m77t_toolbox.save_mgd77_dataset(data, names, "./test/db", "db", "tracklines")
-    #     m77t_toolbox.save_mgd77_dataset(data, names, "./test/", "csv", "tracklines")
-    #     self.assertTrue(os.path.exists("./test/db/tracklines.db"))
-    #     m77t_toolbox.save_mgd77_dataset(data, names, "./test/csv", "csv", "tracklines")
-    #     self.assertTrue(os.path.exists(f"./test/csv/{names[0]}.csv"))
-    #     self.assertRaises(
-    #         NotImplementedError, m77t_toolbox.save_mgd77_dataset, data, names, "./test", "json", "tracklines"
-    #     )
-
     def test_parse_trackline_from_file(self):
         """
         Test that the trackline can be parsed from a file.
@@ -112,20 +90,6 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertRaises(FileNotFoundError, m77t.parse_trackline_from_file, "./test/missing.m77t", ["depth"])
         # self.assertRaises(NotImplementedError, m77t_toolbox.parse_trackline_from_file, "./test/test_data.csv", [10])
 
-    # def test_parse_tracklines_from_db(self):
-    #     """
-    #     Test that the trackline can be parsed from a database.
-    #     """
-    #     tracklines, _ = m77t_toolbox.parse_tracklines_from_db(
-    #         "./test/db/tracklines.db", data_types=["depth", ["mag", "grav"]]
-    #     )
-    #     self.assertNotEqual(len(tracklines), 0)
-    #     trackline = tracklines[0]
-    #     self.assertIsInstance(trackline, DataFrame)
-    #     self.assertNotEqual(len(trackline), 0)
-    #     self.assertRaises(
-    #         NotImplementedError, m77t_toolbox.parse_tracklines_from_db, "./test/db/tracklines.db", data_types=[10]
-    #     )
 
     def test_validate_data_type_string(self):
         """
@@ -191,7 +155,7 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the M77T data can be read.
         """
-        df = m77t.read_m77t("./test/test_data.m77t")
-        self.assertIsInstance(df, DataFrame)
-        self.assertNotEqual(len(df), 0)
-        self.assertRaises(FileNotFoundError, m77t.read_m77t, "./test/missing.m77t")
+        df: DataFrame = m77t.read_m77t(filepath="./test/test_data.m77t")
+        self.assertIsInstance(obj=df, cls=DataFrame)
+        self.assertNotEqual(first=len(df), second=0)
+        self.assertRaises(FileNotFoundError, callable=m77t.read_m77t, "./test/missing.m77t")
