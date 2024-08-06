@@ -5,7 +5,7 @@ Library for interacting with the M77T data format.
 from typing import List, Tuple
 
 from haversine import Unit, haversine_vector
-from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like
+from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like, asarray
 from numpy.typing import NDArray
 from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index
 from pyins.sim import generate_imu
@@ -51,9 +51,6 @@ def m77t_to_df(data: DataFrame) -> DataFrame:
     data = data[["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]]
     # Rename "CORR_DEPTH" to "DEPTH"
     data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
-    # Clean up the rest of the data frame
-    # data = data.dropna(axis=1, how="all")
-    # data = data.dropna(axis=0, how="any")
     # Sort the DataFrame by the index
     data = data.sort_index()
     # Remove duplicate index values
@@ -137,6 +134,8 @@ def calculate_bearing_vector(coords1: NDArray[float64], coords2: NDArray[float64
     """
     # lat1, lon1 = deg2rad(coords1)
     # lat2, lon2 = deg2rad(coords2)
+    coords1 = asarray(coords1)
+    coords2 = asarray(coords2)
 
     lat1: NDArray[float64] = deg2rad(coords1[:, 0])
     lon1: NDArray[float64] = deg2rad(coords1[:, 1])

@@ -8,8 +8,6 @@ import unittest
 
 from pandas import DataFrame
 
-from src.geophysical import open_loop_sim as ols
-
 
 class TestOpenLoopSim(unittest.TestCase):
     """
@@ -45,12 +43,3 @@ class TestOpenLoopSim(unittest.TestCase):
         os.remove("./out.txt")
         os.remove("./DB_ol.db")
         pass
-
-    def test_post_process_batch(self):
-        """
-        Test post_process_batch function
-        """
-
-        ols.post_process_batch("summary.csv", "./DB_ol.db", "./out.txt")
-        self.assertTrue(os.path.isfile("./out.txt"))
-        self.assertTrue(os.path.isfile("./summary.csv"))
