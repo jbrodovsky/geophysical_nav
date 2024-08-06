@@ -49,5 +49,5 @@ python_classes = ["Test*", "*Test"]
 python_functions = ["test_*"]
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = "./src"
 addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
