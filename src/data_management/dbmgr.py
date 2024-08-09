@@ -61,8 +61,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.orm.query import Query
 from tqdm import tqdm
 
-# from m77t import process_m77t_file
-from data_managment.m77t import process_m77t_file
+from src.data_management.m77t import process_m77t_file
 
 
 class Base(DeclarativeBase):
@@ -157,6 +156,16 @@ class DatabaseManager:
         """Drop the tables in the database"""
         Base.metadata.drop_all(self.engine)
 
+    def get_all_tables(self) -> list[str]:
+        """Get the names of the tables in the database"""
+        return Base.metadata.tables.keys()
+
+    def get_table(self, table_name: str) -> DataFrame:
+        """Get the contents of a table in the database"""
+        with Session(bind=self.engine) as session:
+            query: Query = session.query(Base.metadata.tables[table_name])
+            return read_sql(sql=query.statement, con=self.engine)
+
     def insert_trajectory(self, trajectory: DataFrame, name: str) -> int:
         """Insert a trajectory into the database"""
         distances: ndarray[float] = haversine_vector(
@@ -168,7 +177,7 @@ class DatabaseManager:
         # replace nan values in distances with zero
         distances = nan_to_num(x=distances)
 
-        # Check if the measurement columns are present in the DataFrame by validating that over half of the rows are
+        # Checdb/sourcesk if the measurement columns are present in the DataFrame by validating that over half of the rows are
         # not nan
         has_depth = False
         has_mag_tot = False
@@ -249,20 +258,26 @@ class DatabaseManager:
 def write_results_to_file(filename: str, configuration: dict, summary: DataFrame, results: list[DataFrame]) -> None:
     """Writes the results of a simulation to a hdf5 file"""
 
+    # Check if the filepath specified by filename exists
+    if not os.path.exists(os.path.split(filename)[0]):
+        os.makedirs(os.path.split(filename)[0])
+    # Check if .hdf5 extension is present in the filename
+    if filename.split(".")[-1] != "hdf5":
+        filename = f"{filename}.hdf5"
     # Create an HDF5 file
-    with h5py.File(name=f"{filename}.hdf5", mode="w") as f:
+    with h5py.File(name=filename, mode="w") as f:
         # Store the dictionary as attributes of a group
         config_group: h5py.Group = f.create_group(name="config")
         for key, value in configuration.items():
             config_group.attrs[key] = value
 
         # Store the main results DataFrame
-        summary.to_hdf(path_or_buf="simulation_results.hdf5", key="summary", mode="a")
+        summary.to_hdf(path_or_buf=filename, key="summary", mode="a")
 
         # Store each DataFrame in the list of DataFrames in separate groups
         f.create_group(name="results")
         for i, df in enumerate(iterable=results):
-            df.to_hdf(path_or_buf=f"{filename}.hdf5", key=f"results/result_{i}", mode="a")
+            df.to_hdf(path_or_buf=filename, key=f"results/result_{i}", mode="a")
 
 
 def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
