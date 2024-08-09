@@ -4,12 +4,10 @@ Test DB tools
 
 import os
 import shutil
-import sqlite3
 from typing import LiteralString
 import unittest
 
 from pandas import DataFrame
-import sqlalchemy
 
 from src.data_management import dbmgr, m77t
 
@@ -31,7 +29,7 @@ class TestDatabaseManager(unittest.TestCase):
         # Check that the database tables have been created
         tables: list[str] = self.db.get_all_tables()
         self.assertIsNotNone(tables)
-        # self.assertIsNotNone(self.db.get_table("trajectories"))
+        self.assertIsNotNone(self.db.get_table("trajectories"))
 
     def tearDown(self):
         """
@@ -45,16 +43,16 @@ class TestDatabaseManager(unittest.TestCase):
         """test that the module can be imported"""
         self.assertIsNotNone(dbmgr)
 
-    # def test_trajectory_insertion(self) -> None:
-    #     """test getting a trajectory"""
-    #     data: list[DataFrame] = m77t.process_m77t_file("test_data.m77t")
-    #     self.assertIsNotNone(data)
-    #     id: int = self.db.insert_trajectory(trajectory=data[0], name="TestTrajectory")
-    #     self.assertIsNotNone(id)
-    #     trajectory: DataFrame = self.db.get_trajectory(id)
-    #     self.assertIsNotNone(trajectory)
-    #     self.assertEqual(data[0].shape, trajectory.shape)
-    #     self.assertIsNotNone(self.db.get_all_trajectories())
+    def test_trajectory_insertion(self) -> None:
+        """test getting a trajectory"""
+        data: list[DataFrame] = m77t.process_m77t_file("test/test_data.m77t")
+        self.assertIsNotNone(data)
+        id: int = self.db.insert_trajectory(trajectory=data[0], name="TestTrajectory")
+        self.assertIsNotNone(id)
+        trajectory: DataFrame = self.db.get_trajectory(id)
+        self.assertIsNotNone(trajectory)
+        self.assertEqual(data[0].shape[0], trajectory.shape[0])
+        self.assertIsNotNone(self.db.get_all_trajectories())
 
 
 def test_write_and_read_results_to_file() -> None:
@@ -77,6 +75,7 @@ def test_write_and_read_results_to_file() -> None:
     assert results[0].shape == (1, 3)
     assert results[1].shape == (1, 3)
     assert results[2].shape == (1, 3)
+    shutil.rmtree(os.path.join("test", "db"))
 
 
 if __name__ == "__main__":
