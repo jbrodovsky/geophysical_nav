@@ -44,6 +44,7 @@ dependencies:
   - hdf5
   - h5py
   - netcdf4
+  - pytables
   # Misc
   - tqdm
   
