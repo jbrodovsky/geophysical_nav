@@ -46,7 +46,7 @@ from typing import Any
 import h5py
 from haversine import Unit, haversine_vector
 from numpy import column_stack, nan_to_num, ndarray
-from pandas import DataFrame, read_sql
+from pandas import DataFrame, read_sql, read_hdf
 from sqlalchemy import (
     Boolean,
     DateTime,
@@ -145,7 +145,7 @@ class DatabaseManager:
 
     def __init__(self, source: str) -> None:
         self.source: str = source
-        self.engine: Engine = create_engine(f"sqlite:///{source}")
+        self.engine: Engine = create_engine(url=f"sqlite:///{source}")
         self.create_tables()
 
     def create_tables(self) -> None:
@@ -177,8 +177,8 @@ class DatabaseManager:
         # replace nan values in distances with zero
         distances = nan_to_num(x=distances)
 
-        # Checdb/sourcesk if the measurement columns are present in the DataFrame by validating that over half of the rows are
-        # not nan
+        # Checdb/sourcesk if the measurement columns are present in the DataFrame by validating that over half of the
+        # rows are not nan
         has_depth = False
         has_mag_tot = False
         has_mag_res = False
@@ -212,7 +212,7 @@ class DatabaseManager:
             )
             session.add(instance=trajectory_entry)
             session.commit()
-            trajectory_id = trajectory_entry.id
+            trajectory_id: int = trajectory_entry.id
 
             for _, row in trajectory.iterrows():
                 data_entry = Data(
@@ -289,12 +289,12 @@ def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
         config: dict = dict(f["config"].attrs.items())
 
         # Read the main results DataFrame
-        summary: DataFrame = f["summary"].to_pandas()
+        summary: DataFrame = read_hdf(path_or_buf=f.filename, key="summary")
 
         # Read each DataFrame in the list of DataFrames from separate groups
         results: list[DataFrame] = []
         for i in range(len(f["results"])):
-            results.append(f[f"results/result_{i}"].to_pandas())
+            results.append(read_hdf(path_or_buf=f.filename, key=f"results/result_{i}"))
 
         return config, summary, results
 
