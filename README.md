@@ -4,6 +4,12 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 30 August 2024
+
+Using Insync and OneDrive I've gotten around the source data issue. The plan is to store the source data and resulting processed database on OneDrive location and use this a network drive. Insync allows for OneDrive syncing directly to the filesystem on a linux machine and will allow me to transfer and access the data on my remote linux desktop. Development paradigm will be to use my laptop and WSL2 for development and testing. Code will then be pushed to GitHub and pulled down on the remote desktop for testing and deployment and running full-scale simulations.
+
+To that end, I need to look into packaging the source code and library a bit more. I think the current model of packaging it as a conda environment is the best place to start from. 
+
 ### Update 16 July 2024
 
 So I feel that this project is a good enough excuse for me to work on my C/C++ skills as well. Also considering the sheer bulk of data and repetitions I'm going to be making, having a faster backend would be beneficial. I'm going to be using `pybind11` to write the backend code in C++ and then use Python to interface with it. All Python-based backend code should make use of heavy type hints and be transcompiled and built using MyPyC. Simulations and experiments should be conducted in the `scripts` folder and make use of the built source code found in `src`.
