@@ -7,7 +7,7 @@ from typing import List, Tuple
 from haversine import Unit, haversine_vector
 from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like, asarray
 from numpy.typing import NDArray
-from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index
+from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index, Timedelta
 from pyins.sim import generate_imu
 
 
@@ -197,12 +197,18 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     points: NDArray[float64] = column_stack(tup=(lat, lon))
     dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
     dt: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(0).to_numpy()
-    vel: NDArray[float64] = dists / dt[1:]
+    vel: Series = Series(dists / dt[1:], index=timestamp[1:])
 
     lat_rad: NDArray[float64] = deg2rad(lat)
     lon_rad: NDArray[float64] = deg2rad(lon)
     points_rad: NDArray[float64] = column_stack(tup=(lat_rad, lon_rad))
-    bearings: NDArray[float64] = calculate_bearing_vector(coords1=points_rad[:-1, :], coords2=points_rad[1:, :])
+    bearings: Series = Series(
+        calculate_bearing_vector(coords1=points_rad[:-1, :], coords2=points_rad[1:, :]), index=timestamp[1:]
+    )
+
+    # smooth the velocity and bearing data using a moving median window
+    vel = vel.rolling(window=Timedelta(minutes=60), min_periods=1).mean()
+    bearings = bearings.rolling(window=Timedelta(minutes=60), min_periods=1).mean()
 
     vel_north: NDArray[float64] = vel * cos(deg2rad(bearings))
     vel_east: NDArray[float64] = vel * sin(deg2rad(bearings))
@@ -219,11 +225,12 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph, velocity_n=vel_ned)
     traj: DataFrame = out[0]
     imu: DataFrame = out[1]
-    traj = traj.drop(columns=["VN", "VE", "VD"])
-    traj = traj.assign(speed=vel)
 
     out_traj: DataFrame = concat(objs=[traj, imu], axis=1)
     out_traj.index = timestamp[:-1]
+    out_traj = out_traj.assign(speed=vel)
+    out_traj = out_traj.drop(columns=["VN", "VE", "VD"])
+
     return out_traj
 
 
