@@ -21,7 +21,7 @@ class TestDatabaseManager(unittest.TestCase):
         """
         Set up the test environment data.
         """
-        self.db_path: LiteralString = os.path.join(".", "test", "db")
+        self.db_path: LiteralString = os.path.join("test", "db")
         self.db_string: LiteralString = f"{self.db_path}/test.db"
         self.table_name = "test_table"
         os.makedirs(name=self.db_path)

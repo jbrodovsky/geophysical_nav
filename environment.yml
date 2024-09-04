@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - Microsoft
 dependencies:
-  - python=3.11
+  - python
   # Standard base scientific packages
   - numpy
   - scipy

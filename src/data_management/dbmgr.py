@@ -61,7 +61,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.orm.query import Query
 from tqdm import tqdm
 
-from src.data_management.m77t import process_m77t_file
+from data_management.m77t import process_m77t_file
 
 
 class Base(DeclarativeBase):
@@ -271,13 +271,14 @@ def write_results_to_file(filename: str, configuration: dict, summary: DataFrame
         for key, value in configuration.items():
             config_group.attrs[key] = value
 
-        # Store the main results DataFrame
-        summary.to_hdf(path_or_buf=filename, key="summary", mode="a")
-
         # Store each DataFrame in the list of DataFrames in separate groups
         f.create_group(name="results")
-        for i, df in enumerate(iterable=results):
-            df.to_hdf(path_or_buf=filename, key=f"results/result_{i}", mode="a")
+
+    for i, df in enumerate(iterable=results):
+        df.to_hdf(path_or_buf=filename, key=f"results/result_{i}", mode="a")
+
+        # Store the main results DataFrame
+        summary.to_hdf(path_or_buf=filename, key="summary", mode="a")
 
 
 def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:

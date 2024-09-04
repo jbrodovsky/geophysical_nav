@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "Geophyiscal_Navigation_Simulator"
 version = "0.1.0"
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.9"
 description = "A simulator and database manager for geophysical navigation systems"
 readme = "README.md"
 authors = [{name="James Brodovsky"}]
@@ -14,7 +14,7 @@ authors = [{name="James Brodovsky"}]
 homepage = "https://github.com/jbrodovsky/geophysical_nav"
 
 [project.scripts]
-dbmgr = "data_managment.dbmgr:main"
+dbmgr = "data_management.dbmgr:main"
 
 [tool.black]
 line-length = 120
@@ -31,7 +31,6 @@ extend-ignore = "E203, W503"
 max-line-length = 120
 
 [mypy]
-python_version = "3.11"
 ignore_missing_imports = true
 show_error_codes = true
 disallow_untyped_calls = true
@@ -40,7 +39,7 @@ plugins = "sqlalchemy.ext.mypy.plugin"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["geophysical", "data_managment"]
+packages = ["geophysical", "data_management"]
 
 [tool.pytest]
 testpaths = ["tests"]
