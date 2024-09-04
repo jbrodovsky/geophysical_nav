@@ -177,7 +177,7 @@ class DatabaseManager:
         # replace nan values in distances with zero
         distances = nan_to_num(x=distances)
 
-        # Checdb/sourcesk if the measurement columns are present in the DataFrame by validating that over half of the
+        # Check db/sources if the measurement columns are present in the DataFrame by validating that over half of the
         # rows are not nan
         has_depth = False
         has_mag_tot = False
