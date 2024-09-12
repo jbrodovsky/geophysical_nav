@@ -5,7 +5,7 @@ Library for interacting with the M77T data format.
 from typing import List, Tuple
 
 from haversine import Unit, haversine_vector
-from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like, asarray
+from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like, asarray, nan_to_num
 from numpy.typing import NDArray
 from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index, Timedelta
 from pyins.sim import generate_imu
@@ -191,7 +191,7 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     Populate the inertial measurement unit columns in the dataframe using the
     lat, lon, and dt columns.
     """
-    timestamp: Series = data.index
+    timestamp: Series = data.index.to_series()
     lat: NDArray[float64] = data["LAT"].to_numpy()
     lon: NDArray[float64] = data["LON"].to_numpy()
     points: NDArray[float64] = column_stack(tup=(lat, lon))
@@ -227,9 +227,11 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     imu: DataFrame = out[1]
 
     out_traj: DataFrame = concat(objs=[traj, imu], axis=1)
-    out_traj.index = timestamp[:-1]
+    out_traj.index = Index(timestamp[:-1])
     out_traj = out_traj.assign(speed=vel)
     out_traj = out_traj.drop(columns=["VN", "VE", "VD"])
+
+    out_traj["speed"][0] = out_traj["speed"][1]
 
     return out_traj
 
