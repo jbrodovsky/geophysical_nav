@@ -17,9 +17,10 @@ dependencies:
   - mypy
   - numba
   # linting
-  - black
-  - flake8
-  - pylint
+  # - black
+  # - flake8
+  # - pylint
+  - ruff
   # Testing
   - pytest
   - pytest-cov
