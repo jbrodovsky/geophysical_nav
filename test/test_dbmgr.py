@@ -4,8 +4,8 @@ Test DB tools
 
 import os
 import shutil
-from typing import LiteralString
 import unittest
+from typing import LiteralString
 
 from pandas import DataFrame
 
@@ -60,12 +60,26 @@ def test_write_and_read_results_to_file() -> None:
     filename: str = os.path.join("test", "db", "test_result.hdf5")
     configuration: dict = {"test": "test"}
     summary: DataFrame = DataFrame.from_dict(
-        data={"row": [0, "bathy", 10]}, orient="index", columns=["error", "measurements", "time"]
+        data={"row": [0, "bathy", 10]},
+        orient="index",
+        columns=["error", "measurements", "time"],
     )
     results: list[DataFrame] = [
-        DataFrame.from_dict(data={"row": [0, "bathy", 0]}, orient="index", columns=["error", "measurements", "time"]),
-        DataFrame.from_dict(data={"row": [1, "mag", 10]}, orient="index", columns=["error", "measurements", "time"]),
-        DataFrame.from_dict(data={"row": [2, "grav", 20]}, orient="index", columns=["error", "measurements", "time"]),
+        DataFrame.from_dict(
+            data={"row": [0, "bathy", 0]},
+            orient="index",
+            columns=["error", "measurements", "time"],
+        ),
+        DataFrame.from_dict(
+            data={"row": [1, "mag", 10]},
+            orient="index",
+            columns=["error", "measurements", "time"],
+        ),
+        DataFrame.from_dict(
+            data={"row": [2, "grav", 20]},
+            orient="index",
+            columns=["error", "measurements", "time"],
+        ),
     ]
     dbmgr.write_results_to_file(filename=filename, configuration=configuration, summary=summary, results=results)
     assert os.path.exists(os.path.join(filename))

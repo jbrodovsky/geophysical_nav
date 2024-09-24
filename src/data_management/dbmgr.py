@@ -39,14 +39,14 @@ Data should be stored in a database with the following schema:
 """
 
 import argparse
-from datetime import datetime
 import os
+from datetime import datetime
 from typing import Any
 
 import h5py
 from haversine import Unit, haversine_vector
 from numpy import column_stack, nan_to_num, ndarray
-from pandas import DataFrame, read_sql, read_hdf
+from pandas import DataFrame, read_hdf, read_sql
 from sqlalchemy import (
     Boolean,
     DateTime,
@@ -170,7 +170,12 @@ class DatabaseManager:
         """Insert a trajectory into the database"""
         distances: ndarray[float] = haversine_vector(
             array1=column_stack(tup=(trajectory["lat"], trajectory["lon"])),
-            array2=column_stack(tup=(trajectory["lat"].shift(periods=1), trajectory["lon"].shift(periods=1))),
+            array2=column_stack(
+                tup=(
+                    trajectory["lat"].shift(periods=1),
+                    trajectory["lon"].shift(periods=1),
+                )
+            ),
             unit=Unit.METERS,
         )
 
@@ -317,7 +322,10 @@ def main() -> None:
     parser.add_argument("--source", type=str, help="Source file path", required=True)
     parser.add_argument("--output", type=str, help="Output file path", required=True)
     parser.add_argument(
-        "--interval", type=int, help="Time interval in seconds to parse for continuous data collections", required=True
+        "--interval",
+        type=int,
+        help="Time interval in seconds to parse for continuous data collections",
+        required=True,
     )
 
     args: argparse.Namespace = parser.parse_args()

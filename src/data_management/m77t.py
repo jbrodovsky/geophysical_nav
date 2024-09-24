@@ -5,9 +5,20 @@ Library for interacting with the M77T data format.
 from typing import List, Tuple
 
 from haversine import Unit, haversine_vector
-from numpy import arctan2, column_stack, cos, deg2rad, float64, rad2deg, sin, zeros_like, asarray, nan_to_num
+from numpy import (
+    arctan2,
+    asarray,
+    column_stack,
+    cos,
+    deg2rad,
+    float64,
+    nan_to_num,
+    rad2deg,
+    sin,
+    zeros_like,
+)
 from numpy.typing import NDArray
-from pandas import DataFrame, Series, concat, read_csv, to_datetime, Index, Timedelta
+from pandas import DataFrame, Index, Series, Timedelta, concat, read_csv, to_datetime
 from pyins.sim import generate_imu
 
 
@@ -124,7 +135,7 @@ def create_trajectory(df: DataFrame) -> DataFrame:
 
     ins = ins.assign(depth=depths, gra_obs=grav, freeair=grav_anom, mag_tot=mags, mag_res=mag_anom)
     # shift all column names of INS to lowercase
-    ins.columns = Index(data=[col.lower() for col in ins.columns])
+    # ins.columns = Index(data=[col.lower() for col in ins.columns])
     return ins
 
 
@@ -196,25 +207,27 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     lon: NDArray[float64] = data["LON"].to_numpy()
     points: NDArray[float64] = column_stack(tup=(lat, lon))
     dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
-    dt: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(0).to_numpy()
-    vel: Series = Series(dists / dt[1:], index=timestamp[1:])
+    dists = dists.cumsum()
+    # dt: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(0).to_numpy()
+    # vel: Series = Series(dists / dt[1:], index=timestamp[1:])
 
     lat_rad: NDArray[float64] = deg2rad(lat)
     lon_rad: NDArray[float64] = deg2rad(lon)
     points_rad: NDArray[float64] = column_stack(tup=(lat_rad, lon_rad))
     bearings: Series = Series(
-        calculate_bearing_vector(coords1=points_rad[:-1, :], coords2=points_rad[1:, :]), index=timestamp[1:]
+        calculate_bearing_vector(coords1=points_rad[:-1, :], coords2=points_rad[1:, :]),
+        index=timestamp[1:],
     )
 
     # smooth the velocity and bearing data using a moving median window
-    vel = vel.rolling(window=Timedelta(minutes=60), min_periods=1).mean()
+    # vel = vel.rolling(window=Timedelta(minutes=60), min_periods=1).mean()
     bearings = bearings.rolling(window=Timedelta(minutes=60), min_periods=1).mean()
 
-    vel_north: NDArray[float64] = vel * cos(deg2rad(bearings))
-    vel_east: NDArray[float64] = vel * sin(deg2rad(bearings))
-    vel_down: NDArray[float64] = zeros_like(vel)
+    # vel_north: NDArray[float64] = vel * cos(deg2rad(bearings))
+    # vel_east: NDArray[float64] = vel * sin(deg2rad(bearings))
+    # vel_down: NDArray[float64] = zeros_like(vel)
 
-    vel_ned: NDArray[float64] = column_stack(tup=(vel_north, vel_east, vel_down))
+    # vel_ned: NDArray[float64] = column_stack(tup=(vel_north, vel_east, vel_down))
 
     lla: NDArray[float64] = column_stack((lat, lon, zeros_like(lat)))
     rph: NDArray[float64] = column_stack(tup=(zeros_like(bearings), zeros_like(bearings), bearings))
@@ -222,16 +235,18 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     time: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(value=0).to_numpy()
     time = time.cumsum()
 
-    out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph, velocity_n=vel_ned)
+    out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph, sensor_type="rate")
     traj: DataFrame = out[0]
     imu: DataFrame = out[1]
 
     out_traj: DataFrame = concat(objs=[traj, imu], axis=1)
     out_traj.index = Index(timestamp[:-1])
-    out_traj = out_traj.assign(speed=vel)
-    out_traj = out_traj.drop(columns=["VN", "VE", "VD"])
+    out_traj["distance"] = dists
+    out_traj.loc[out_traj.index[0], "distance"] = 0
+    # out_traj = out_traj.assign(speed=vel)
+    # out_traj = out_traj.drop(columns=["VN", "VE", "VD"])
 
-    out_traj["speed"][0] = out_traj["speed"][1]
+    # out_traj.loc[out_traj.index[0], "speed"] = out_traj.loc[out_traj.index[1], "speed"]
 
     return out_traj
 
