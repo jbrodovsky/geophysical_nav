@@ -35,7 +35,7 @@ ignore_missing_imports = true
 show_error_codes = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
-plugins = "sqlalchemy.ext.mypy.plugin"
+plugins = ["sqlalchemy.ext.mypy.plugin", "numpy.typing.mypy_plugin"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
