@@ -618,22 +618,22 @@ def run_particle_filter(
         new_weights = zeros_like(weights)
         for measurement in config.measurement_config:
             if measurement.name == MeasurementType.BATHYMETRY:
-                new_weights += update_relief(particles, geomaps[measurement.name], row.depth, measurement.std)
+                new_weights += update_relief(particles, geomaps[measurement.name], row['depth'], measurement.std)
             elif measurement.name == MeasurementType.RELIEF:
-                new_weights += update_relief(particles, geomaps[measurement.name], row.depth, measurement.std)
+                new_weights += update_relief(particles, geomaps[measurement.name], row['depth'], measurement.std)
             elif measurement.name == MeasurementType.GRAVITY:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row.freeair, measurement.std)
+                new_weights += update_anomaly(particles, geomaps[measurement.name], row['freeair'], measurement.std)
             elif measurement.name == MeasurementType.MAGNETIC:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row.mag_res, measurement.std)
+                new_weights += update_anomaly(particles, geomaps[measurement.name], row['mag_res'], measurement.std)
             else:
                 raise ValueError(f"Measurement type {measurement.name} not recognized.")
         weights = new_weights / sum(new_weights)
         # Resample
         inds = residual_resample(weights)
-        particles[:] = particles[inds]
+        particles = particles[inds]
     # Final error calculations
     i += 1
-    estimate[i] = weights @ particles
+    estimate[i, :] = weights @ particles
     rms_error_2d[i] = rmse(particles, row[['lat', 'lon']].to_numpy(), include_altitude=False, weights=weights)
     rms_error_3d[i] = rmse(particles, row[['lat', 'lon', 'alt']].to_numpy(), include_altitude=True, weights=weights)       
 
@@ -658,10 +658,10 @@ def process_particle_filter(
     # config: ParticleFilterConfig,
 
 
-    min_lon = data["LON"].min()
-    max_lon = data["LON"].max()
-    min_lat = data["LAT"].min()
-    max_lat = data["LAT"].max()
+    min_lon = trajectory["lon"].min()
+    max_lon = trajectory["lon"].max()
+    min_lat = trajectory["lat"].min()
+    max_lat = trajectory["lat"].max()
     min_lon, min_lat, max_lon, max_lat = inflate_bounds(min_lon, min_lat, max_lon, max_lat, 0.25)
     geo_map = get_map_section(
         min_lon,
