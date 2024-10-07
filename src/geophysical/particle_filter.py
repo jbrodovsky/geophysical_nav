@@ -264,7 +264,7 @@ def skew_symmetric_to_vector(
 @njit
 def _propagate_imu(
     particles: NDArray,
-    C_: NDArray,
+    c_: NDArray,
     gyros: NDArray,
     accels: NDArray,
     dt: float64,
@@ -285,7 +285,7 @@ def _propagate_imu(
     particles : NDArray, (n, 15)
         The particles to propagate. NED strapdown state vector with the following
         elements: [lat, lon, alt, vn, ve, vd, roll, pitch, yaw, bgx, bgy, bgz, bax, bay, baz]
-    C_ : array_like
+    c_ : array_like
         The previous attitude matrix.
     """
     n = len(particles)
@@ -297,7 +297,7 @@ def _propagate_imu(
     ve_ = particles[:, 4]
     vd_ = particles[:, 5]
     # Initializing output arrays
-    C = empty((n, 3, 3), dtype=float64)
+    c = empty((n, 3, 3), dtype=float64)
     f = empty((n, 3), dtype=float64)
     velocity = empty((n, 3), dtype=float64)
     # Compute the angular velocity of the Earth relative to the local-level frame
@@ -311,9 +311,9 @@ def _propagate_imu(
         Omega_ie = EARTH_RATE * _vector_to_skew_symmetric([cos(lat_[i]), 0, -sin(lon_[i])])
         Omega_en = _vector_to_skew_symmetric(omega[i])
         Omega_ib = _vector_to_skew_symmetric(gyros - particles[i, 9:12])
-        C[i] = C_[i] @ (eye(3) + Omega_ib * dt) - (Omega_ie + Omega_en) @ C_[i] * dt
+        c[i] = c_[i] @ (eye(3) + Omega_ib * dt) - (Omega_ie + Omega_en) @ c_[i] * dt
         # Specific force update
-        f[i] = 0.5 * (C[i] + C_[i]) @ (accels[i] - particles[i, 12:])
+        f[i] = 0.5 * (c[i] + c_[i]) @ (accels[i] - particles[i, 12:])
         # Velocity update
         q = Omega_en + 2 * Omega_ie
         transport_rate = q @ particles[i, 3:6]
@@ -323,7 +323,7 @@ def _propagate_imu(
     lat = rad2deg(lat_ + dt / 2 * (vn_ / (Rn + lat_) + velocity[:, 0] / (Rn + alt)))
     lon = rad2deg(lon_ + dt / 2 * (ve_ / ((Re + alt_) * cos(lat_)) + velocity[:, 1] / ((Re + alt) * cos(lat))))
 
-    return column_stack((lat, lon, alt, velocity)), C
+    return column_stack((lat, lon, alt, velocity)), c
 
 
 @njit
@@ -403,8 +403,8 @@ def propagate_imu(
     # Getting some constants
     Rn, Re, _ = earth.principal_radii(particles[:, 0], particles[:, 2])
     gravity_vector = earth.gravity_n(particles[:, 0], particles[:, 2])
-    C_ = transform.mat_from_rph(deg2rad(particles[:, 6:9]))
-    new_particles, C = _propagate_imu(particles, C_, gyros, accels, dt, Rn, Re, gravity_vector)
+    c_ = transform.mat_from_rph(deg2rad(particles[:, 6:9]))
+    new_particles, c = _propagate_imu(particles, c_, gyros, accels, dt, Rn, Re, gravity_vector)
     new_particles = column_stack([new_particles, transform.mat_to_rph(C), particles[:, 9:]])
     jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
     return new_particles + jitter
