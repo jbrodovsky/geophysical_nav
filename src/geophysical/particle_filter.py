@@ -23,16 +23,14 @@ The primary functions needing jitting are the propagate and update functions. Th
 
 from dataclasses import dataclass
 from datetime import timedelta
-from enum import Enum
 import json
 
 # import numpy as np
 from filterpy.monte_carlo import residual_resample
-from haversine import Unit, haversine, haversine_vector
+from haversine import Unit, haversine_vector
 from matplotlib import pyplot as plt
 from numba import njit
 from numpy import (
-    abs,
     array,
     asarray,
     append,
@@ -47,7 +45,6 @@ from numpy import (
     int64,
     isnan,
     mean,
-    nan,
     rad2deg,
     sin,
     sum,
@@ -58,7 +55,6 @@ from numpy import (
     zeros_like,
     ones_like,
     ones,
-    any,
 )
 from numpy.random import multivariate_normal as mvn
 from numpy.typing import NDArray
@@ -177,10 +173,10 @@ def coning_and_sculling_correction(
 
     Example
     -------
-    >>> current_gyros = np.array([0.1, 0.2, 0.3])
-    >>> previous_gyros = np.array([0.05, 0.15, 0.25])
-    >>> current_accels = np.array([0.1, 0.2, 0.3])
-    >>> previous_accels = np.array([0.05, 0.15, 0.25])
+    >>> current_gyros = array([0.1, 0.2, 0.3])
+    >>> previous_gyros = array([0.05, 0.15, 0.25])
+    >>> current_accels = array([0.1, 0.2, 0.3])
+    >>> previous_accels = array([0.05, 0.15, 0.25])
     >>> coning_and_sculling_correction(current_gyros, previous_gyros, current_accels, previous_accels)
     (array([0.075, 0.175, 0.275]), array([0.075, 0.175, 0.275]))
 
@@ -378,7 +374,7 @@ def propagate_imu(
 
     Returns:
     --------
-    particles : np.ndarray (n x 12)
+    particles : ndarray (n x 12)
         The propagated particles.
 
     References:
@@ -405,7 +401,7 @@ def propagate_imu(
     gravity_vector = earth.gravity_n(particles[:, 0], particles[:, 2])
     c_ = transform.mat_from_rph(deg2rad(particles[:, 6:9]))
     new_particles, c = _propagate_imu(particles, c_, gyros, accels, dt, Rn, Re, gravity_vector)
-    new_particles = column_stack([new_particles, transform.mat_to_rph(C), particles[:, 9:]])
+    new_particles = column_stack([new_particles, transform.mat_to_rph(c), particles[:, 9:]])
     jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
     return new_particles + jitter
 
@@ -679,11 +675,11 @@ def process_particle_filter(
         map_resolution,
     )
     # Load initial conditions
-    mu = np.asarray([data.iloc[0].LAT, data.iloc[0].LON, 0, 0, 0, 0])
-    cov = np.asarray(configurations["cov"])
-    cov = np.diag(cov)
-    noise = np.asarray(configurations["velocity_noise"])
-    noise = np.diag(noise)
+    mu = asarray([data.iloc[0].LAT, data.iloc[0].LON, 0, 0, 0, 0])
+    cov = asarray(configurations["cov"])
+    cov = diag(cov)
+    noise = asarray(configurations["velocity_noise"])
+    noise = diag(noise)
     if map_type == "relief":
         measurement_sigma = configurations["bathy_std"]
         measurment_type = "DEPTH"
@@ -842,7 +838,7 @@ def plot_estimate(
         The map to plot on
     data : DataFrame
         The data to plot
-    estimate : np.ndarray
+    estimate : ndarray
         The estimate to plot
     Returns
     -------
@@ -934,7 +930,7 @@ def plot_error(
     ----------
     data : DataFrame
         The data to plot
-    rms_error : np.ndarray
+    rms_error : ndarray
         The error values to plot with respect to time
     res : float
         The resolution of the map in meters
@@ -968,14 +964,14 @@ def plot_error(
         if annotations["recovery"] is not None:
             ax.plot(
                 time,
-                np.ones_like(time) * annotations["recovery"],
+                ones_like(time) * annotations["recovery"],
                 label="Recovery",
             )
             # highlight the area undereath the points where the error is less than the pixel resolution
             ax.fill_between(
                 time,
                 data.RMSE.values,
-                np.ones_like(time) * annotations["recovery"],
+                ones_like(time) * annotations["recovery"],
                 where=data.RMSE.values < annotations["recovery"],
                 color="blue",
                 alpha=0.25,
@@ -983,14 +979,14 @@ def plot_error(
         if annotations["res"] is not None:
             ax.plot(
                 time,
-                np.ones_like(time) * annotations["res"],
+                ones_like(time) * annotations["res"],
                 label="Pixel Resolution",
             )
             # highlight the area undereath the points where the error is less than the pixel resolution
             ax.fill_between(
                 time,
                 data.RMSE.values,
-                np.ones_like(time) * annotations["res"],
+                ones_like(time) * annotations["res"],
                 where=data.RMSE.values < annotations["res"],
                 color="green",
                 alpha=0.25,

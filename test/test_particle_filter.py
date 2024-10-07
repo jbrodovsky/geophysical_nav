@@ -11,10 +11,9 @@ import unittest
 import numpy as np
 
 
-from src.geophysical.gmt_toolbox import GeophysicalMap, MapType, ReliefResolution, GravityResolution, MagneticResolution
+from src.geophysical.gmt_toolbox import GeophysicalMap, ReliefResolution, GravityResolution, MagneticResolution
 from src.geophysical.particle_filter import (
     MeasurementType,
-    GeophysicalMeasurement,
     ParticleFilterConfig,
     coning_and_sculling_correction,
     rmse,

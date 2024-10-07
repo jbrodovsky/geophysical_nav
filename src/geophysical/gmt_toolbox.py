@@ -2,17 +2,13 @@
 Toolbox module. Contains utility functions for accessing and manipulating geophysical map data.
 """
 
-from dataclasses import dataclass
 from enum import Enum
-import os
 
-import numpy as np
-from numpy import array
 from numpy.typing import NDArray
 from numpy import float64, int64
 
 # import xarray as xr
-from xarray import DataArray, load_dataarray
+from xarray import DataArray
 from anglewrapper import wrap
 from pygmt.datasets import (
     load_earth_free_air_anomaly,
