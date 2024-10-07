@@ -68,35 +68,14 @@ from scipy.stats import norm
 from xarray import DataArray
 
 from ..data_management.m77t import find_periods
-from .gmt_toolbox import get_map_point, get_map_section, inflate_bounds
+from .gmt_toolbox import MeasurementType, GeophysicalMap
 
 OVERFLOW = 500
 EARTH_RATE = earth.RATE
 
-class MeasurementType(Enum):
-    BATHYMETRY = 0
-    RELIEF = 1
-    GRAVITY = 2
-    MAGNETIC = 3
-
-    def __str__(self):
-        if self == MeasurementType.BATHYMETRY:
-            return "BATHYMETRY"
-        elif self == MeasurementType.RELIEF:
-            return "RELIEF"
-        elif self == MeasurementType.GRAVITY:
-            return "GRAVITY"
-        elif self == MeasurementType.MAGNETIC:
-            return "MAGNETIC"
-        else:
-            return "Unknown"
-    
-    def __repr__(self):
-        return f"MeasurementType<{str(self)}>"
-    
 
 @dataclass
-class GeophysicalMeasurement():
+class GeophysicalMeasurement:
     name: MeasurementType
     std: int | float | int64 | float64
 
@@ -111,7 +90,7 @@ class GeophysicalMeasurement():
 
     @classmethod
     def from_dict(cls, config: dict):
-        name = config['name'].upper()
+        name = config["name"].upper()
         if name == "BATHYMETRY" or name == "BATHY":
             return cls(MeasurementType.BATHYMETRY, config["std"])
         elif name == "RELIEF" or name == "TERRAIN":
@@ -122,7 +101,7 @@ class GeophysicalMeasurement():
             return cls(MeasurementType.MAGNETIC, config["std"])
         else:
             raise ValueError(f"Measurement type {name} not recognized.")
-    
+
     def to_dict(self):
         return {
             "name": str(self.name),
@@ -132,8 +111,9 @@ class GeophysicalMeasurement():
     def __repr__(self):
         return f"{self.name}\n\tStandard Deviation={self.std}"
 
+
 @dataclass
-class ParticleFilterConfig():
+class ParticleFilterConfig:
     n: int
     cov: NDArray[float64 | int64] | list[float | int]
     noise: NDArray[float64 | int64] | list[float | int]
@@ -146,29 +126,27 @@ class ParticleFilterConfig():
         noise = array(config["noise"])
         measurement_config = [GeophysicalMeasurement.from_dict(meas) for meas in config["measurement_config"]]
         return cls(n, cov, noise, measurement_config)
-        
 
     def to_dict(self) -> dict:
         return {
             "n": self.n,
             "cov": self.cov.tolist(),
             "noise": self.noise.tolist(),
-            "measurement_config": [meas.to_dict() for meas in self.measurement_config]
+            "measurement_config": [meas.to_dict() for meas in self.measurement_config],
         }
 
     @classmethod
     def load(cls, path: str) -> dict:
         with open(path, "r") as file:
             return cls.from_dict(json.load(file))
-    
 
     def save(self, path: str):
         with open(path, "w") as file:
             json.dump(self.to_dict(), file)
 
-
     def __repr__(self) -> str:
         return f"Particle Filter Configuration:\n\tNumber of Particles={self.n}\n\tCovariance={self.cov}\n\tNoise={self.noise}\n\tMeasurement Configurations={self.measurement_config}"
+
 
 def coning_and_sculling_correction(
     current_gyros: NDArray[float64 | int64] | list[float | int],
@@ -412,10 +390,14 @@ def propagate_imu(
     gyros = array(gyros)
     accels = array(accels)
     noise = array(noise)
-    assert particles.shape[1] >= 15, "Please check dimensions of particles. Particles must have at least 15 elements corresponding to the strapdown INS states and be shaped as a (n, 15) array."
+    assert (
+        particles.shape[1] >= 15
+    ), "Please check dimensions of particles. Particles must have at least 15 elements corresponding to the strapdown INS states and be shaped as a (n, 15) array."
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
-    assert noise.shape[0] == particles.shape[1], "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
+    assert (
+        noise.shape[0] == particles.shape[1]
+    ), "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
     # Getting some constants
@@ -430,9 +412,10 @@ def propagate_imu(
 
 # Measurement Functions
 
+
 def update_relief(
     particles: NDArray[float64 | int64] | list[float | int],
-    geo_map: DataArray,
+    geo_map: GeophysicalMap,
     observation: float | int | float64 | int64,
     sigma: float,
     bias: NDArray[float64 | int64] | list[float | int] = zeros(1, dtype=float64),
@@ -460,9 +443,9 @@ def update_relief(
         The standard deviation of the normal distribution.
     bias : array_like (default=zeros(1,))
         The bias of the observation. This is assumed to be a scalar value. Due to variability in the configuration
-        of the particle filter state vector, the bias (and subsequently any other measurement corrections) are 
+        of the particle filter state vector, the bias (and subsequently any other measurement corrections) are
         included as separate arguments.
-    
+
     Returns
     -------
     array_like
@@ -477,17 +460,18 @@ def update_relief(
     observation -= particles[:, 2] + bias
     return _update(particles, geo_map, observation, sigma)
 
+
 def update_anomaly(
     particles: NDArray[float64 | int64] | list[float | int],
-    geo_map: DataArray,
+    geo_map: GeophysicalMap,
     observation: float | int | float64 | int64,
     sigma: float | int | float64 | int64,
     bias: NDArray[float64 | int64] | list[float | int] = zeros(1, dtype=float64),
 ) -> NDArray[float64]:
     """
     Measurement update for magnetic or gravimetric anomaly. This measurement function assumes a single scalar
-    observation of an anomaly type measurement. The particles are assumed to be in the following format: 
-    [lat, lon, alt, vn, ve, vd, roll, pitch, yaw, bgx, bgy, bgz, bax, bay, baz]. The weights are then updated 
+    observation of an anomaly type measurement. The particles are assumed to be in the following format:
+    [lat, lon, alt, vn, ve, vd, roll, pitch, yaw, bgx, bgy, bgz, bax, bay, baz]. The weights are then updated
     based on the difference between the observation and the map. Unlike with terrain relief and bathymetry, the
     observation is not corrected for the altitude of the particles.
 
@@ -507,9 +491,9 @@ def update_anomaly(
         The standard deviation of the normal distribution.
     bias : array_like (default=zeros(1,))
         The bias of the observation. This is assumed to be a scalar value. Due to variability in the configuration
-        of the particle filter state vector, the bias (and subsequently any other measurement corrections) are 
+        of the particle filter state vector, the bias (and subsequently any other measurement corrections) are
         included as separate arguments.
-    
+
     Returns
     -------
     array_like
@@ -524,15 +508,18 @@ def update_anomaly(
     observation -= bias
     return _update(particles, geo_map, observation, sigma)
 
-def _update(particles: NDArray[float64 | int64] | list[float | int],
-            geo_map: DataArray,
-            observation: float | int | float64 | int64,
-            sigma: float) -> NDArray[float64]:
+
+def _update(
+    particles: NDArray[float64 | int64] | list[float | int],
+    geo_map: GeophysicalMap,
+    observation: float | int | float64 | int64,
+    sigma: float,
+) -> NDArray[float64]:
     """
     Generic measurement update function for the particle filter that assumes a zero mean normal distribution.
     Intended as a helper function for the update functions so as to reduce code duplication. This function
     assumes that any measurement corrections have already occurred and simply calculates the probabilities
-    of the particles assuming a zero mean normal distribution according to the difference between the 
+    of the particles assuming a zero mean normal distribution according to the difference between the
     observation and the map.
 
     Parameters
@@ -555,7 +542,8 @@ def _update(particles: NDArray[float64 | int64] | list[float | int],
     array_like
         The updated weights of the particles.
     """
-    z_bar = -get_map_point(geo_map, particles[:, 1], particles[:, 0])
+    #z_bar = get_map_point(geo_map, particles[:, 1], particles[:, 0])
+    z_bar = geo_map.get_map_point(particles[:, 1], particles[:, 0])
     dz = observation - z_bar
     w = norm(loc=0, scale=sigma).pdf(dz)
     w[isnan(w)] = 1e-16
@@ -575,7 +563,7 @@ def run_particle_filter(
     trajectory : DataFrame
         Trajectory should contain ground truth data ("lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"), IMU
         data ("gyro_x", "gyro_y", "gyro_z", "accel_x", "accel_y", "accel_z"), observational data ("depth", "gra_obs", "freeair",
-        "mat_tot", "mag_res"), and indexed to a datetime. The geomap should be a DataArray containing the geophysical data with 
+        "mat_tot", "mag_res"), and indexed to a datetime. The geomap should be a DataArray containing the geophysical data with
         the axis corresponding to "lon" and "lat".
     geomap : dict[MeasurementType, DataArray]
         The geophysical map to compare the particles to. The map should be a DataArray with the following
@@ -590,14 +578,20 @@ def run_particle_filter(
             The noise matrix or diagonal for the system.
         measurement_config: list[GeophysicalMeasurement]
             The list of geophysical measurements to use in the filter.
-    
+
     """
     # To do: condense the input of this function so that the simulation can be compartmentalized, suggest using a data class for particle
-    # filter configuration. 
-    mu = trajectory.loc[trajectory.index[0], ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"]].to_numpy()
-    mu = append(mu, zeros(6 + len(config.measurement_config))) # add size IMU biases and other measurement biases
-    assert mu.shape[0] == config.cov.shape[0], f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
-    assert mu.shape[0] == config.noise.shape[0], f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
+    # filter configuration.
+    mu = trajectory.loc[
+        trajectory.index[0], ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"]
+    ].to_numpy()
+    mu = append(mu, zeros(6 + len(config.measurement_config)))  # add size IMU biases and other measurement biases
+    assert (
+        mu.shape[0] == config.cov.shape[0]
+    ), f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
+    assert (
+        mu.shape[0] == config.noise.shape[0]
+    ), f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
     assert isinstance(config.n, int), "Number of particles must be an integer."
     assert config.n > 0, "Number of particles must be greater than zero."
     # Initialization
@@ -606,31 +600,37 @@ def run_particle_filter(
     rms_error_2d = zeros(len(trajectory))
     rms_error_3d = zeros_like(rms_error_2d)
     estimate = zeros((len(trajectory), particles.shape[1]))
-    trajectory['dt'] = trajectory.index.to_series().diff().dt.seconds.fillna(0)
+    trajectory["dt"] = trajectory.index.to_series().diff().dt.seconds.fillna(0)
 
     # Jit the loop?
     for i, item in enumerate(trajectory.iterrows()):
         row = item[1]
         # Error calculations
         estimate[i] = weights @ particles
-        rms_error_2d[i] = rmse(particles, row[['lat', 'lon']].to_numpy(), include_altitude=False, weights=weights)
-        rms_error_3d[i] = rmse(particles, row[['lat', 'lon', 'alt']].to_numpy(), include_altitude=True, weights=weights)        
+        rms_error_2d[i] = rmse(particles, row[["lat", "lon"]].to_numpy(), include_altitude=False, weights=weights)
+        rms_error_3d[i] = rmse(particles, row[["lat", "lon", "alt"]].to_numpy(), include_altitude=True, weights=weights)
         # Propagate particles
-        particles = propagate_imu(particles, row[["gyro_x", "gyro_y", "gyro_z"]], row[["accel_x", "accel_y", "accel_z"]], row["dt"], config.noise)
+        particles = propagate_imu(
+            particles,
+            row[["gyro_x", "gyro_y", "gyro_z"]],
+            row[["accel_x", "accel_y", "accel_z"]],
+            row["dt"],
+            config.noise,
+        )
         # Update weights
-        # To a certain extent the below is a measurement model itself, however a sensor fusion model hasn't 
+        # To a certain extent the below is a measurement model itself, however a sensor fusion model hasn't
         # been investigated yet that would allow for a more informed measurement model. For now, each measurement
         # will be treated as independent and equally weighted.
         new_weights = zeros_like(weights)
         for measurement in config.measurement_config:
             if measurement.name == MeasurementType.BATHYMETRY:
-                new_weights += update_relief(particles, geomaps[measurement.name], row['depth'], measurement.std)
+                new_weights += update_relief(particles, geomaps[measurement.name], row["depth"], measurement.std)
             elif measurement.name == MeasurementType.RELIEF:
-                new_weights += update_relief(particles, geomaps[measurement.name], row['depth'], measurement.std)
+                new_weights += update_relief(particles, geomaps[measurement.name], row["depth"], measurement.std)
             elif measurement.name == MeasurementType.GRAVITY:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row['freeair'], measurement.std)
+                new_weights += update_anomaly(particles, geomaps[measurement.name], row["freeair"], measurement.std)
             elif measurement.name == MeasurementType.MAGNETIC:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row['mag_res'], measurement.std)
+                new_weights += update_anomaly(particles, geomaps[measurement.name], row["mag_res"], measurement.std)
             else:
                 raise ValueError(f"Measurement type {measurement.name} not recognized.")
         weights = new_weights / sum(new_weights)
@@ -640,10 +640,11 @@ def run_particle_filter(
     # Final error calculations
     i += 1
     estimate[i, :] = weights @ particles
-    rms_error_2d[i] = rmse(particles, row[['lat', 'lon']].to_numpy(), include_altitude=False, weights=weights)
-    rms_error_3d[i] = rmse(particles, row[['lat', 'lon', 'alt']].to_numpy(), include_altitude=True, weights=weights)       
+    rms_error_2d[i] = rmse(particles, row[["lat", "lon"]].to_numpy(), include_altitude=False, weights=weights)
+    rms_error_3d[i] = rmse(particles, row[["lat", "lon", "alt"]].to_numpy(), include_altitude=True, weights=weights)
 
     return estimate, rms_error_2d, rms_error_3d
+
 
 '''
 # Simulation functions
@@ -718,8 +719,14 @@ def process_particle_filter(
     return data, geo_map
 '''
 
+
 # Error functions
-def rmse(particles: NDArray[int64 | float64], truth: NDArray[int64 | float64], include_altitude:bool=False, weights: NDArray[float64]=ones(1, dtype=float64)) -> float64:
+def rmse(
+    particles: NDArray[int64 | float64],
+    truth: NDArray[int64 | float64],
+    include_altitude: bool = False,
+    weights: NDArray[float64] = ones(1, dtype=float64),
+) -> float64:
     """
     Root mean square error calculation to calculate the error between the particles and the truth. If weights are provided, the
     squared error is weighted by the weights.
@@ -734,7 +741,7 @@ def rmse(particles: NDArray[int64 | float64], truth: NDArray[int64 | float64], i
         Include the altitude in the error calculation.
     weights : array_like (default=ones(1,))
         The weights of the particles. Default value insures that the weights are all equal and the error is not weighted.
-    
+
     Returns
     -------
     float
@@ -748,7 +755,7 @@ def rmse(particles: NDArray[int64 | float64], truth: NDArray[int64 | float64], i
         alts = particles[:, 2] - truth[:, 2]
     else:
         alts = zeros((n,))
-    diffs = haversine_vector(truth[:, :2], particles[:, :2], Unit.METERS)**2 + alts**2
+    diffs = haversine_vector(truth[:, :2], particles[:, :2], Unit.METERS) ** 2 + alts**2
 
     return sqrt(mean(diffs * weights))
 

@@ -122,11 +122,11 @@ class Data(Base):
     alt: Mapped[float] = mapped_column(Float)
     vn: Mapped[float] = mapped_column(Float)
     ve: Mapped[float] = mapped_column(Float)
-    vd: Mapped[float] = mapped_column(Float)    
+    vd: Mapped[float] = mapped_column(Float)
     roll: Mapped[float] = mapped_column(Float)
     pitch: Mapped[float] = mapped_column(Float)
     heading: Mapped[float] = mapped_column(Float)
-    #speed: Mapped[float] = mapped_column(Float)
+    # speed: Mapped[float] = mapped_column(Float)
     gyro_x: Mapped[float] = mapped_column(Float)
     gyro_y: Mapped[float] = mapped_column(Float)
     gyro_z: Mapped[float] = mapped_column(Float)
@@ -244,7 +244,7 @@ class DatabaseManager:
                     accel_x=row["accel_x"],
                     accel_y=row["accel_y"],
                     accel_z=row["accel_z"],
-                    distance=row['distance'],
+                    distance=row["distance"],
                     depth=row["depth"],
                     mag_tot=row["mag_tot"],
                     mag_res=row["mag_res"],
