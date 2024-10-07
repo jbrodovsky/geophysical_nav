@@ -100,6 +100,15 @@ class GeophysicalMeasurement():
     name: MeasurementType
     std: int | float | int64 | float64
 
+    def __init__(self, name: MeasurementType | int | str, std: int | float | int64 | float64):
+        if isinstance(name, MeasurementType):
+            self.name = name
+        elif isinstance(name, int):
+            self.name = MeasurementType(name)
+        elif isinstance(name, str):
+            self.name = MeasurementType[name.upper()]
+        self.std = std
+
     @classmethod
     def from_dict(cls, config: dict):
         name = config['name'].upper()
@@ -114,11 +123,10 @@ class GeophysicalMeasurement():
         else:
             raise ValueError(f"Measurement type {name} not recognized.")
     
-    @classmethod
-    def to_dict(cls, config):
+    def to_dict(self):
         return {
-            "name": str(config.name),
-            "std": config.std,
+            "name": str(self.name),
+            "std": self.std,
         }
 
     def __repr__(self):
@@ -139,14 +147,13 @@ class ParticleFilterConfig():
         measurement_config = [GeophysicalMeasurement.from_dict(meas) for meas in config["measurement_config"]]
         return cls(n, cov, noise, measurement_config)
         
-    
-    @classmethod
-    def to_dict(cls, config):
+
+    def to_dict(self) -> dict:
         return {
-            "n": config.n,
-            "cov": config.cov.tolist(),
-            "noise": config.noise.tolist(),
-            "measurement_config": [GeophysicalMeasurement.to_dict(meas) for meas in config.measurement_config]
+            "n": self.n,
+            "cov": self.cov.tolist(),
+            "noise": self.noise.tolist(),
+            "measurement_config": [meas.to_dict() for meas in self.measurement_config]
         }
 
     @classmethod
@@ -155,7 +162,6 @@ class ParticleFilterConfig():
             return cls.from_dict(json.load(file))
     
 
-    @classmethod
     def save(self, path: str):
         with open(path, "w") as file:
             json.dump(self.to_dict(), file)
@@ -406,7 +412,7 @@ def propagate_imu(
     gyros = array(gyros)
     accels = array(accels)
     noise = array(noise)
-    assert particles.shape[1] >= 15, "Please check dimensions of particles. Particles must have at least 15 elements corresponding to the strapdown INS states."
+    assert particles.shape[1] >= 15, "Please check dimensions of particles. Particles must have at least 15 elements corresponding to the strapdown INS states and be shaped as a (n, 15) array."
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
     assert noise.shape[0] == particles.shape[1], "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
@@ -416,9 +422,9 @@ def propagate_imu(
     Rn, Re, _ = earth.principal_radii(particles[:, 0], particles[:, 2])
     gravity_vector = earth.gravity_n(particles[:, 0], particles[:, 2])
     C_ = transform.mat_from_rph(deg2rad(particles[:, 6:9]))
-    new_particles, C = _propagate_imu(particles, C_, gyros, accels, dt, noise, Rn, Re, EARTH_RATE, gravity_vector)
+    new_particles, C = _propagate_imu(particles, C_, gyros, accels, dt, Rn, Re, gravity_vector)
     new_particles = column_stack([new_particles, transform.mat_to_rph(C), particles[:, 9:]])
-    jitter = mvn(len(particles[0]), diag(noise), len(particles))
+    jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
     return new_particles + jitter
 
 
@@ -639,7 +645,7 @@ def run_particle_filter(
 
     return estimate, rms_error_2d, rms_error_3d
 
-
+'''
 # Simulation functions
 def process_particle_filter(
     trajectory: DataFrame,
@@ -710,7 +716,7 @@ def process_particle_filter(
     data["RMSE"] = rms_error
     data["ERROR"] = error
     return data, geo_map
-
+'''
 
 # Error functions
 def rmse(particles: NDArray[int64 | float64], truth: NDArray[int64 | float64], include_altitude:bool=False, weights: NDArray[float64]=ones(1, dtype=float64)) -> float64:
@@ -735,12 +741,11 @@ def rmse(particles: NDArray[int64 | float64], truth: NDArray[int64 | float64], i
         The root mean square error between the particles and the truth.
     """
     n = particles.shape[0]
-    if truth.shape[0] != n:
-        truth = tile(truth, (n, 1))
+    truth = tile(truth, (n, 1))
     if weights.shape[0] != n:
         weights = ones((n,))
     if include_altitude:
-        alts = (particles[:, 2] - truth[2])
+        alts = particles[:, 2] - truth[:, 2]
     else:
         alts = zeros((n,))
     diffs = haversine_vector(truth[:, :2], particles[:, :2], Unit.METERS)**2 + alts**2

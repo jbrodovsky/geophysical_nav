@@ -2,6 +2,7 @@
 Toolbox module. Contains utility functions for accessing and manipulating geophysical map data.
 """
 
+from dataclasses import dataclass
 import os
 
 import numpy as np
@@ -12,6 +13,8 @@ from pygmt.datasets import (
     load_earth_magnetic_anomaly,
     load_earth_relief,
 )
+
+# TODO: #74 replace map type and map resolution strings with enums
 
 
 def get_map_section(

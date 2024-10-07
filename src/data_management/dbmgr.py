@@ -21,10 +21,12 @@ Data should be stored in a database with the following schema:
         - lat: float (lat of the data point)
         - lon: float (lon of the data point)
         - altitude: float (altitude of the data point)
+        - VN: float (velocity north of the data point)
+        - VE: float (velocity east of the data point)
+        - VD: float (velocity down of the data point)
         - roll: float (roll of the data point)
         - pitch: float (pitch of the data point)
         - heading: float (heading of the data point)
-        - speed: float (speed of the data point)
         - gyro_x: float (gyroscope x of the data point)
         - gyro_y: float (gyroscope y of the data point)
         - gyro_z: float (gyroscope z of the data point)
@@ -118,16 +120,20 @@ class Data(Base):
     lat: Mapped[float] = mapped_column(Float)
     lon: Mapped[float] = mapped_column(Float)
     alt: Mapped[float] = mapped_column(Float)
+    vn: Mapped[float] = mapped_column(Float)
+    ve: Mapped[float] = mapped_column(Float)
+    vd: Mapped[float] = mapped_column(Float)    
     roll: Mapped[float] = mapped_column(Float)
     pitch: Mapped[float] = mapped_column(Float)
     heading: Mapped[float] = mapped_column(Float)
-    speed: Mapped[float] = mapped_column(Float)
+    #speed: Mapped[float] = mapped_column(Float)
     gyro_x: Mapped[float] = mapped_column(Float)
     gyro_y: Mapped[float] = mapped_column(Float)
     gyro_z: Mapped[float] = mapped_column(Float)
     accel_x: Mapped[float] = mapped_column(Float)
     accel_y: Mapped[float] = mapped_column(Float)
     accel_z: Mapped[float] = mapped_column(Float)
+    distance: Mapped[float] = mapped_column(Float)
     depth: Mapped[float] = mapped_column(Float, nullable=True)
     mag_tot: Mapped[float] = mapped_column(Float, nullable=True)
     mag_res: Mapped[float] = mapped_column(Float, nullable=True)
@@ -226,16 +232,19 @@ class DatabaseManager:
                     lat=row["lat"],
                     lon=row["lon"],
                     alt=row["alt"],
+                    vn=row["VN"],
+                    ve=row["VE"],
+                    vd=row["VE"],
                     roll=row["roll"],
                     pitch=row["pitch"],
                     heading=row["heading"],
-                    speed=row["speed"],
                     gyro_x=row["gyro_x"],
                     gyro_y=row["gyro_y"],
                     gyro_z=row["gyro_z"],
                     accel_x=row["accel_x"],
                     accel_y=row["accel_y"],
                     accel_z=row["accel_z"],
+                    distance=row['distance'],
                     depth=row["depth"],
                     mag_tot=row["mag_tot"],
                     mag_res=row["mag_res"],
