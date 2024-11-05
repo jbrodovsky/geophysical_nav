@@ -538,7 +538,7 @@ def _update(
     array_like
         The updated weights of the particles.
     """
-    #z_bar = get_map_point(geo_map, particles[:, 1], particles[:, 0])
+    # z_bar = get_map_point(geo_map, particles[:, 1], particles[:, 0])
     z_bar = geo_map.get_map_point(particles[:, 1], particles[:, 0])
     dz = observation - z_bar
     w = norm(loc=0, scale=sigma).pdf(dz)
@@ -579,7 +579,8 @@ def run_particle_filter(
     # To do: condense the input of this function so that the simulation can be compartmentalized, suggest using a data class for particle
     # filter configuration.
     mu = trajectory.loc[
-        trajectory.index[0], ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"]
+        trajectory.index[0],
+        ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"],
     ].to_numpy()
     mu = append(mu, zeros(6 + len(config.measurement_config)))  # add size IMU biases and other measurement biases
     assert (
@@ -603,8 +604,18 @@ def run_particle_filter(
         row = item[1]
         # Error calculations
         estimate[i] = weights @ particles
-        rms_error_2d[i] = rmse(particles, row[["lat", "lon"]].to_numpy(), include_altitude=False, weights=weights)
-        rms_error_3d[i] = rmse(particles, row[["lat", "lon", "alt"]].to_numpy(), include_altitude=True, weights=weights)
+        rms_error_2d[i] = rmse(
+            particles,
+            row[["lat", "lon"]].to_numpy(),
+            include_altitude=False,
+            weights=weights,
+        )
+        rms_error_3d[i] = rmse(
+            particles,
+            row[["lat", "lon", "alt"]].to_numpy(),
+            include_altitude=True,
+            weights=weights,
+        )
         # Propagate particles
         particles = propagate_imu(
             particles,
@@ -624,9 +635,19 @@ def run_particle_filter(
             elif measurement.name == MeasurementType.RELIEF:
                 new_weights += update_relief(particles, geomaps[measurement.name], row["depth"], measurement.std)
             elif measurement.name == MeasurementType.GRAVITY:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row["freeair"], measurement.std)
+                new_weights += update_anomaly(
+                    particles,
+                    geomaps[measurement.name],
+                    row["freeair"],
+                    measurement.std,
+                )
             elif measurement.name == MeasurementType.MAGNETIC:
-                new_weights += update_anomaly(particles, geomaps[measurement.name], row["mag_res"], measurement.std)
+                new_weights += update_anomaly(
+                    particles,
+                    geomaps[measurement.name],
+                    row["mag_res"],
+                    measurement.std,
+                )
             else:
                 raise ValueError(f"Measurement type {measurement.name} not recognized.")
         weights = new_weights / sum(new_weights)
@@ -636,8 +657,18 @@ def run_particle_filter(
     # Final error calculations
     i += 1
     estimate[i, :] = weights @ particles
-    rms_error_2d[i] = rmse(particles, row[["lat", "lon"]].to_numpy(), include_altitude=False, weights=weights)
-    rms_error_3d[i] = rmse(particles, row[["lat", "lon", "alt"]].to_numpy(), include_altitude=True, weights=weights)
+    rms_error_2d[i] = rmse(
+        particles,
+        row[["lat", "lon"]].to_numpy(),
+        include_altitude=False,
+        weights=weights,
+    )
+    rms_error_3d[i] = rmse(
+        particles,
+        row[["lat", "lon", "alt"]].to_numpy(),
+        include_altitude=True,
+        weights=weights,
+    )
 
     return estimate, rms_error_2d, rms_error_3d
 

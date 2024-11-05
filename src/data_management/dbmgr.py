@@ -314,6 +314,14 @@ def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
         return config, summary, results
 
 
+####
+def say_hello() -> None:
+    print("Hello, World!")
+
+
+###
+
+
 def main() -> None:
     """
     Command line tool interface for the database manager. Finds, reads, parses, and stores .m77t files into a

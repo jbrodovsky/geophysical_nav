@@ -1,17 +1,17 @@
 [project]
 dependencies = []
 description = "Add a short description here"
-name = "geophysical_nav"
+name = "geophysical-nav"
 requires-python = ">= 3.11"
 version = "0.1.0"
 
 [build-system]
-requires = ["setuptools", "wheel", "mypy", "build"]
+requires = ["setuptools", "wheel", "build", "pybind11"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["geophysical", "data_management"]
+packages = ["geophysical", "data_management", "navtoolbox"]
 
 [tool.pytest]
 testpaths = ["tests"]
@@ -23,6 +23,9 @@ python_functions = ["test_*"]
 pythonpath = "./src"
 addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
 
+[tool.ruff]
+line-length = 120
+
 [tool.pixi.project]
 channels = ["conda-forge"]
 platforms = ["linux-64"]
@@ -31,8 +34,13 @@ platforms = ["linux-64"]
 geophysical_nav = { path = ".", editable = true }
 python-ins = "*"
 anglewrapper = "*"
+build = "*"
+setuptools = "*"
+wheel = "*"
 
 [tool.pixi.tasks]
+build = {cmd = "rm -r dist; rm -r sdist; rm -r build; python -m build;"}
+install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
 
 [tool.pixi.dependencies]
 numpy = "*"
@@ -41,13 +49,17 @@ filterpy = "*"
 pytz = "*"
 haversine = "*"
 pygmt = "*"
-numba = ">=0.60.0,<0.61"
-matplotlib = ">=3.9.2,<4"
-h5py = ">=3.12.1,<4"
-sqlalchemy = ">=2.0.36,<3"
-sqlite = ">=3.47.0,<4"
-tqdm = ">=4.66.6,<5"
-pytables = ">=3.10.1,<4"
+numba = "*"
+matplotlib = "*"
+h5py = "*"
+sqlalchemy = "*"
+sqlite = "*"
+tqdm = "*"
+pytables = "*"
+pybind11 = ">=2.13.6,<3"
+pip = ">=24.3.1,<25"
+cxx-compiler = ">=1.8.0,<2"
+libstdcxx-ng = ">=14.2.0,<15"
 
 [tool.pixi.feature.dev.dependencies]
 notebook = "*"
@@ -58,7 +70,8 @@ pytest-cov = "*"
 ruff = "*"
 
 [tool.pixi.feature.test.tasks]
-test = "coverage run -m pytest"
+lint = "ruff format ."
+test = {cmd = "coverage run -m pytest", depends-on = "lint"}
 
 [tool.pixi.environments]
 test = { features = ["test"], solve-group = "default" }

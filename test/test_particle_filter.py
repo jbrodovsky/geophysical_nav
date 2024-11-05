@@ -2,6 +2,7 @@
 """
 Test the particle filter implementation.
 """
+
 import json
 from os import remove
 from os.path import join
@@ -11,7 +12,12 @@ import unittest
 import numpy as np
 
 
-from src.geophysical.gmt_toolbox import GeophysicalMap, ReliefResolution, GravityResolution, MagneticResolution
+from src.geophysical.gmt_toolbox import (
+    GeophysicalMap,
+    ReliefResolution,
+    GravityResolution,
+    MagneticResolution,
+)
 from src.geophysical.particle_filter import (
     MeasurementType,
     ParticleFilterConfig,

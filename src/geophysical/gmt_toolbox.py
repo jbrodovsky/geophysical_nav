@@ -108,7 +108,7 @@ class MagneticResolution(Enum):
     TWO_MINUTES = "02m"
 
 
-class GeophysicalMap():
+class GeophysicalMap:
     """
     Class for storing and validating geophysical map data. Combination of a dataclass and a
     thin wrapper around xarray.DataArray. The class is used to store the map data and query

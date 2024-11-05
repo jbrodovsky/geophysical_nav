@@ -4,6 +4,21 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 5 Noveber 2024
+
+**Dev environment**
+
+Got fed up with `conda` and switched to `pixi` for environment and package management. Pixi builds on the conda philosophy but instead of having a central local environment it instead builds the environment within the project folder. This requires a slightly different workflow:
+
+1. Project dependencies are listed in the `pyproject.toml` file under the `[tool.pixi]` section. I've additionally seperated out the dependancies for testing, linting, and development into seperate sections. This requires that the appropriate environment be 'activated' (namely `dev` since I use notebooks and other interactive tools in testing) using `pixi shell -e dev`.
+2. The project does not need to build manually built prior to writing an experiment in `/scripts`. Pixi lists the current project as an editable dependancy and builds and installs the project in the environment when the shell and environment is activated using `pixi shell`. Note that the root folder/project name `geophysical_nav` is not required anymore and imports and intellisense works from below the `/src` folder.
+
+**Language usage**
+
+I'm getting a little annoyed wrestling with `numba` and don't like storing the navigation states in arrays which require a known order of states. The arrays are somewhat useful for the linear algebra computations they enable, but that can likely be stored and utilized still with small specific sets of states ex: `nav_states.position = [lat, lon, alt]` and `nav_states.velocity = [v_n, v_e, v_d]`. I'm going to see about using Numba's `jitclass` functionality. If that gets annoying, I'll switch to using `pybind11` to write the backend in C++ and use Python as a scripting language to run the simulations and manage the data.
+
+The main issue is that I don't want to write *multiple* versions of the basic strapdown integration method. For the Kalman filter approaches, it's all the same and can easily be done with matrix math. For the particle filter implementations, I can use that existing integration method and *loop* over all the particles (tried that in Python, its ***slow***) or I can vectorize the calculations and write another integration method that will need to be tested against the prior one. Converting the existing method to a C/C++ backend will allow me to meet somewhere in the middle. I can write a single integration method that only needs to be tested once, and can take advantage of compilation to speed up the looped calculations.
+
 ### Update 30 August 2024
 
 Using Insync and OneDrive I've gotten around the source data issue. The plan is to store the source data and resulting processed database on OneDrive location and use this a network drive. Insync allows for OneDrive syncing directly to the filesystem on a linux machine and will allow me to transfer and access the data on my remote linux desktop. Development paradigm will be to use my laptop and WSL2 for development and testing. Code will then be pushed to GitHub and pulled down on the remote desktop for testing and deployment and running full-scale simulations.

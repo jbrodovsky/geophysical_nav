@@ -21,6 +21,7 @@ def test_map_type() -> None:
     assert str(magnetic) == "magnetic_anomaly"
     assert str(unknown) == "unknown"
 
+
 def test_measurement_type() -> None:
     """
     Test the MeasurementType enumeration.
@@ -55,6 +56,7 @@ def test_relief_resolution() -> None:
     assert tbx.ReliefResolution.THREE_SECONDS.value == "03s"
     assert tbx.ReliefResolution.ONE_SECOND.value == "01s"
 
+
 def test_gravity_resolution() -> None:
     """
     Test the gravity resolution enum.
@@ -70,6 +72,7 @@ def test_gravity_resolution() -> None:
     assert tbx.GravityResolution.THREE_MINUTES.value == "03m"
     assert tbx.GravityResolution.TWO_MINUTES.value == "02m"
     assert tbx.GravityResolution.ONE_MINUTE.value == "01m"
+
 
 def test_magnetic_resolution() -> None:
     """
