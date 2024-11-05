@@ -1,0 +1,89 @@
+[project]
+name = "Geophyiscal_Navigation_Simulator"
+version = "0.1.0"
+requires-python = ">=3.9"
+description = "A simulator and database manager for geophysical navigation systems"
+readme = "README.md"
+authors = [{name="James Brodovsky"}]
+dependencies = ["anglewrapper", "python-ins"]
+
+[project.urls]
+homepage = "https://github.com/jbrodovsky/geophysical_nav"
+
+[project.scripts]
+dbmgr = "data_management.dbmgr:main"
+
+[project.optional-dependencies]
+lint = ["ruff",  "mypy"]
+test = ["pytest", "pytest-cov"]
+dev = ["notebook"]
+
+[build-system]
+requires = ["setuptools", "wheel", "mypy", "build"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = "E203, W503"
+
+[tool.pylint]
+max-line-length = 120
+
+[mypy]
+ignore_missing_imports = true
+show_error_codes = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+plugins = ["sqlalchemy.ext.mypy.plugin", "numpy.typing.mypy_plugin"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["geophysical", "data_management"]
+
+[tool.pytest]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "tests.py", "test.py"]
+python_classes = ["Test*", "*Test"]
+python_functions = ["test_*"]
+
+[tool.pytest.ini_options]
+pythonpath = "./src"
+addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[tool.pixi.pypi-dependencies]
+Geophyiscal_Navigation_Simulator = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+test = "coverage run -m pytest"
+lint = "ruff lint"
+
+[tool.pixi.dependencies]
+numpy = "*"
+scipy = "*"
+pandas = "*"
+build = "*"
+setuptools = "*"
+wheel = "*"
+numba = "*"
+matplotlib = "*"
+filterpy = "*"
+pytz = "*"
+haversine = "*"
+sqlite = "*"
+sqlalchemy = "*"
+h5py = "*"
+netcdf4 = "*"
+pytables = "*"
+tqdm = "*"
+pygmt = "*"

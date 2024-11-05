@@ -1,41 +1,13 @@
+[project]
+dependencies = []
+description = "Add a short description here"
+name = "geophysical_nav"
+requires-python = ">= 3.11"
+version = "0.1.0"
+
 [build-system]
 requires = ["setuptools", "wheel", "mypy", "build"]
 build-backend = "setuptools.build_meta"
-
-[project]
-name = "Geophyiscal_Navigation_Simulator"
-version = "0.1.0"
-requires-python = ">=3.9"
-description = "A simulator and database manager for geophysical navigation systems"
-readme = "README.md"
-authors = [{name="James Brodovsky"}]
-
-[project.urls]
-homepage = "https://github.com/jbrodovsky/geophysical_nav"
-
-[project.scripts]
-dbmgr = "data_management.dbmgr:main"
-
-[tool.black]
-line-length = 120
-target-version = ['py311']
-
-[tool.isort]
-profile = "black"
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = "E203, W503"
-
-[tool.pylint]
-max-line-length = 120
-
-[mypy]
-ignore_missing_imports = true
-show_error_codes = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-plugins = ["sqlalchemy.ext.mypy.plugin", "numpy.typing.mypy_plugin"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -50,3 +22,44 @@ python_functions = ["test_*"]
 [tool.pytest.ini_options]
 pythonpath = "./src"
 addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+geophysical_nav = { path = ".", editable = true }
+python-ins = "*"
+anglewrapper = "*"
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+numpy = "*"
+pandas = "*"
+filterpy = "*"
+pytz = "*"
+haversine = "*"
+pygmt = "*"
+numba = ">=0.60.0,<0.61"
+matplotlib = ">=3.9.2,<4"
+h5py = ">=3.12.1,<4"
+sqlalchemy = ">=2.0.36,<3"
+sqlite = ">=3.47.0,<4"
+tqdm = ">=4.66.6,<5"
+pytables = ">=3.10.1,<4"
+
+[tool.pixi.feature.dev.dependencies]
+notebook = "*"
+
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+ruff = "*"
+
+[tool.pixi.feature.test.tasks]
+test = "coverage run -m pytest"
+
+[tool.pixi.environments]
+test = { features = ["test"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }

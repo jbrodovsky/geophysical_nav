@@ -96,3 +96,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+# pixi environments
+.pixi
+*.egg-info

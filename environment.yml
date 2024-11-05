@@ -7,7 +7,6 @@ dependencies:
   - python
   # Standard base scientific packages
   - numpy
-  - scipy
   - pandas
   - pandas-stubs
   # building and speed
