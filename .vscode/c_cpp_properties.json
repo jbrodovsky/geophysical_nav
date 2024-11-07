@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/.pixi/envs/default/**",
-                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/**",
                 "${default}"
             ],
             "defines": [],

@@ -1,3 +1,6 @@
 {
-    "C_Cpp.default.compilerPath": "/home/james/Code/research_workspace/geophysical_nav/.pixi/envs/default/bin/g++"
+    "C_Cpp.default.compilerPath": "/home/james/Code/research_workspace/geophysical_nav/.pixi/envs/default/bin/g++",
+    "files.associations": {
+        "cstddef": "cpp"
+    }
 }

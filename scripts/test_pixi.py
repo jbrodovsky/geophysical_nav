@@ -1,6 +1,9 @@
-from data_management.dbmgr import say_hello
-from navtoolbox import say_hello as hellocpp
+from data_management import dbmgr
+from navtoolbox import navtoolbox as tbx
+from navtoolbox import earth
+
 
 if __name__ == "__main__":
-    say_hello()
-    hellocpp()
+    dbmgr.say_hello()
+    tbx.say_hello()
+    earth.say_hello()

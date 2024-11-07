@@ -96,6 +96,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
 # pixi environments
 .pixi
 *.egg-info
+
+# CMake
+*.ninja_deps
+*.ninja_log
+*.skbuild-info.json
+build.ninja
+cmake_install.cmake
+CMakeCache.txt
+CMakeInit.txt
+install_manifest.txt
+src/navtoolbox/CMakeFiles/

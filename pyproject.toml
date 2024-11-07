@@ -6,12 +6,18 @@ requires-python = ">= 3.11"
 version = "0.1.0"
 
 [build-system]
-requires = ["setuptools", "wheel", "build", "pybind11"]
-build-backend = "setuptools.build_meta"
+# requires = ["setuptools", "wheel", "build", "pybind11"]
+# build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["geophysical", "data_management", "navtoolbox"]
+# [tool.scikit-build]
+# build-dir = "src/navtoolbox"
+# cmake.verbose = true
+
+# [tool.setuptools]
+# package-dir = {"" = "src"}
+# packages = ["geophysical", "data_management", "navtoolbox"]
 
 [tool.pytest]
 testpaths = ["tests"]
@@ -28,7 +34,7 @@ line-length = 120
 
 [tool.pixi.project]
 channels = ["conda-forge"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "win-64", "osx-64"]
 
 [tool.pixi.pypi-dependencies]
 geophysical_nav = { path = ".", editable = true }
@@ -37,10 +43,6 @@ anglewrapper = "*"
 build = "*"
 setuptools = "*"
 wheel = "*"
-
-[tool.pixi.tasks]
-build = {cmd = "rm -r dist; rm -r sdist; rm -r build; python -m build;"}
-install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
 
 [tool.pixi.dependencies]
 numpy = "*"
@@ -56,13 +58,19 @@ sqlalchemy = "*"
 sqlite = "*"
 tqdm = "*"
 pytables = "*"
-pybind11 = ">=2.13.6,<3"
-pip = ">=24.3.1,<25"
-cxx-compiler = ">=1.8.0,<2"
-libstdcxx-ng = ">=14.2.0,<15"
+pybind11 = "*"
+pip = "*"
+cxx-compiler = "*"
+eigen = ">=3.4.0,<4"
 
 [tool.pixi.feature.dev.dependencies]
 notebook = "*"
+cmake = "*"
+make = "*"
+
+[tool.pixi.feature.dev.tasks]
+build = {cmd = "rm -r dist; rm -r sdist; rm -r build; python -m build;"}
+install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
