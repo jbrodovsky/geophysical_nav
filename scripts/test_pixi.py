@@ -13,3 +13,14 @@ hello_earth()
 from navtoolbox import transform
 
 transform.say_hello()
+
+from pyins import _numba_integrate as nbi
+import numpy as np
+
+rv = np.array([90, 0, 0])
+M = np.empty((3, 3))
+
+nbi.mat_from_rotvec(rv, M)
+print(f"{M=}")
+
+print(f"{transform.mat_from_rotvec(rv)=}")

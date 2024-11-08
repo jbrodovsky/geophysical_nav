@@ -48,7 +48,9 @@ Eigen::Vector3d earth::gravity_n(double lat, double alt) {
  */
 
 Eigen::Vector3d earth::gravitation_ecef(const std::array<double, 3>& lla) {
-    double lat = lla[0], lon = lla[1], alt = lla[2];
+    double lat = lla[0];
+    double lon = lla[1]; 
+    double alt = lla[2];
 
     double sin_lat = std::sin(lat * M_PI / 180.0);
     double cos_lat = std::cos(lat * M_PI / 180.0);
@@ -59,9 +61,8 @@ Eigen::Vector3d earth::gravitation_ecef(const std::array<double, 3>& lla) {
     g0_g[0] = RATE * RATE * rp * sin_lat;
     g0_g[2] = gravity(lat, alt) + RATE * RATE * rp * cos_lat;
 
-    // Assuming mat_en_from_ll and mv_prod are utility functions in separate namespaces
     Eigen::Matrix3d mat_eg = transform::mat_en_from_ll(lat, lon);
-    return util::mv_prod(mat_eg, g0_g);
+    return mat_eg * g0_g; //util::mv_prod(mat_eg, g0_g);
 }
 
 

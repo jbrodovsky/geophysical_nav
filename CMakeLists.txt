@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.26)
 project(navtoolbox LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3") #-Werror -Wall -Wextra -Wpedantic 
 set(PYBIND11_FINDPYTHON ON)
 
 find_package(pybind11 CONFIG REQUIRED)
@@ -21,7 +21,8 @@ add_library(navtoolbox SHARED
     ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/navtoolbox.cpp
     ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/earth.cpp
     ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/transform.cpp
-    #${CMAKE_SOURCE_DIR}/src/navtoolbox/src/util.cpp
+    ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/util.cpp
+    ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/integrate.cpp
     )
 
 target_link_libraries(navtoolbox PRIVATE Eigen3::Eigen pybind11::module)
