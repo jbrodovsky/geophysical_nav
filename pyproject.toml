@@ -1,23 +1,21 @@
 [project]
 dependencies = []
 description = "Add a short description here"
-name = "geophysical-nav"
+name = "geophysical_nav"
 requires-python = ">= 3.11"
 version = "0.1.0"
 
 [build-system]
-# requires = ["setuptools", "wheel", "build", "pybind11"]
-# build-backend = "setuptools.build_meta"
 requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
-# [tool.scikit-build]
-# build-dir = "src/navtoolbox"
-# cmake.verbose = true
+[tool.scikit-build]
+build-dir = "src/navtoolbox"
 
-# [tool.setuptools]
-# package-dir = {"" = "src"}
-# packages = ["geophysical", "data_management", "navtoolbox"]
+[tool.scikit-build.wheel.packages]
+data_management = "src/data_management"
+geophysical = "src/geophysical"
+navtoolbox = "src/navtoolbox/navtoolbox"
 
 [tool.pytest]
 testpaths = ["tests"]
@@ -61,16 +59,20 @@ pytables = "*"
 pybind11 = "*"
 pip = "*"
 cxx-compiler = "*"
-eigen = ">=3.4.0,<4"
+eigen = "*"
+cmake = "*"
+pybind11-stubgen = "*"
+
+[tool.pixi.tasks]
+clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
+build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
+# install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
+install = {cmd = "pip install -e .; pybind11-stubgen -o ./src/ navtoolbox", depends-on="clean"}
 
 [tool.pixi.feature.dev.dependencies]
 notebook = "*"
 cmake = "*"
 make = "*"
-
-[tool.pixi.feature.dev.tasks]
-build = {cmd = "rm -r dist; rm -r sdist; rm -r build; python -m build;"}
-install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"

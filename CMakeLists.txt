@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
-project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
-# project(navtoolbox LANGUAGES CXX)
+# project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
+project(navtoolbox LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -17,12 +17,20 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src/navtoolbox/include)
 
-pybind11_add_module(navtoolbox MODULE ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/navtoolbox.cpp)
-set_target_properties(navtoolbox PROPERTIES PREFIX "" OUTPUT_NAME "navtoolbox")
+add_library(navtoolbox SHARED 
+    ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/navtoolbox.cpp
+    ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/earth.cpp
+    ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/transform.cpp
+    #${CMAKE_SOURCE_DIR}/src/navtoolbox/src/util.cpp
+    )
 
-pybind11_add_module(earth MODULE ${CMAKE_SOURCE_DIR}/src/navtoolbox/src/earth.cpp)
-target_link_libraries(earth PRIVATE Eigen3::Eigen) 
-set_target_properties(earth PROPERTIES PREFIX "" OUTPUT_NAME "earth")
+target_link_libraries(navtoolbox PRIVATE Eigen3::Eigen pybind11::module)
 
-install(TARGETS navtoolbox earth DESTINATION ${SKBUILD_PROJECT_NAME})
-# install(TARGETS navtoolbox earth LIBRARY DESTINATION .)
+# Set the output directory for the Python module
+set_target_properties(navtoolbox PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    PREFIX ""
+    SUFFIX ".so"
+)
+
+#install(TARGETS navtoolbox LIBRARY DESTINATION ./src/)#

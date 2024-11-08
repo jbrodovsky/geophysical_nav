@@ -1,9 +1,15 @@
 from data_management import dbmgr
-from navtoolbox import navtoolbox as tbx
-from navtoolbox import earth
 
+dbmgr.say_hello()
 
-if __name__ == "__main__":
-    dbmgr.say_hello()
-    tbx.say_hello()
-    earth.say_hello()
+from navtoolbox import say_hello
+
+say_hello()
+
+from navtoolbox.earth import say_hello as hello_earth
+
+hello_earth()
+
+from navtoolbox import transform
+
+transform.say_hello()
