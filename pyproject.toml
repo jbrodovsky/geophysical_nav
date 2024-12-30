@@ -1,21 +1,24 @@
 [project]
-dependencies = []
-description = "Add a short description here"
-name = "geophysical_nav"
-requires-python = ">= 3.11"
+name = "Geophyiscal_Navigation_Simulator"
 version = "0.1.0"
+requires-python = ">=3.9"
+description = "A simulator and database manager for geophysical navigation systems"
+readme = "README.md"
+authors = [{name="James Brodovsky"}]
+
+[project.urls]
+homepage = "https://github.com/jbrodovsky/geophysical_nav"
+
+[project.scripts]
+dbmgr = "data_management.dbmgr:main"
 
 [build-system]
-requires = ["scikit-build-core", "pybind11"]
-build-backend = "scikit_build_core.build"
+requires = ["setuptools", "wheel", "build"]
+build-backend = "setuptools.build_meta"
 
-[tool.scikit-build]
-build-dir = "src/navtoolbox"
-
-[tool.scikit-build.wheel.packages]
-data_management = "src/data_management"
-geophysical = "src/geophysical"
-navtoolbox = "src/navtoolbox/navtoolbox"
+[tool.setuptools]
+package-dir ={ "" = "src" }
+packages = ["geophysical", "data_management"]
 
 [tool.pytest]
 testpaths = ["tests"]
@@ -56,23 +59,14 @@ sqlalchemy = "*"
 sqlite = "*"
 tqdm = "*"
 pytables = "*"
-pybind11 = "*"
-pip = "*"
-cxx-compiler = "*"
-eigen = "*"
-cmake = "*"
-pybind11-stubgen = "*"
 
 [tool.pixi.tasks]
 clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
 build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
-# install = {cmd = "WHL_FILE=$(find ./dist -name '*.whl'); python -m pip install $WHL_FILE --force-reinstall", depends-on="build"}
 install = {cmd = "pip install -e .; pybind11-stubgen -o ./src/ navtoolbox", depends-on="clean"}
 
 [tool.pixi.feature.dev.dependencies]
 notebook = "*"
-cmake = "*"
-make = "*"
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"

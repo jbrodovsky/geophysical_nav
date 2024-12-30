@@ -23,11 +23,12 @@ The primary functions needing jitting are the propagate and update functions. Th
 
 from dataclasses import dataclass
 from datetime import timedelta
+from enum import Enum
 import json
 
 # import numpy as np
 from filterpy.monte_carlo import residual_resample
-from haversine import Unit, haversine_vector
+from haversine import Unit, haversine_vector, haversine
 from matplotlib import pyplot as plt
 from numba import njit
 from numpy import (
@@ -35,6 +36,7 @@ from numpy import (
     asarray,
     append,
     column_stack,
+    concat,
     cos,
     cross,
     deg2rad,
@@ -108,12 +110,47 @@ class GeophysicalMeasurement:
         return f"{self.name}\n\tStandard Deviation={self.std}"
 
 
+class ParticleFilterInputConfig(Enum):
+    VELOCITY = "velocity"
+    IMU = "imu"
+
+    def __str__(self):
+        if self == ParticleFilterInputConfig.VELOCITY:
+            return "Velocity"
+        elif self == ParticleFilterInputConfig.IMU:
+            return "IMU"
+        else:
+            return "Unknown"
+
+    def __repr__(self):
+        return str(self)
+
+
 @dataclass
 class ParticleFilterConfig:
+    """
+    Setup configuration for the particle filter. This data class is used to formally set
+    the parameters for the particle filter based on a given experimental configuration.
+
+    Parameters
+    ----------
+    n : int
+        The number of particles to use in the filter.
+    cov : array_like
+        The covariance matrix or diagonal for the initial state vector.
+    noise : array_like
+        The noise matrix or diagonal for the system.
+    measurement_config : list[GeophysicalMeasurement]
+        The configuration for the geophysical measurements.
+    input_config : list[str]
+        The configuration for the input data. Refers sepecifically to the
+    """
+
     n: int
     cov: NDArray[float64 | int64] | list[float | int]
     noise: NDArray[float64 | int64] | list[float | int]
     measurement_config: list[GeophysicalMeasurement]
+    input_config: ParticleFilterInputConfig
 
     @classmethod
     def from_dict(cls, config: dict) -> dict:
@@ -121,7 +158,8 @@ class ParticleFilterConfig:
         cov = array(config["cov"])
         noise = array(config["noise"])
         measurement_config = [GeophysicalMeasurement.from_dict(meas) for meas in config["measurement_config"]]
-        return cls(n, cov, noise, measurement_config)
+        input_config = ParticleFilterInputConfig(config["input_config"])
+        return cls(n, cov, noise, measurement_config, input_config)
 
     def to_dict(self) -> dict:
         return {
@@ -129,6 +167,7 @@ class ParticleFilterConfig:
             "cov": self.cov.tolist(),
             "noise": self.noise.tolist(),
             "measurement_config": [meas.to_dict() for meas in self.measurement_config],
+            "input_config": str(self.input_config),
         }
 
     @classmethod
@@ -140,8 +179,20 @@ class ParticleFilterConfig:
         with open(path, "w") as file:
             json.dump(self.to_dict(), file)
 
-    def __repr__(self) -> str:
+    def get_base_state(self) -> list[str]:
+        """Gets the column names for a trajectory data frame for the base states. Primarily used for initialization."""
+        if self.input_config == ParticleFilterInputConfig.VELOCITY:
+            return ["lat", "lon", "alt", "vn", "ve", "vd"]
+        elif self.input_config == ParticleFilterInputConfig.IMU:
+            return ["lat", "lon", "alt", "vn", "ve", "vd", "roll", "pitch", "yaw"]
+        else:
+            raise ValueError("Input configuration not recognized.")
+
+    def __str__(self):
         return f"Particle Filter Configuration:\n\tNumber of Particles={self.n}\n\tCovariance={self.cov}\n\tNoise={self.noise}\n\tMeasurement Configurations={self.measurement_config}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 def coning_and_sculling_correction(
@@ -232,8 +283,15 @@ def vector_to_skew_symmetric(
         A 3x3 skew-symmetric matrix.
     """
     v = array(v).squeeze()
-    assert v.shape == (3,), "Input must be a 3-element vector."
-    return array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]], dtype=float64)
+    # assert v.shape == (3,), "Input must be a 3-element vector."
+    if len(v.shape) == 1:
+        assert v.shape == (3,), "Input must be a 3-element vector."
+        return array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    elif len(v.shape) == 2:
+        assert v.shape[1] == 3, "Input must be a (n, 3) array."
+        return asarray([_vector_to_skew_symmetric(vec) for vec in v])
+    else:
+        raise ValueError("Input must be a 3-element vector or list of 3.")
 
 
 def skew_symmetric_to_vector(
@@ -253,20 +311,126 @@ def skew_symmetric_to_vector(
         A 3-element vector
     """
     m = array(m).squeeze()
-    assert m.shape == (3, 3), "Input must be a 3x3 matrix."
-    return array([m[2, 1], m[0, 2], m[1, 0]])
+    if len(m.shape) == 2:
+        assert m.shape == (3, 3), "Input must be a 3x3 matrix."
+        return array([m[2, 1], m[0, 2], m[1, 0]], dtype=float64)
+    elif len(m.shape) == 3:
+        assert m.shape[1] == 3 and m.shape[2] == 3, "Input must be a (n, 3, 3) array."
+        return _skew_symmetric_to_vector(m)
+    else:
+        raise ValueError("Input must be a 3x3 matrix or list of 3x3 matrices.")
 
 
 @njit
+def _vector_to_skew_symmetric(v: NDArray[int64 | float64]) -> NDArray[int64 | float64]:
+    """
+    Convert a 3-element vector to a skew-symmetric matrix. Jitted function for use
+    in _propagate_imu. This function is not intended for use outside of the
+    propagate_imu function as it makes certain assumptions about the input and
+    does not validate it as Numba has limited support for data validation.
+
+    Please use the vector_to_skew_symmetric function for general use.
+
+    Parameters
+    ----------
+    v : array_like
+        A 3-element vector.
+
+    Returns
+    -------
+    array_like
+        A 3x3 skew-symmetric matrix if the input is a single vector, otherwise a (n, 3, 3) array.
+    """
+
+    return array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+
+
+@njit
+def _skew_symmetric_to_vector(m: NDArray[float64 | int64]) -> NDArray[float64 | int64]:
+    """
+    Convert a 3x3 skew-symmetric matrix to a 3-element vector. Jitted function for use
+    in _propagate_imu. This function is not intended for use outside of the
+    propagate_imu function as it makes certain assumptions about the input and
+    does not validate it as Numba has limited support for data validation.
+
+    Please use the skew_symmetric_to_vector function for general use.
+
+    Parameters
+    ----------
+    m : array_like
+        A 3x3 skew-symmetric matrix.
+
+    Returns
+    -------
+    NDArray
+        A 3-element vector if the input is a single matrix, otherwise a (n, 3) array.
+    """
+    out = empty((m.shape[0], 3), dtype=float64)
+    for i in range(m.shape[0]):
+        out[i] = array([m[i, 2, 1], m[i, 0, 2], m[i, 1, 0]], dtype=float64)
+    return out
+
+
+@njit
+def _principal_radii(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64]) -> tuple[NDArray, NDArray, NDArray]:
+    """Compute the principal radii of curvature of Earth ellipsoid.
+
+    Parameters
+    ----------
+    lat, alt : array_like
+        Latitude and altitude.
+
+    Returns
+    -------
+    rn : float or ndarray
+        Principle radius in North direction in radians
+    re : float or ndarray
+        Principle radius in East direction in radians
+    rp : float or ndarray
+        Radius of cross-section along the parallel.
+    """
+    sin_lat = sin(lat)
+    cos_lat = sqrt(1 - sin_lat**2)
+
+    x = 1 - earth.E2 * sin_lat**2
+    re = earth.A / sqrt(x)
+    rn = re * (1 - earth.E2) / x
+
+    return rn + alt, re + alt, (re + alt) * cos_lat
+
+
+@njit
+def _gravity(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64], degrees: bool = True) -> NDArray[float64]:
+    """Compute gravity vector in NED frame.
+
+    Parameters
+    ----------
+    lat, alt : array_like
+        Latitude and altitude.
+
+    Returns
+    -------
+    g_n : ndarray, shape (3,) or (n, 3)
+        Vector of the gravity.
+    """
+    n = lat.shape[0] if lat.ndim > 0 else 1
+    g = zeros((n, 3))
+
+    if degrees:
+        sin_lat = sin(deg2rad(lat))
+    else:
+        sin_lat = sin(lat)
+    g[:, 2] = earth.GE * (1 + earth.F * sin_lat**2) / (1 - earth.E2 * sin_lat**2) ** 0.5 * (1 - 2 * alt / earth.A)
+    return g
+
+
+# @njit
 def _propagate_imu(
     particles: NDArray,
     c_: NDArray,
     gyros: NDArray,
     accels: NDArray,
     dt: float64,
-    Rn,
-    Re,
-    gravity_vector,
 ):
     """
     NED strapdown INS equations using NumPy and Numba. Numba does not support matrix
@@ -292,58 +456,48 @@ def _propagate_imu(
     vn_ = particles[:, 3]
     ve_ = particles[:, 4]
     vd_ = particles[:, 5]
+    # Get principal radii
+    Rn_, Re_, _ = _principal_radii(lat_, alt_)
     # Initializing output arrays
     c = empty((n, 3, 3), dtype=float64)
-    f = empty((n, 3), dtype=float64)
     velocity = empty((n, 3), dtype=float64)
-    # Compute the angular velocity of the Earth relative to the local-level frame
-    omega = empty((n, 3), dtype=float64)
-    omega[:, 0] = ve_ / (Re + alt_)
-    omega[:, 1] = -vn_ / (Rn + alt_)
-    omega[:, 2] = -vn_ * tan(lat_) / (Rn + alt_)
+    # Compute the Earth's angular velocity in the local-level frame
+    omega_ie = EARTH_RATE * array([cos(lat_), zeros_like(lat_), -sin(lat_)])
+    # Compute the angular velocity of the NED frame with respect to the Earth (transport rate)
+    omega_en = empty((n, 3), dtype=float64)
+    omega_en[:, 0] = ve_ / (Re_ + alt_)
+    omega_en[:, 1] = -vn_ / (Rn_ + alt_)
+    omega_en[:, 2] = -vn_ * tan(lat_) / (Rn_ + alt_)
+    # Compute the total angular velocity of the body with respect to the Earth
+    # omega_ib = gyros + omega_ie + omega_en
+    omega_ib = gyros  # * dt
     # Loop over the particles, Numba doesn't support (n, 3, 3) @ (3, 3) so we need to do it via a loop over n
     for i in range(n):
-        # Attitude update
-        Omega_ie = EARTH_RATE * _vector_to_skew_symmetric([cos(lat_[i]), 0, -sin(lon_[i])])
-        Omega_en = _vector_to_skew_symmetric(omega[i])
-        Omega_ib = _vector_to_skew_symmetric(gyros - particles[i, 9:12])
+        # Attitude Update
+        Omega_ib = _vector_to_skew_symmetric(omega_ib)
+        Omega_en = _vector_to_skew_symmetric(omega_en[i])
+        Omega_ie = _vector_to_skew_symmetric(omega_ie[i])
         c[i] = c_[i] @ (eye(3) + Omega_ib * dt) - (Omega_ie + Omega_en) @ c_[i] * dt
         # Specific force update
-        f[i] = 0.5 * (c[i] + c_[i]) @ (accels[i] - particles[i, 12:])
+        f: NDArray = 0.5 * (c[i] + c_[i]) @ accels  # - particles[i, 12:]) # This is JUST the INTEGRATION method
+        # --------------------------------------------------------------------------------------------------------
+        # Note on the biases:
+        # The biases are not updated in this function. They are updated in the main loop of the particle filter.
+        # Gyro and accel values should be corrected for biases before being passed to this function. Thus this
+        # is why this function and the trampoline function only concern themselves with the 9 navigation states.
+        # --------------------------------------------------------------------------------------------------------
         # Velocity update
-        q = Omega_en + 2 * Omega_ie
-        transport_rate = q @ particles[i, 3:6]
-        velocity[i] = particles[i, 3:6] + (f[i] + gravity_vector[i] - transport_rate) * dt
+        g = _gravity(lat_, alt_)
+        a = f + g + (Omega_en + 2 * Omega_ie) @ particles[i, 3:6]
+        velocity[i] = particles[i, 3:6] + a * dt
     # Position Update
-    alt = alt_ - dt / 2 * (vd_ + velocity[:, 2])
-    lat = rad2deg(lat_ + dt / 2 * (vn_ / (Rn + lat_) + velocity[:, 0] / (Rn + alt)))
-    lon = rad2deg(lon_ + dt / 2 * (ve_ / ((Re + alt_) * cos(lat_)) + velocity[:, 1] / ((Re + alt) * cos(lat))))
-
-    return column_stack((lat, lon, alt, velocity)), c
-
-
-@njit
-def _vector_to_skew_symmetric(v: NDArray[int64 | float64]) -> NDArray[int64 | float64]:
-    """
-    Convert a 3-element vector to a skew-symmetric matrix. Jitted function for use
-    in _propagate_imu. This function is not intended for use outside of the
-    propagate_imu function as it makes certain assumptions about the input and
-    does not validate it as Numba has limited support data validation.
-
-    Please use the vector_to_skew_symmetric function for general use.
-
-    Parameters
-    ----------
-    v : array_like
-        A 3-element vector.
-
-    Returns
-    -------
-    array_like
-        A 3x3 skew-symmetric matrix.
-    """
-    # assert v.shape == (3,), "Input must be a 3-element vector."
-    return array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]], dtype=float64)
+    alt = alt_ - (dt / 2) * (vd_ + velocity[:, 2])
+    lat = lat_ + (dt / 2) * ((vn_ / (Rn_ + alt_)) + (velocity[:, 0] / (Rn_ + alt)))
+    _, Re, _ = _principal_radii(lat, alt)
+    lon = lon_ + (dt / 2) * ((ve_ / ((Re_ + alt_) * cos(lat_))) + (velocity[:, 1] / ((Re + alt) * cos(lat))))
+    lat = rad2deg(lat)
+    lon = rad2deg(lon)
+    return column_stack([lat, lon, alt, velocity]), c
 
 
 def propagate_imu(
@@ -361,7 +515,7 @@ def propagate_imu(
 
     Parameters:
     -----------
-    particles : array-like (n x 15; nine navigation states six IMU states)
+    particles : array-like (n x 9; nine navigation states)
         The particles to propagate
     gyros : array-like (3,)
         The current gyro output from the IMU in rad/s
@@ -387,8 +541,8 @@ def propagate_imu(
     accels = array(accels)
     noise = array(noise)
     assert (
-        particles.shape[1] >= 15
-    ), "Please check dimensions of particles. Particles must have at least 15 elements corresponding to the strapdown INS states and be shaped as a (n, 15) array."
+        particles.shape[1] >= 9
+    ), "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
     assert (
@@ -396,14 +550,77 @@ def propagate_imu(
     ), "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
-    # Getting some constants
-    Rn, Re, _ = earth.principal_radii(particles[:, 0], particles[:, 2])
-    gravity_vector = earth.gravity_n(particles[:, 0], particles[:, 2])
-    c_ = transform.mat_from_rph(deg2rad(particles[:, 6:9]))
-    new_particles, c = _propagate_imu(particles, c_, gyros, accels, dt, Rn, Re, gravity_vector)
+    c_ = transform.mat_from_rph(particles[:, 6:9])  # Calls scipy Rotation under the hood with degrees as true.
+    new_particles, c = _propagate_imu(particles, c_, gyros, accels, dt)
     new_particles = column_stack([new_particles, transform.mat_to_rph(c), particles[:, 9:]])
-    jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
-    return new_particles + jitter
+    # jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
+    return new_particles  # + jitter
+
+
+def propagate_savage(
+    particles: NDArray[float64 | int64] | list[float | int],
+    gyros: NDArray[float64 | int64] | list[float | int],
+    accels: NDArray[float64 | int64] | list[float | int],
+    dt: float64 | int64 | float | int = 1.0,
+) -> NDArray:
+    """
+    Propagate the particles according to the strapdown INS equations in the
+    NED frame. The particles are propagated based on the IMU output and the
+    previous state. The particles are assumed to be in the following format:
+    [lat, lon, alt, vn, ve, vd, roll, pitch, yaw]
+
+    Parameters:
+    -----------
+    particles : array-like (n x 9; nine navigation states)
+        The particles to propagate
+    gyros : array-like (3,)
+        The current gyro output from the IMU in rad/s
+    accels : array-like (3,)
+        The current accelerometer output from the IMU in m/s^2
+    dt : numeric, greater than zero (default=1.0)
+        The time step to propagate the particles in seconds
+
+    Returns:
+    --------
+    particles : ndarray (n x 9)
+        The propagated particles.
+
+    References:
+    -----------
+    .. [1] Savage, P. F. Strapdown Inertial Navigation Integration Algorithm Design Part 1: Attitude Algorithms.
+    .. [2] Savage, P. F. Strapdown Inertial Navigation Integration Algorithm Design Part 2: Velocity and Position Algorithms.
+    """
+
+    return particles
+
+
+@njit
+def propagate_ned(
+    particles: NDArray[float64 | int64],
+    velocities: NDArray[float64 | int64],
+    dt: float64 | int64,
+) -> NDArray:
+    """
+    Propagate the particles according to the strapdown INS equations using uncorrected velocities. The particles navigation
+    states are solely the position and velocity of the vehicle.
+    """
+    # Getting some constants
+    Rn_, Re_, _ = earth.principal_radii(particles[:, 0], particles[:, 2])
+    # Prior values
+    lat_ = deg2rad(particles[:, 0])
+    lon_ = deg2rad(particles[:, 1])
+    alt_ = particles[:, 2]
+    vn_ = particles[:, 3]
+    ve_ = particles[:, 4]
+    vd_ = particles[:, 5]
+    # Position Update
+    alt = alt_ - dt / 2 * (vd_ + velocities[2])
+    lat = lat_ + dt / 2 * (vn_ / (Rn_ + lat_) + velocities[0] / (Rn_ + alt))
+    # Get new Rn, Re and update longitude
+    _, Re, _ = earth.principal_radii(lat, alt)
+    lon = lon_ + dt / 2 * (ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[1] / ((Re + alt) * cos(lat)))
+
+    return concat([rad2deg(lat), rad2deg(lon), alt, velocities])
 
 
 # Measurement Functions
@@ -502,7 +719,7 @@ def update_anomaly(
     if bias.shape[0] < particles.shape[0]:
         bias = tile(bias, (particles.shape[0],))
     observation -= bias
-    return _update(particles, geo_map, observation, sigma)
+    return (particles, geo_map, observation, sigma)
 
 
 def _update(
@@ -550,39 +767,40 @@ def run_particle_filter(
     trajectory: DataFrame,
     geomaps: dict[MeasurementType, DataArray],
     config: ParticleFilterConfig,
-):
+) -> DataFrame:
     """
     Run through an instance of the particle filter give a trajectory, map, and a configuration for the particle filter.
 
     Parameters
     ----------
     trajectory : DataFrame
-        Trajectory should contain ground truth data ("lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"), IMU
-        data ("gyro_x", "gyro_y", "gyro_z", "accel_x", "accel_y", "accel_z"), observational data ("depth", "gra_obs", "freeair",
-        "mat_tot", "mag_res"), and indexed to a datetime. The geomap should be a DataArray containing the geophysical data with
-        the axis corresponding to "lon" and "lat".
-    geomap : dict[MeasurementType, DataArray]
+        The trajectory data to run the particle filter on. The trajectory should contain the following columns:
+        1. Truth data values containing ground truth positionsing data (defaults to "lat", "lon", "alt" configured in a ParticleFilterConfig object).
+        2. Input data to the particle filter, ex: the control data used to propagate the particles as well as the observations. This should contain the following data:
+            * For a velocity configuration: ["VN", "VE", "VD"]
+            * For an imu configurations: ["gyro_x", "gyro_y", "gyro_z", "accel_x", "accel_y", "accel_z"],
+        3. Observational data ("depth", "gra_obs", "freeair", "mat_tot", "mag_res"),
+        and indexed to a datetime.
+    geomaps : dict[MeasurementType, DataArray]
         The geophysical map to compare the particles to. The map should be a DataArray with the following
         dimensions: lat, lon.
     config : ParticleFilterConfig
-        The configuration for the particle filter, containing the following values:
-        n: int
-            The number of particles to use in the filter.
-        cov: array_like
-            The covariance matrix or diagonal for the initial state vector.
-        noise: array_like
-            The noise matrix or diagonal for the system.
-        measurement_config: list[GeophysicalMeasurement]
-            The list of geophysical measurements to use in the filter.
+        The configuration for the particle filter
 
+    Returns
+    -------
+    DataFrame
+        The resulting estimate (latitude, longitude, altitude, velocities north, east, and west) of the particle filter and some error metrics.
     """
-    # To do: condense the input of this function so that the simulation can be compartmentalized, suggest using a data class for particle
-    # filter configuration.
     mu = trajectory.loc[
         trajectory.index[0],
-        ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"],
+        config.get_base_state(),
     ].to_numpy()
-    mu = append(mu, zeros(6 + len(config.measurement_config)))  # add size IMU biases and other measurement biases
+    additional_states = len(config.measurement_config)
+    if config.input_config == ParticleFilterInputConfig.IMU:
+        additional_states += 6
+
+    mu = append(mu, zeros(additional_states))  # add size IMU biases and other measurement biases
     assert (
         mu.shape[0] == config.cov.shape[0]
     ), f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
@@ -591,19 +809,25 @@ def run_particle_filter(
     ), f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
     assert isinstance(config.n, int), "Number of particles must be an integer."
     assert config.n > 0, "Number of particles must be greater than zero."
+
     # Initialization
     particles = mvn(mu, diag(config.cov), (config.n,))
     weights = ones((config.n,)) / config.n
     rms_error_2d = zeros(len(trajectory))
     rms_error_3d = zeros_like(rms_error_2d)
     estimate = zeros((len(trajectory), particles.shape[1]))
+    estimate_error = zeros_like(rms_error_2d)
+    estimate_certainity = zeros_like(rms_error_2d)
     trajectory["dt"] = trajectory.index.to_series().diff().dt.seconds.fillna(0)
 
     # Jit the loop?
+    # Main loop
     for i, item in enumerate(trajectory.iterrows()):
         row = item[1]
         # Error calculations
         estimate[i] = weights @ particles
+        estimate_error[i] = haversine(estimate[i, :2], row[["lat", "lon"]].to_numpy(), Unit.METERS)
+        estimate_certainity[i] = rmse(particles, estimate[i], include_altitude=True, weights=weights)
         rms_error_2d[i] = rmse(
             particles,
             row[["lat", "lon"]].to_numpy(),
@@ -617,13 +841,12 @@ def run_particle_filter(
             weights=weights,
         )
         # Propagate particles
-        particles = propagate_imu(
-            particles,
-            row[["gyro_x", "gyro_y", "gyro_z"]],
-            row[["accel_x", "accel_y", "accel_z"]],
-            row["dt"],
-            config.noise,
-        )
+        if config.input_config == ParticleFilterInputConfig.IMU:
+            particles = propagate_imu(
+                particles, row[["gyro_x", "gyro_y", "gyro_z"]], row[["accel_x", "accel_y", "accel_z"]], row["dt"]
+            )
+        elif config.input_config == ParticleFilterInputConfig.VELOCITY:
+            particles = propagate_ned(particles, row[["VN", "VE", "VD"]].to_numpy(), row["dt"])
         # Update weights
         # To a certain extent the below is a measurement model itself, however a sensor fusion model hasn't
         # been investigated yet that would allow for a more informed measurement model. For now, each measurement
@@ -656,7 +879,9 @@ def run_particle_filter(
         particles = particles[inds]
     # Final error calculations
     i += 1
-    estimate[i, :] = weights @ particles
+    estimate[i] = weights @ particles
+    estimate_error[i] = haversine(estimate[i, :2], row[["lat", "lon"]].to_numpy(), Unit.METERS)
+    estimate_certainity[i] = rmse(particles, estimate[i], include_altitude=True, weights=weights)
     rms_error_2d[i] = rmse(
         particles,
         row[["lat", "lon"]].to_numpy(),
@@ -669,8 +894,23 @@ def run_particle_filter(
         include_altitude=True,
         weights=weights,
     )
-
-    return estimate, rms_error_2d, rms_error_3d
+    result: DataFrame = DataFrame(
+        {
+            "lat": estimate[:, 0],
+            "lon": estimate[:, 1],
+            "alt": estimate[:, 2],
+            "vn": estimate[:, 3],
+            "ve": estimate[:, 4],
+            "vd": estimate[:, 5],
+            "rms_error_2d": rms_error_2d,
+            "rms_error_3d": rms_error_3d,
+            "estimate_error": estimate_error,
+            "estimate_certainity": estimate_certainity,
+            "distance": trajectory["distance"],
+        },
+        index=trajectory.index,
+    )
+    return result
 
 
 '''

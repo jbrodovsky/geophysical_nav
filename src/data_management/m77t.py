@@ -9,6 +9,7 @@ from numpy import (
     arctan2,
     asarray,
     column_stack,
+    concatenate,
     cos,
     deg2rad,
     float64,
@@ -206,8 +207,8 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     lat: NDArray[float64] = data["LAT"].to_numpy()
     lon: NDArray[float64] = data["LON"].to_numpy()
     points: NDArray[float64] = column_stack(tup=(lat, lon))
-    dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
-    dists = dists.cumsum()
+    # dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
+    # dists = dists.cumsum()
     # dt: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(0).to_numpy()
     # vel: Series = Series(dists / dt[1:], index=timestamp[1:])
 
@@ -241,8 +242,8 @@ def _populate_imu(data: DataFrame) -> DataFrame:
 
     out_traj: DataFrame = concat(objs=[traj, imu], axis=1)
     out_traj.index = Index(timestamp[:-1])
-    out_traj["distance"] = dists
-    out_traj.loc[out_traj.index[0], "distance"] = 0
+    # out_traj["distance"] = dists
+    # out_traj.loc[out_traj.index[0], "distance"] = 0
     # out_traj = out_traj.assign(speed=vel)
     # out_traj = out_traj.drop(columns=["VN", "VE", "VD"])
 
@@ -276,4 +277,8 @@ def process_m77t_file(filepath: str, max_time_delta: float = 60) -> List[DataFra
     dt: Series = trajectory.index.to_series().diff().dt.total_seconds().fillna(0)
     periods: List[Tuple[int, int]] = find_periods(mask=(dt > max_time_delta).to_list())
     continuous: List[DataFrame] = split_dataset(df=trajectory, periods=periods)
+    for traj in continuous:
+        points: NDArray[float64] = traj[["lat", "lon"]].to_numpy()
+        dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
+        traj.loc[:, ["distance"]] = concatenate([[0], dists.cumsum()])
     return continuous

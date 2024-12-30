@@ -4,6 +4,7 @@
 gmt.history
 source_data
 *.zip
+.ruff_cache
 
 # C extensions
 *.so
