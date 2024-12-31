@@ -225,7 +225,8 @@ class DatabaseManager:
             session.commit()
             trajectory_id: int = trajectory_entry.id
 
-            for _, row in trajectory.iterrows():
+            print(f"Inserting trajectory with ID: {trajectory_id}")
+            for _, row in tqdm(trajectory.iterrows()):
                 data_entry = Data(
                     trajectory_id=trajectory_id,
                     timestamp=row.name,
@@ -312,14 +313,6 @@ def read_results_file(filename: str) -> tuple[dict, DataFrame, list[DataFrame]]:
             results.append(read_hdf(path_or_buf=f.filename, key=f"results/result_{i}"))
 
         return config, summary, results
-
-
-####
-def say_hello() -> None:
-    print("Hello, World!")
-
-
-###
 
 
 def main() -> None:

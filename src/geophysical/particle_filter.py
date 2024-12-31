@@ -36,12 +36,12 @@ from numpy import (
     asarray,
     append,
     column_stack,
-    concat,
     cos,
     cross,
     deg2rad,
     diag,
     empty,
+    empty_like,
     eye,
     float64,
     int64,
@@ -605,7 +605,7 @@ def propagate_ned(
     states are solely the position and velocity of the vehicle.
     """
     # Getting some constants
-    Rn_, Re_, _ = earth.principal_radii(particles[:, 0], particles[:, 2])
+    Rn_, Re_, _ = _principal_radii(particles[:, 0], particles[:, 2])
     # Prior values
     lat_ = deg2rad(particles[:, 0])
     lon_ = deg2rad(particles[:, 1])
@@ -617,10 +617,17 @@ def propagate_ned(
     alt = alt_ - dt / 2 * (vd_ + velocities[2])
     lat = lat_ + dt / 2 * (vn_ / (Rn_ + lat_) + velocities[0] / (Rn_ + alt))
     # Get new Rn, Re and update longitude
-    _, Re, _ = earth.principal_radii(lat, alt)
+    _, Re, _ = _principal_radii(lat, alt)
     lon = lon_ + dt / 2 * (ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[1] / ((Re + alt) * cos(lat)))
-
-    return concat([rad2deg(lat), rad2deg(lon), alt, velocities])
+    out = empty_like(particles)
+    out[:, 0] = rad2deg(lat)
+    out[:, 1] = rad2deg(lon)
+    out[:, 2] = alt
+    # out[:, 3:6] = tile(velocities, (particles.shape[0], 1))
+    out[:, 3] = ones(particles.shape[0]) * velocities[0]
+    out[:, 4] = ones(particles.shape[0]) * velocities[1]
+    out[:, 5] = ones(particles.shape[0]) * velocities[2]
+    return out
 
 
 # Measurement Functions

@@ -13,7 +13,6 @@ from numpy import (
     cos,
     deg2rad,
     float64,
-    nan_to_num,
     rad2deg,
     sin,
     zeros_like,
@@ -279,6 +278,9 @@ def process_m77t_file(filepath: str, max_time_delta: float = 60) -> List[DataFra
     continuous: List[DataFrame] = split_dataset(df=trajectory, periods=periods)
     for traj in continuous:
         points: NDArray[float64] = traj[["lat", "lon"]].to_numpy()
-        dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
-        traj.loc[:, ["distance"]] = concatenate([[0], dists.cumsum()])
+        try:
+            dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
+            traj.loc[:, ["distance"]] = concatenate([[0], dists.cumsum()])
+        except ValueError:
+            print(f"Error calculating distance. This trackline has {len(traj)} points.")
     return continuous
