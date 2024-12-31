@@ -1,5 +1,5 @@
 [project]
-name = "Geophyiscal_Navigation_Simulator"
+name = "geophysical-nav"
 version = "0.1.0"
 requires-python = ">=3.9"
 description = "A simulator and database manager for geophysical navigation systems"
