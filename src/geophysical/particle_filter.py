@@ -540,14 +540,14 @@ def propagate_imu(
     gyros = array(gyros)
     accels = array(accels)
     noise = array(noise)
-    assert (
-        particles.shape[1] >= 9
-    ), "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
+    assert particles.shape[1] >= 9, (
+        "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
+    )
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
-    assert (
-        noise.shape[0] == particles.shape[1]
-    ), "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
+    assert noise.shape[0] == particles.shape[1], (
+        "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
+    )
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
     c_ = transform.mat_from_rph(particles[:, 6:9])  # Calls scipy Rotation under the hood with degrees as true.
@@ -808,12 +808,12 @@ def run_particle_filter(
         additional_states += 6
 
     mu = append(mu, zeros(additional_states))  # add size IMU biases and other measurement biases
-    assert (
-        mu.shape[0] == config.cov.shape[0]
-    ), f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
-    assert (
-        mu.shape[0] == config.noise.shape[0]
-    ), f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
+    assert mu.shape[0] == config.cov.shape[0], (
+        f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
+    )
+    assert mu.shape[0] == config.noise.shape[0], (
+        f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
+    )
     assert isinstance(config.n, int), "Number of particles must be an integer."
     assert config.n > 0, "Number of particles must be greater than zero."
 
@@ -831,22 +831,15 @@ def run_particle_filter(
     # Main loop
     for i, item in enumerate(trajectory.iterrows()):
         row = item[1]
+
         # Error calculations
-        estimate[i] = weights @ particles
-        estimate_error[i] = haversine(estimate[i, :2], row[["lat", "lon"]].to_numpy(), Unit.METERS)
-        estimate_certainity[i] = rmse(particles, estimate[i], include_altitude=True, weights=weights)
-        rms_error_2d[i] = rmse(
-            particles,
-            row[["lat", "lon"]].to_numpy(),
-            include_altitude=False,
-            weights=weights,
-        )
-        rms_error_3d[i] = rmse(
-            particles,
-            row[["lat", "lon", "alt"]].to_numpy(),
-            include_altitude=True,
-            weights=weights,
-        )
+        errs = calculate_errors(particles, weights, row[["lat", "lon", "alt"]].to_numpy())
+        estimate[i] = errs[0]
+        estimate_error[i] = errs[1]
+        estimate_certainity[i] = errs[2]
+        rms_error_2d[i] = errs[3]
+        rms_error_3d[i] = errs[4]
+
         # Propagate particles
         if config.input_config == ParticleFilterInputConfig.IMU:
             particles = propagate_imu(
@@ -854,6 +847,7 @@ def run_particle_filter(
             )
         elif config.input_config == ParticleFilterInputConfig.VELOCITY:
             particles = propagate_ned(particles, row[["VN", "VE", "VD"]].to_numpy(), row["dt"])
+
         # Update weights
         # To a certain extent the below is a measurement model itself, however a sensor fusion model hasn't
         # been investigated yet that would allow for a more informed measurement model. For now, each measurement
@@ -881,26 +875,20 @@ def run_particle_filter(
             else:
                 raise ValueError(f"Measurement type {measurement.name} not recognized.")
         weights = new_weights / sum(new_weights)
+
         # Resample
         inds = residual_resample(weights)
         particles = particles[inds]
+
     # Final error calculations
     i += 1
-    estimate[i] = weights @ particles
-    estimate_error[i] = haversine(estimate[i, :2], row[["lat", "lon"]].to_numpy(), Unit.METERS)
-    estimate_certainity[i] = rmse(particles, estimate[i], include_altitude=True, weights=weights)
-    rms_error_2d[i] = rmse(
-        particles,
-        row[["lat", "lon"]].to_numpy(),
-        include_altitude=False,
-        weights=weights,
-    )
-    rms_error_3d[i] = rmse(
-        particles,
-        row[["lat", "lon", "alt"]].to_numpy(),
-        include_altitude=True,
-        weights=weights,
-    )
+    errs = calculate_errors(particles, weights, row[["lat", "lon", "alt"]].to_numpy())
+    estimate[i] = errs[0]
+    estimate_error[i] = errs[1]
+    estimate_certainity[i] = errs[2]
+    rms_error_2d[i] = errs[3]
+    rms_error_3d[i] = errs[4]
+
     result: DataFrame = DataFrame(
         {
             "lat": estimate[:, 0],
@@ -918,6 +906,48 @@ def run_particle_filter(
         index=trajectory.index,
     )
     return result
+
+
+def calculate_errors(
+    particles: NDArray[float64 | int64], weights: NDArray[float64], truth: NDArray[float64 | int64]
+) -> tuple[float64, float64, float64, float64, float64, float64]:
+    """
+    Calculate the errors between the particles and the truth. This function calculates the root mean square error
+    in 2D, 3D, and the weighted error between the particles and the truth.
+
+    Parameters
+    ----------
+    particles : array_like
+        The particles to calculate the error for.
+    truth : array_like
+        The truth point to compare the particles to.
+    weights : array_like
+        The weights of the particles.
+
+    Returns
+    -------
+    float
+        The root mean square error between the particles and the truth.
+    """
+    estimate = weights @ particles
+    estimate_error = haversine(estimate, truth[:2], Unit.METERS)
+    estimate_certainity = weights @ (particles - estimate) ** 2
+    rms_error_2d = rmse(
+        particles,
+        truth[:2],
+        # row[["lat", "lon"]].to_numpy(),
+        include_altitude=False,
+        weights=weights,
+    )
+    rms_error_3d = rmse(
+        particles,
+        truth[:3],
+        # row[["lat", "lon", "alt"]].to_numpy(),
+        include_altitude=True,
+        weights=weights,
+    )
+
+    return estimate, estimate_error, estimate_certainity, rms_error_2d, rms_error_3d
 
 
 '''
