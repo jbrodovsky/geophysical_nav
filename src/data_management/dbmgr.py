@@ -235,7 +235,7 @@ class DatabaseManager:
                     alt=row["alt"],
                     vn=row["VN"],
                     ve=row["VE"],
-                    vd=row["VE"],
+                    vd=row["VD"],
                     roll=row["roll"],
                     pitch=row["pitch"],
                     heading=row["heading"],
@@ -261,7 +261,12 @@ class DatabaseManager:
         """Get a trajectory from the database"""
         with Session(bind=self.engine) as session:
             query: Query[Data] = session.query(Data).filter(Data.trajectory_id == trajectory_id)
-            return read_sql(sql=query.statement, con=self.engine)
+            traj = read_sql(sql=query.statement, con=self.engine)
+            traj = traj.rename(columns={"vn": "VN", "ve": "VE", "vd": "VD"})
+            time = traj["timestamp"].diff().dt.total_seconds().fillna(0).cumsum().to_numpy()
+            traj = traj.drop(columns=["timestamp", "id", "trajectory_id"])
+            traj.index = time
+            return traj.astype(float)
 
     def get_all_trajectories(self) -> DataFrame:
         """Get all trajectories from the database."""
