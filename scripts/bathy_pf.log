@@ -1,0 +1,907 @@
+2025-01-12 13:55:42,407 || =========================================
+2025-01-12 13:55:42,407 || Beginning new run of bathy particle filter
+2025-01-12 13:55:42,490 || Trajectory 136 is too short: 2880.0
+2025-01-12 13:55:42,490 || Trajectory 155 is too short: 2880.0
+2025-01-12 13:55:42,490 || Trajectory 137 is too short: 2880.0
+2025-01-12 13:55:42,490 || Trajectory 156 is too short: 2880.0
+2025-01-12 13:55:42,490 || Trajectory 117 is too short: 2880.0
+2025-01-12 13:55:42,490 || Trajectory 138 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 157 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 139 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 118 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 140 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 141 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 119 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 142 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 120 is too short: 2880.0
+2025-01-12 13:55:42,491 || Trajectory 143 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 144 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 121 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 145 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 122 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 146 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 147 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 123 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 148 is too short: 2880.0
+2025-01-12 13:55:42,492 || Trajectory 124 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 149 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 150 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 125 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 151 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 126 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 152 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 127 is too short: 2880.0
+2025-01-12 13:55:42,493 || Trajectory 153 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 154 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 128 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 129 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 174 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 193 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 130 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 175 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 194 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 131 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 176 is too short: 2880.0
+2025-01-12 13:55:42,494 || Trajectory 212 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 195 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 177 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 132 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 213 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 196 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 214 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 133 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 197 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 215 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 134 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 216 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 217 is too short: 2880.0
+2025-01-12 13:55:42,495 || Trajectory 135 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 218 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 219 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 220 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 198 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 221 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 199 is too short: 2880.0
+2025-01-12 13:55:42,496 || Trajectory 222 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 200 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 223 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 201 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 224 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 202 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 225 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 203 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 226 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 204 is too short: 2880.0
+2025-01-12 13:55:42,497 || Trajectory 227 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 205 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 228 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 206 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 231 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 229 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 207 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 230 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 232 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 208 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 233 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 209 is too short: 2880.0
+2025-01-12 13:55:42,498 || Trajectory 234 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 210 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 211 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 158 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 269 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 159 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 270 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 160 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 271 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 250 is too short: 2880.0
+2025-01-12 13:55:42,499 || Trajectory 161 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 272 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 162 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 251 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 273 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 163 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 252 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 274 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 164 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 275 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 253 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 165 is too short: 2880.0
+2025-01-12 13:55:42,500 || Trajectory 276 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 166 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 254 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 167 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 255 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 168 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 256 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 169 is too short: 2880.0
+2025-01-12 13:55:42,501 || Processing trajectory wi933014_38
+2025-01-12 13:55:42,501 || Trajectory 170 is too short: 2880.0
+2025-01-12 13:55:42,501 || Trajectory 257 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 171 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 258 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 178 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 259 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 290 is too short: 2880.0
+2025-01-12 13:55:42,502 || Processing trajectory ew0114_0
+2025-01-12 13:55:42,502 || Processing trajectory wi933014_19
+2025-01-12 13:55:42,502 || Processing trajectory wi933014_57
+2025-01-12 13:55:42,502 || Trajectory 179 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 291 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 260 is too short: 2880.0
+2025-01-12 13:55:42,502 || Trajectory 180 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 292 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 181 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 261 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 235 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 293 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 182 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 262 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 294 is too short: 2880.0
+2025-01-12 13:55:42,503 || Processing trajectory wi933014_76
+2025-01-12 13:55:42,503 || Trajectory 236 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 183 is too short: 2880.0
+2025-01-12 13:55:42,503 || Processing trajectory index17_95
+2025-01-12 13:55:42,503 || Trajectory 295 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 263 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 237 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 184 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 296 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 238 is too short: 2880.0
+2025-01-12 13:55:42,503 || Trajectory 264 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 185 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 297 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 186 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 239 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 265 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 298 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 187 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 240 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 266 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 299 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 188 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 241 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 300 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 267 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 189 is too short: 2880.0
+2025-01-12 13:55:42,504 || Trajectory 242 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 301 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 190 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 268 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 243 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 191 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 244 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 192 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 245 is too short: 2880.0
+2025-01-12 13:55:42,505 || Trajectory 246 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 247 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 277 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 278 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 172 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 248 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 281 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 302 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 309 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 282 is too short: 2880.0
+2025-01-12 13:55:42,506 || Trajectory 173 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 303 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 283 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 310 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 304 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 284 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 305 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 311 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 285 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 306 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 312 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 286 is too short: 2880.0
+2025-01-12 13:55:42,507 || Trajectory 307 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 313 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 287 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 308 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 347 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 288 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 314 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 348 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 289 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 349 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 249 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 315 is too short: 2880.0
+2025-01-12 13:55:42,508 || Trajectory 350 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 316 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 351 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 352 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 317 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 353 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 318 is too short: 2880.0
+2025-01-12 13:55:42,509 || Trajectory 354 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 366 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 355 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 319 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 367 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 320 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 368 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 328 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 321 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 369 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 329 is too short: 2880.0
+2025-01-12 13:55:42,510 || Trajectory 322 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 330 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 370 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 385 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 331 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 323 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 371 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 386 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 332 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 372 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 409 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 324 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 387 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 333 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 373 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 325 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 388 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 334 is too short: 2880.0
+2025-01-12 13:55:42,511 || Trajectory 410 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 374 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 335 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 389 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 326 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 336 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 390 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 327 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 337 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 391 is too short: 2880.0
+2025-01-12 13:55:42,512 || Trajectory 338 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 392 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 375 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 393 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 411 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 356 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 394 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 412 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 357 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 395 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 413 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 358 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 396 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 414 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 359 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 428 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 397 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 415 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 360 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 429 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 398 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 416 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 361 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 399 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 417 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 430 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 376 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 362 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 400 is too short: 2880.0
+2025-01-12 13:55:42,514 || Trajectory 418 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 431 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 363 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 377 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 406 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 364 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 432 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 378 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 407 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 365 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 379 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 433 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 408 is too short: 2880.0
+2025-01-12 13:55:42,513 || Trajectory 339 is too short: 2880.0
+2025-01-12 13:55:42,515 || Trajectory 380 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 340 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 381 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 419 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 341 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 382 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 434 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 342 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 420 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 383 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 435 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 343 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 384 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 421 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 436 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 344 is too short: 2880.0
+2025-01-12 13:55:42,516 || Trajectory 422 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 437 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 345 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 423 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 438 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 346 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 424 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 439 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 425 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 440 is too short: 2880.0
+2025-01-12 13:55:42,517 || Trajectory 426 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 441 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 427 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 442 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 443 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 444 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 466 is too short: 2880.0
+2025-01-12 13:55:42,518 || Trajectory 445 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 485 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 467 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 446 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 486 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 468 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 447 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 487 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 469 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 504 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 448 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 488 is too short: 2880.0
+2025-01-12 13:55:42,519 || Trajectory 449 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 470 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 505 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 489 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 450 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 471 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 490 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 506 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 451 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 472 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 491 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 507 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 452 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 473 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 492 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 508 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 453 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 474 is too short: 2880.0
+2025-01-12 13:55:42,520 || Trajectory 493 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 454 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 509 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 475 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 494 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 455 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 476 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 495 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 510 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 456 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 477 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 496 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 511 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 457 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 478 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 497 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 458 is too short: 2880.0
+2025-01-12 13:55:42,521 || Trajectory 512 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 479 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 498 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 459 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 480 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 499 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 460 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 481 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 500 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 513 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 461 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 482 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 501 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 462 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 514 is too short: 2880.0
+2025-01-12 13:55:42,522 || Trajectory 483 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 502 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 484 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 463 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 515 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 503 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 464 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 516 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 465 is too short: 2880.0
+2025-01-12 13:55:42,523 || Trajectory 517 is too short: 2880.0
+2025-01-12 13:55:42,524 || Trajectory 518 is too short: 2880.0
+2025-01-12 13:55:42,524 || Trajectory 519 is too short: 2880.0
+2025-01-12 13:55:42,524 || Trajectory 520 is too short: 2880.0
+2025-01-12 13:55:42,524 || Trajectory 521 is too short: 2880.0
+2025-01-12 13:55:42,525 || Trajectory 522 is too short: 2880.0
+2025-01-12 13:55:42,525 || Trajectory 523 is too short: 2880.0
+2025-01-12 13:55:42,525 || Trajectory 524 is too short: 2880.0
+2025-01-12 13:55:42,525 || Trajectory 525 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 542 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 526 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 543 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 527 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 544 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 528 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 545 is too short: 2880.0
+2025-01-12 13:55:42,526 || Trajectory 529 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 546 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 585 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 530 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 547 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 586 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 531 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 548 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 587 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 532 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 549 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 588 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 533 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 550 is too short: 2880.0
+2025-01-12 13:55:42,527 || Trajectory 566 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 589 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 534 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 551 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 590 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 567 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 552 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 591 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 568 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 558 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 592 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 559 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 569 is too short: 2880.0
+2025-01-12 13:55:42,528 || Trajectory 593 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 560 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 561 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 594 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 562 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 595 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 535 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 563 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 596 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 536 is too short: 2880.0
+2025-01-12 13:55:42,529 || Trajectory 564 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 537 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 565 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 538 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 570 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 539 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 606 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 540 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 625 is too short: 2880.0
+2025-01-12 13:55:42,530 || Trajectory 571 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 541 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 626 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 572 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 627 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 607 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 573 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 628 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 608 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 574 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 629 is too short: 2880.0
+2025-01-12 13:55:42,531 || Trajectory 609 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 575 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 610 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 611 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 597 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 576 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 612 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 598 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 577 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 613 is too short: 2880.0
+2025-01-12 13:55:42,532 || Trajectory 599 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 578 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 614 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 600 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 579 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 615 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 601 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 645 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 616 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 604 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 605 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 617 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 646 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 630 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 618 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 647 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 619 is too short: 2880.0
+2025-01-12 13:55:42,533 || Trajectory 580 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 631 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 620 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 648 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 632 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 621 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 649 is too short: 2880.0
+2025-01-12 13:55:42,534 || Trajectory 633 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 622 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 650 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 634 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 623 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 651 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 635 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 664 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 624 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 636 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 665 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 581 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 652 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 637 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 666 is too short: 2880.0
+2025-01-12 13:55:42,535 || Trajectory 582 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 638 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 653 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 667 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 639 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 583 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 654 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 668 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 640 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 655 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 584 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 669 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 683 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 642 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 656 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 670 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 684 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 643 is too short: 2880.0
+2025-01-12 13:55:42,536 || Trajectory 657 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 671 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 644 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 658 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 672 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 659 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 673 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 685 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 660 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 674 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 661 is too short: 2880.0
+2025-01-12 13:55:42,537 || Trajectory 675 is too short: 2880.0
+2025-01-12 13:55:42,538 || Trajectory 662 is too short: 2880.0
+2025-01-12 13:55:42,538 || Trajectory 663 is too short: 2880.0
+2025-01-12 13:55:42,538 || Trajectory 676 is too short: 2880.0
+2025-01-12 13:55:42,538 || Trajectory 677 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 678 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 686 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 743 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 724 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 679 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 687 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 744 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 725 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 762 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 680 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 745 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 688 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 726 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 771 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 746 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 689 is too short: 2880.0
+2025-01-12 13:55:42,539 || Trajectory 681 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 727 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 772 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 747 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 690 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 728 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 682 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 773 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 748 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 691 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 729 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 774 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 749 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 692 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 730 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 775 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 750 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 693 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 731 is too short: 2880.0
+2025-01-12 13:55:42,540 || Trajectory 779 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 751 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 694 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 732 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 780 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 752 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 695 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 733 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 781 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 792 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 753 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 734 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 696 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 782 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 754 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 735 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 697 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 793 is too short: 2880.0
+2025-01-12 13:55:42,541 || Trajectory 783 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 736 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 755 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 698 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 784 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 794 is too short: 2880.0
+2025-01-12 13:55:42,538 || Trajectory 702 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 737 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 756 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 785 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 738 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 757 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 703 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 786 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 739 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 758 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 699 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 787 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 704 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 740 is too short: 2880.0
+2025-01-12 13:55:42,542 || Trajectory 759 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 788 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 700 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 741 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 705 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 760 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 789 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 701 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 742 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 761 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 709 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 790 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 795 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 710 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 791 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 796 is too short: 2880.0
+2025-01-12 13:55:42,543 || Trajectory 711 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 797 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 712 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 798 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 811 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 713 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 799 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 812 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 714 is too short: 2880.0
+2025-01-12 13:55:42,544 || Trajectory 800 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 813 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 801 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 715 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 814 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 802 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 716 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 815 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 835 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 803 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 717 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 821 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 804 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 836 is too short: 2880.0
+2025-01-12 13:55:42,545 || Trajectory 718 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 822 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 805 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 837 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 823 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 806 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 854 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 838 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 824 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 807 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 839 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 855 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 825 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 808 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 840 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 856 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 826 is too short: 2880.0
+2025-01-12 13:55:42,546 || Trajectory 809 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 841 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 857 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 827 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 810 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 842 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 858 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 828 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 843 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 859 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 829 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 844 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 860 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 830 is too short: 2880.0
+2025-01-12 13:55:42,547 || Trajectory 845 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 861 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 831 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 862 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 832 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 846 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 863 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 719 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 833 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 847 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 864 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 834 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 848 is too short: 2880.0
+2025-01-12 13:55:42,548 || Trajectory 720 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 849 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 721 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 850 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 722 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 851 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 852 is too short: 2880.0
+2025-01-12 13:55:42,549 || Trajectory 723 is too short: 2880.0
+2025-01-12 13:55:42,550 || Trajectory 853 is too short: 2880.0
+2025-01-12 13:55:42,561 || Failed to get trajectory 0
+2025-01-12 13:55:42,565 || Processing trajectory ew9704_865
+2025-01-12 13:55:42,568 || Processing trajectory ew0114_1
+2025-01-12 13:56:14,899 || Finished processing trajectory ew9704_865
+2025-01-12 13:56:17,166 || Finished processing trajectory wi933014_76
+2025-01-12 13:56:17,167 || Trajectory 77 is too short: 3420.0
+2025-01-12 13:56:17,167 || Trajectory 78 is too short: 3540.0
+2025-01-12 13:56:17,210 || Processing trajectory wi933014_79
+2025-01-12 13:56:22,369 || Finished processing trajectory wi933014_57
+2025-01-12 13:56:22,435 || Processing trajectory wi933014_58
+2025-01-12 13:56:26,707 || Finished processing trajectory wi933014_79
+2025-01-12 13:56:26,752 || Processing trajectory wi933014_80
+2025-01-12 13:56:43,021 || Finished processing trajectory wi933014_58
+2025-01-12 13:56:43,063 || Processing trajectory wi933014_59
+2025-01-12 13:57:00,346 || Finished processing trajectory wi933014_59
+2025-01-12 13:57:00,385 || Processing trajectory wi933014_60
+2025-01-12 13:57:02,354 || Finished processing trajectory wi933014_38
+2025-01-12 13:57:02,402 || Processing trajectory wi933014_39
+2025-01-12 13:57:10,949 || Finished processing trajectory wi933014_19
+2025-01-12 13:57:11,012 || Processing trajectory wi933014_20
+2025-01-12 13:57:19,144 || Finished processing trajectory wi933014_60
+2025-01-12 13:57:19,198 || Processing trajectory wi933014_61
+2025-01-12 13:57:36,466 || Finished processing trajectory wi933014_61
+2025-01-12 13:57:36,512 || Processing trajectory wi933014_62
+2025-01-12 13:57:52,068 || Finished processing trajectory wi933014_62
+2025-01-12 13:57:52,120 || Processing trajectory wi933014_63
+2025-01-12 13:58:11,338 || Finished processing trajectory wi933014_63
+2025-01-12 13:58:11,399 || Processing trajectory wi933014_64
+2025-01-12 13:58:14,234 || Finished processing trajectory wi933014_20
+2025-01-12 13:58:14,288 || Processing trajectory wi933014_21
+2025-01-12 13:58:28,727 || Finished processing trajectory wi933014_64
+2025-01-12 13:58:28,764 || Processing trajectory wi933014_65
+2025-01-12 13:58:40,933 || Finished processing trajectory wi933014_39
+2025-01-12 13:58:40,978 || Processing trajectory wi933014_40
+2025-01-12 13:58:50,382 || Finished processing trajectory wi933014_65
+2025-01-12 13:58:50,445 || Processing trajectory wi933014_66
+2025-01-12 13:59:15,501 || Finished processing trajectory wi933014_66
+2025-01-12 13:59:15,562 || Processing trajectory wi933014_67
+2025-01-12 13:59:33,000 || Finished processing trajectory wi933014_67
+2025-01-12 13:59:33,043 || Processing trajectory wi933014_68
+2025-01-12 13:59:38,655 || Finished processing trajectory wi933014_21
+2025-01-12 13:59:38,706 || Processing trajectory wi933014_22
+2025-01-12 14:00:10,863 || Finished processing trajectory wi933014_68
+2025-01-12 14:00:10,906 || Processing trajectory wi933014_69
+2025-01-12 14:00:22,791 || Finished processing trajectory wi933014_69
+2025-01-12 14:00:22,831 || Processing trajectory wi933014_70
+2025-01-12 14:00:35,351 || Finished processing trajectory wi933014_22
+2025-01-12 14:00:35,387 || Processing trajectory wi933014_23
+2025-01-12 14:00:35,407 || Finished processing trajectory wi933014_70
+2025-01-12 14:00:35,428 || Processing trajectory wi933014_71
+2025-01-12 14:00:45,149 || Failed to get bathymetry map for trajectory 71
+2025-01-12 14:00:45,161 || Processing trajectory wi933014_72
+2025-01-12 14:01:02,528 || Finished processing trajectory wi933014_72
+2025-01-12 14:01:02,557 || Processing trajectory wi933014_73
+2025-01-12 14:01:12,553 || Finished processing trajectory wi933014_40
+2025-01-12 14:01:12,605 || Processing trajectory wi933014_41
+2025-01-12 14:01:21,991 || Finished processing trajectory wi933014_73
+2025-01-12 14:01:22,062 || Processing trajectory wi933014_74
+2025-01-12 14:01:38,200 || Finished processing trajectory wi933014_74
+2025-01-12 14:01:38,201 || Trajectory 75 is too short: 2820.0
+2025-01-12 14:02:30,357 || Finished processing trajectory wi933014_41
+2025-01-12 14:02:30,400 || Processing trajectory wi933014_42
+2025-01-12 14:03:18,757 || Finished processing trajectory wi933014_42
+2025-01-12 14:03:18,777 || Processing trajectory wi933014_43
+2025-01-12 14:03:27,227 || Finished processing trajectory wi933014_43
+2025-01-12 14:03:27,249 || Processing trajectory wi933014_44
+2025-01-12 14:03:32,720 || Finished processing trajectory wi933014_80
+2025-01-12 14:03:32,754 || Processing trajectory wi933014_81
+2025-01-12 14:03:38,096 || Failed to run particle filter for trajectory 44
+2025-01-12 14:03:38,134 || Processing trajectory wi933014_45
+2025-01-12 14:03:46,187 || Finished processing trajectory wi933014_45
+2025-01-12 14:03:46,213 || Processing trajectory wi933014_46
+2025-01-12 14:03:56,780 || Finished processing trajectory wi933014_46
+2025-01-12 14:03:56,822 || Processing trajectory wi933014_47
+2025-01-12 14:04:08,046 || Finished processing trajectory wi933014_47
+2025-01-12 14:04:08,066 || Processing trajectory wi933014_48
+2025-01-12 14:04:10,821 || Finished processing trajectory wi933014_23
+2025-01-12 14:04:10,834 || Processing trajectory wi933014_24
+2025-01-12 14:04:25,728 || Finished processing trajectory wi933014_48
+2025-01-12 14:04:25,752 || Processing trajectory wi933014_49
+2025-01-12 14:04:40,379 || Finished processing trajectory wi933014_49
+2025-01-12 14:04:40,402 || Processing trajectory wi933014_50
+2025-01-12 14:04:52,737 || Finished processing trajectory wi933014_50
+2025-01-12 14:04:52,749 || Processing trajectory wi933014_51
+2025-01-12 14:04:58,657 || Finished processing trajectory wi933014_24
+2025-01-12 14:04:58,693 || Processing trajectory wi933014_25
+2025-01-12 14:05:06,215 || Finished processing trajectory wi933014_51
+2025-01-12 14:05:06,247 || Processing trajectory wi933014_52
+2025-01-12 14:05:22,209 || Finished processing trajectory wi933014_52
+2025-01-12 14:05:22,253 || Processing trajectory wi933014_53
+2025-01-12 14:05:39,117 || Finished processing trajectory wi933014_53
+2025-01-12 14:05:39,152 || Processing trajectory wi933014_54
+2025-01-12 14:05:51,296 || Finished processing trajectory wi933014_54
+2025-01-12 14:05:51,321 || Processing trajectory wi933014_55
+2025-01-12 14:05:53,302 || Finished processing trajectory wi933014_25
+2025-01-12 14:05:53,337 || Processing trajectory wi933014_26
+2025-01-12 14:06:05,356 || Finished processing trajectory wi933014_55
+2025-01-12 14:06:05,408 || Processing trajectory wi933014_56
+2025-01-12 14:06:21,301 || Finished processing trajectory wi933014_56
+2025-01-12 14:06:35,441 || Finished processing trajectory index17_95
+2025-01-12 14:06:35,463 || Processing trajectory index17_96
+2025-01-12 14:06:36,838 || Finished processing trajectory wi933014_26
+2025-01-12 14:06:36,868 || Processing trajectory wi933014_27
+2025-01-12 14:07:05,178 || Finished processing trajectory index17_96
+2025-01-12 14:07:05,210 || Processing trajectory index17_97
+2025-01-12 14:07:26,591 || Finished processing trajectory wi933014_27
+2025-01-12 14:07:26,629 || Processing trajectory wi933014_28
+2025-01-12 14:08:05,988 || Finished processing trajectory wi933014_28
+2025-01-12 14:08:06,001 || Processing trajectory wi933014_29
+2025-01-12 14:08:06,734 || Finished processing trajectory index17_97
+2025-01-12 14:08:06,759 || Processing trajectory index17_98
+2025-01-12 14:08:48,630 || Finished processing trajectory wi933014_29
+2025-01-12 14:08:48,668 || Processing trajectory wi933014_30
+2025-01-12 14:09:11,849 || Failed to calculate truth for trajectory 1
+2025-01-12 14:09:12,056 || Processing trajectory ew0114_2
+2025-01-12 14:09:17,551 || Finished processing trajectory index17_98
+2025-01-12 14:09:17,574 || Processing trajectory index17_99
+2025-01-12 14:09:26,960 || Finished processing trajectory wi933014_30
+2025-01-12 14:09:26,999 || Processing trajectory wi933014_31
+2025-01-12 14:10:10,187 || Finished processing trajectory wi933014_31
+2025-01-12 14:10:10,214 || Processing trajectory wi933014_32
+2025-01-12 14:10:44,516 || Finished processing trajectory index17_99
+2025-01-12 14:10:44,523 || Processing trajectory index17_100
+2025-01-12 14:10:45,626 || Finished processing trajectory wi933014_32
+2025-01-12 14:10:45,640 || Processing trajectory wi933014_33
+2025-01-12 14:10:51,380 || Finished processing trajectory index17_100
+2025-01-12 14:10:51,393 || Processing trajectory index17_101
+2025-01-12 14:10:53,151 || Finished processing trajectory ew0114_2
+2025-01-12 14:10:53,172 || Processing trajectory wi933014_3
+2025-01-12 14:11:15,960 || Finished processing trajectory wi933014_33
+2025-01-12 14:11:15,999 || Processing trajectory wi933014_34
+2025-01-12 14:11:54,659 || Finished processing trajectory wi933014_34
+2025-01-12 14:11:54,681 || Processing trajectory wi933014_35
+2025-01-12 14:12:27,199 || Finished processing trajectory wi933014_35
+2025-01-12 14:12:27,213 || Processing trajectory wi933014_36
+2025-01-12 14:12:43,905 || Finished processing trajectory index17_101
+2025-01-12 14:12:43,929 || Processing trajectory index17_102
+2025-01-12 14:13:50,421 || Finished processing trajectory wi933014_36
+2025-01-12 14:13:50,444 || Processing trajectory wi933014_37
+2025-01-12 14:14:34,772 || Finished processing trajectory wi933014_37
+2025-01-12 14:16:17,474 || Finished processing trajectory wi933014_81
+2025-01-12 14:16:17,475 || Trajectory 82 is too short: 2160.0
+2025-01-12 14:16:17,498 || Processing trajectory index17_83
+2025-01-12 14:17:11,834 || Finished processing trajectory index17_102
+2025-01-12 14:17:11,857 || Processing trajectory index17_103
+2025-01-12 14:19:03,711 || Failed to calculate truth for trajectory 3
+2025-01-12 14:19:03,893 || Processing trajectory wi933014_4
+2025-01-12 14:22:07,335 || Finished processing trajectory index17_103
+2025-01-12 14:22:07,349 || Processing trajectory index17_104
+2025-01-12 14:23:16,492 || Finished processing trajectory index17_104
+2025-01-12 14:23:16,504 || Processing trajectory index17_105
+2025-01-12 14:24:07,962 || Finished processing trajectory wi933014_4
+2025-01-12 14:24:07,984 || Processing trajectory wi933014_5
+2025-01-12 14:24:19,870 || Finished processing trajectory wi933014_5
+2025-01-12 14:24:19,882 || Processing trajectory wi933014_6
+2025-01-12 14:24:31,803 || Finished processing trajectory index17_105
+2025-01-12 14:24:31,826 || Processing trajectory index17_106
+2025-01-12 14:29:17,809 || Failed to calculate truth for trajectory 83
+2025-01-12 14:29:18,065 || Processing trajectory index17_84
+2025-01-12 14:31:21,509 || Finished processing trajectory index17_84
+2025-01-12 14:31:21,516 || Processing trajectory index17_85
+2025-01-12 14:32:14,835 || Finished processing trajectory index17_106
+2025-01-12 14:32:14,850 || Processing trajectory ew0112_107
+2025-01-12 14:32:56,084 || Finished processing trajectory index17_85
+2025-01-12 14:32:56,096 || Processing trajectory index17_86
+2025-01-12 14:33:12,768 || Finished processing trajectory index17_86
+2025-01-12 14:33:12,779 || Processing trajectory index17_87
+2025-01-12 14:34:07,264 || Finished processing trajectory index17_87
+2025-01-12 14:34:07,308 || Processing trajectory index17_88
+2025-01-12 14:35:20,249 || Finished processing trajectory index17_88
+2025-01-12 14:35:20,249 || Trajectory 89 is too short: 1020.0
+2025-01-12 14:35:20,262 || Processing trajectory index17_90
+2025-01-12 14:35:21,987 || Finished processing trajectory wi933014_6
+2025-01-12 14:35:22,029 || Processing trajectory wi933014_7
+2025-01-12 14:36:38,480 || Finished processing trajectory wi933014_7
+2025-01-12 14:36:38,505 || Processing trajectory wi933014_8
+2025-01-12 14:37:17,883 || Finished processing trajectory index17_90
+2025-01-12 14:37:17,904 || Processing trajectory index17_91
+2025-01-12 14:38:00,741 || Finished processing trajectory index17_91
+2025-01-12 14:38:00,766 || Processing trajectory index17_92
+2025-01-12 14:38:23,221 || Finished processing trajectory index17_92
+2025-01-12 14:38:23,243 || Processing trajectory index17_93
+2025-01-12 14:40:16,780 || Finished processing trajectory index17_93
+2025-01-12 14:40:16,804 || Processing trajectory index17_94
+2025-01-12 14:41:04,939 || Finished processing trajectory index17_94

@@ -59,11 +59,12 @@ sqlalchemy = "*"
 sqlite = "*"
 tqdm = "*"
 pytables = "*"
+pip = ">=24.3.1,<25"
 
 [tool.pixi.tasks]
 clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
 build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
-install = {cmd = "pip install -e .; pybind11-stubgen -o ./src/ navtoolbox", depends-on="clean"}
+install = {cmd = "pip install -e ."}
 
 [tool.pixi.feature.dev.dependencies]
 notebook = "*"
