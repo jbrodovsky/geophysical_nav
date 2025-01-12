@@ -60,18 +60,19 @@ from numpy import (
 )
 from numpy.random import multivariate_normal as mvn
 from numpy.typing import NDArray
-from pandas import DataFrame
-from pyins import earth, transform
+from pandas import DataFrame, Series
+from pyins import earth, transform, strapdown, measurements, filters, sim
 from scipy.stats import norm
 from xarray import DataArray
 
-from ..data_management.m77t import find_periods
+from data_management.m77t import find_periods
 from .gmt_toolbox import MeasurementType, GeophysicalMap
 
 OVERFLOW = 500
 EARTH_RATE = earth.RATE
 
 
+# --- Configuration Classes ---
 @dataclass
 class GeophysicalMeasurement:
     name: MeasurementType
@@ -107,7 +108,7 @@ class GeophysicalMeasurement:
         }
 
     def __repr__(self):
-        return f"{self.name}\n\tStandard Deviation={self.std}"
+        return f"<{self.name}>:{self.std}"
 
 
 class ParticleFilterInputConfig(Enum):
@@ -143,7 +144,11 @@ class ParticleFilterConfig:
     measurement_config : list[GeophysicalMeasurement]
         The configuration for the geophysical measurements.
     input_config : list[str]
-        The configuration for the input data. Refers sepecifically to the
+        The configuration for the input data. Refers sepecifically to the quantities used
+        to propagate the particles (e.g. velocity or IMU data).
+    m : int
+        The length of the particle filter state vector. This is used to verify the
+        size of the noise and covariance matrices.
     """
 
     n: int
@@ -151,6 +156,7 @@ class ParticleFilterConfig:
     noise: NDArray[float64 | int64] | list[float | int]
     measurement_config: list[GeophysicalMeasurement]
     input_config: ParticleFilterInputConfig
+    m: int
 
     @classmethod
     def from_dict(cls, config: dict) -> dict:
@@ -159,7 +165,15 @@ class ParticleFilterConfig:
         noise = array(config["noise"])
         measurement_config = [GeophysicalMeasurement.from_dict(meas) for meas in config["measurement_config"]]
         input_config = ParticleFilterInputConfig(config["input_config"])
-        return cls(n, cov, noise, measurement_config, input_config)
+        if input_config == ParticleFilterInputConfig.VELOCITY:
+            m = 9 + len(measurement_config)
+        elif input_config == ParticleFilterInputConfig.IMU:
+            m = 15 + len(measurement_config)
+        assert cov.shape[0] == m, (
+            f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
+        )
+        assert noise.shape[0] == m, f"Particle filter configuration {input_config} requires a noise matrix of size {m}."
+        return cls(n, cov, noise, measurement_config, input_config, m)
 
     def to_dict(self) -> dict:
         return {
@@ -182,19 +196,32 @@ class ParticleFilterConfig:
     def get_base_state(self) -> list[str]:
         """Gets the column names for a trajectory data frame for the base states. Primarily used for initialization."""
         if self.input_config == ParticleFilterInputConfig.VELOCITY:
-            return ["lat", "lon", "alt", "vn", "ve", "vd"]
+            return ["lat", "lon", "alt", "VN", "VE", "VD"]
         elif self.input_config == ParticleFilterInputConfig.IMU:
-            return ["lat", "lon", "alt", "vn", "ve", "vd", "roll", "pitch", "yaw"]
+            return ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "yaw"]
         else:
             raise ValueError("Input configuration not recognized.")
 
     def __str__(self):
-        return f"Particle Filter Configuration:\n\tNumber of Particles={self.n}\n\tCovariance={self.cov}\n\tNoise={self.noise}\n\tMeasurement Configurations={self.measurement_config}"
+        out = f"Particle Filter Configuration:\nNumber of Particles={self.n}\nCovariance={self.cov}\nNoise={self.noise}\nMeasurement Configurations={self.measurement_config}\nInput Configuration={self.input_config}\nState Vector Length={self.m}\n"
+        vector_str = "["
+        for state in self.get_base_state():
+            vector_str += state + ", "
+        if self.input_config == ParticleFilterInputConfig.VELOCITY:
+            vector_str += "bvn, bve, bvd"
+        elif self.input_config == ParticleFilterInputConfig.IMU:
+            vector_str += "bgx, bgy, bgz, bax, bay, baz"
+        for meas in self.measurement_config:
+            vector_str += f", {meas.name}_bias"
+        out += f"State Vector={vector_str}]\n"
+
+        return out
 
     def __repr__(self) -> str:
         return self.__str__()
 
 
+# --- Utility functions ---
 def coning_and_sculling_correction(
     current_gyros: NDArray[float64 | int64] | list[float | int],
     previous_gyros: NDArray[float64 | int64] | list[float | int],
@@ -424,6 +451,7 @@ def _gravity(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64], degre
     return g
 
 
+# --- Propagation Functions ---
 # @njit
 def _propagate_imu(
     particles: NDArray,
@@ -601,8 +629,7 @@ def propagate_ned(
     dt: float64 | int64,
 ) -> NDArray:
     """
-    Propagate the particles according to the strapdown INS equations using uncorrected velocities. The particles navigation
-    states are solely the position and velocity of the vehicle.
+    Propagate the particles according to the strapdown INS equations using uncorrected velocities. The particles navigation states are solely the position and velocity of the vehicle.
     """
     # Getting some constants
     Rn_, Re_, _ = _principal_radii(particles[:, 0], particles[:, 2])
@@ -614,23 +641,24 @@ def propagate_ned(
     ve_ = particles[:, 4]
     vd_ = particles[:, 5]
     # Position Update
-    alt = alt_ - dt / 2 * (vd_ + velocities[2])
-    lat = lat_ + dt / 2 * (vn_ / (Rn_ + lat_) + velocities[0] / (Rn_ + alt))
+    alt = alt_ - dt / 2 * (vd_ + velocities[:, 2])
+    lat = lat_ + dt / 2 * (vn_ / (Rn_ + lat_) + velocities[:, 0] / (Rn_ + alt))
     # Get new Rn, Re and update longitude
     _, Re, _ = _principal_radii(lat, alt)
-    lon = lon_ + dt / 2 * (ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[1] / ((Re + alt) * cos(lat)))
+    lon = lon_ + dt / 2 * (ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[:, 1] / ((Re + alt) * cos(lat)))
     out = empty_like(particles)
     out[:, 0] = rad2deg(lat)
     out[:, 1] = rad2deg(lon)
     out[:, 2] = alt
     # out[:, 3:6] = tile(velocities, (particles.shape[0], 1))
-    out[:, 3] = ones(particles.shape[0]) * velocities[0]
-    out[:, 4] = ones(particles.shape[0]) * velocities[1]
-    out[:, 5] = ones(particles.shape[0]) * velocities[2]
+    out[:, 3:6] = velocities
+    # out[:, 4] = ones(particles.shape[0]) * velocities[1]
+    # out[:, 5] = ones(particles.shape[0]) * velocities[2]
+    out[:, 6:] = particles[:, 6:]
     return out
 
 
-# Measurement Functions
+# --- Measurement Functions ---
 
 
 def update_relief(
@@ -770,9 +798,38 @@ def _update(
     return w
 
 
+# --- Simulation functions ---
+def calculate_truth(trajectory: DataFrame) -> tuple[DataFrame, DataFrame]:
+    """
+    Calculates the INS truth values of the trajectory data and the incremented
+    """
+
+    increments = strapdown.compute_increments_from_imu(trajectory, "rate")
+    observations = measurements.Position(
+        sim.generate_position_measurements(trajectory[["lat", "lon", "alt"]], 5.0), 5.0
+    )
+    init_pva = trajectory.loc[trajectory.index[0], ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"]]
+    integrator = strapdown.Integrator(init_pva, True)
+    integrator.integrate(increments)
+    feedback = filters.run_feedback_filter(
+        init_pva, 5, 2, 1, 1, increments, measurements=[observations], time_step=1.0, with_altitude=True
+    )
+    return integrator.trajectory, feedback
+
+
+def initialize_particle_filter(initial_state: NDArray, config: ParticleFilterConfig) -> NDArray:
+    """Initializes the particle filter with the initial state and configuration."""
+    assert isinstance(config.n, int), "Number of particles must be an integer."
+    assert config.n > 0, "Number of particles must be greater than zero."
+    intial_state = append(initial_state, zeros(config.cov.shape[0] - initial_state.shape[0]))
+    particles = mvn(intial_state, diag(config.cov), (config.n,))
+    return particles
+
+
 def run_particle_filter(
+    truth: DataFrame,
     trajectory: DataFrame,
-    geomaps: dict[MeasurementType, DataArray],
+    geomaps: dict[MeasurementType, GeophysicalMap],
     config: ParticleFilterConfig,
 ) -> DataFrame:
     """
@@ -780,14 +837,14 @@ def run_particle_filter(
 
     Parameters
     ----------
+    truth: DataFrame
+        The truth data to compare the particle filter to. This should correspond to the output to the feedback INS filter.
     trajectory : DataFrame
         The trajectory data to run the particle filter on. The trajectory should contain the following columns:
-        1. Truth data values containing ground truth positionsing data (defaults to "lat", "lon", "alt" configured in a ParticleFilterConfig object).
-        2. Input data to the particle filter, ex: the control data used to propagate the particles as well as the observations. This should contain the following data:
+        1. Input data to the particle filter, ex: the control data used to propagate the particles as well as the observations. This should contain the following data:
             * For a velocity configuration: ["VN", "VE", "VD"]
             * For an imu configurations: ["gyro_x", "gyro_y", "gyro_z", "accel_x", "accel_y", "accel_z"],
-        3. Observational data ("depth", "gra_obs", "freeair", "mat_tot", "mag_res"),
-        and indexed to a datetime.
+        2. Observational data ("depth", "gra_obs", "freeair", "mat_tot", "mag_res"),
     geomaps : dict[MeasurementType, DataArray]
         The geophysical map to compare the particles to. The map should be a DataArray with the following
         dimensions: lat, lon.
@@ -799,54 +856,30 @@ def run_particle_filter(
     DataFrame
         The resulting estimate (latitude, longitude, altitude, velocities north, east, and west) of the particle filter and some error metrics.
     """
-    mu = trajectory.loc[
-        trajectory.index[0],
-        config.get_base_state(),
-    ].to_numpy()
-    additional_states = len(config.measurement_config)
-    if config.input_config == ParticleFilterInputConfig.IMU:
-        additional_states += 6
-
-    mu = append(mu, zeros(additional_states))  # add size IMU biases and other measurement biases
-    assert mu.shape[0] == config.cov.shape[0], (
-        f"Initial state vector and covariance matrix do not match dimensions. {mu.shape[0]} != {config.cov.shape[0]}"
-    )
-    assert mu.shape[0] == config.noise.shape[0], (
-        f"Initial state vector and noise matrix do not match dimensions. {mu.shape[0]} != {config.noise.shape[0]}"
-    )
-    assert isinstance(config.n, int), "Number of particles must be an integer."
-    assert config.n > 0, "Number of particles must be greater than zero."
-
     # Initialization
-    particles = mvn(mu, diag(config.cov), (config.n,))
+    particles = initialize_particle_filter(truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config)
     weights = ones((config.n,)) / config.n
     rms_error_2d = zeros(len(trajectory))
     rms_error_3d = zeros_like(rms_error_2d)
     estimate = zeros((len(trajectory), particles.shape[1]))
     estimate_error = zeros_like(rms_error_2d)
-    estimate_certainity = zeros_like(rms_error_2d)
-    trajectory["dt"] = trajectory.index.to_series().diff().dt.seconds.fillna(0)
+    estimate_variance = zeros_like(estimate)
+    trajectory["dt"] = trajectory.index.diff().fillna(0)
 
     # Jit the loop?
     # Main loop
-    for i, item in enumerate(trajectory.iterrows()):
-        row = item[1]
-
+    i = 0
+    # for i, item in enumerate(trajectory.iloc[0:].iterrows()):
+    while i < len(truth):
         # Error calculations
-        errs = calculate_errors(particles, weights, row[["lat", "lon", "alt"]].to_numpy())
-        estimate[i] = errs[0]
-        estimate_error[i] = errs[1]
-        estimate_certainity[i] = errs[2]
-        rms_error_2d[i] = errs[3]
-        rms_error_3d[i] = errs[4]
+        estimate[i, :], estimate_error[i], estimate_variance[i, :], rms_error_2d[i], rms_error_3d[i] = calculate_errors(
+            particles, weights, truth.loc[truth.index[i], ["lat", "lon", "alt"]].to_numpy()
+        )
 
         # Propagate particles
-        if config.input_config == ParticleFilterInputConfig.IMU:
-            particles = propagate_imu(
-                particles, row[["gyro_x", "gyro_y", "gyro_z"]], row[["accel_x", "accel_y", "accel_z"]], row["dt"]
-            )
-        elif config.input_config == ParticleFilterInputConfig.VELOCITY:
-            particles = propagate_ned(particles, row[["VN", "VE", "VD"]].to_numpy(), row["dt"])
+        u = trajectory.loc[trajectory.index[i], ["VN", "VE", "VD"]].to_numpy()
+        u = mvn(u, diag(config.noise[3:6]), config.n)
+        particles = propagate_ned(particles, u - particles[:, 6:9], 60)
 
         # Update weights
         # To a certain extent the below is a measurement model itself, however a sensor fusion model hasn't
@@ -855,21 +888,29 @@ def run_particle_filter(
         new_weights = zeros_like(weights)
         for measurement in config.measurement_config:
             if measurement.name == MeasurementType.BATHYMETRY:
-                new_weights += update_relief(particles, geomaps[measurement.name], row["depth"], measurement.std)
+                new_weights += update_relief(
+                    particles,
+                    geomaps[measurement.name],
+                    -truth.loc[truth.index[i], "depth"],
+                    measurement.std,
+                    particles[:, 9],
+                )
             elif measurement.name == MeasurementType.RELIEF:
-                new_weights += update_relief(particles, geomaps[measurement.name], row["depth"], measurement.std)
+                new_weights += update_relief(
+                    particles, geomaps[measurement.name], truth.loc[truth.index[i], "depth"], measurement.std
+                )
             elif measurement.name == MeasurementType.GRAVITY:
                 new_weights += update_anomaly(
                     particles,
                     geomaps[measurement.name],
-                    row["freeair"],
+                    truth.loc[truth.index[i], "freeair"],
                     measurement.std,
                 )
             elif measurement.name == MeasurementType.MAGNETIC:
                 new_weights += update_anomaly(
                     particles,
                     geomaps[measurement.name],
-                    row["mag_res"],
+                    truth.loc[truth.index[i], "mag_res"],
                     measurement.std,
                 )
             else:
@@ -878,16 +919,15 @@ def run_particle_filter(
 
         # Resample
         inds = residual_resample(weights)
-        particles = particles[inds]
+        jitter = mvn(zeros(config.m), diag(config.noise), config.n)
+        particles = particles[inds] + jitter
+        i += 1
 
     # Final error calculations
-    i += 1
-    errs = calculate_errors(particles, weights, row[["lat", "lon", "alt"]].to_numpy())
-    estimate[i] = errs[0]
-    estimate_error[i] = errs[1]
-    estimate_certainity[i] = errs[2]
-    rms_error_2d[i] = errs[3]
-    rms_error_3d[i] = errs[4]
+    # i += 1
+    # estimate[i], estimate_error[i], estimate_variance[i], rms_error_2d[i], rms_error_3d[i] = calculate_errors(
+    #     particles, weights, truth.loc[truth.index[i], ["lat", "lon", "alt"]].to_numpy()
+    # )
 
     result: DataFrame = DataFrame(
         {
@@ -897,11 +937,15 @@ def run_particle_filter(
             "vn": estimate[:, 3],
             "ve": estimate[:, 4],
             "vd": estimate[:, 5],
+            "lat_var": estimate_variance[:, 0],
+            "lon_var": estimate_variance[:, 1],
+            "alt_var": estimate_variance[:, 2],
+            "vn_var": estimate_variance[:, 3],
+            "ve_var": estimate_variance[:, 4],
+            "vd_var": estimate_variance[:, 5],
+            "estimate_error": estimate_error,
             "rms_error_2d": rms_error_2d,
             "rms_error_3d": rms_error_3d,
-            "estimate_error": estimate_error,
-            "estimate_certainity": estimate_certainity,
-            "distance": trajectory["distance"],
         },
         index=trajectory.index,
     )
@@ -926,12 +970,20 @@ def calculate_errors(
 
     Returns
     -------
-    float
-        The root mean square error between the particles and the truth.
+    estimate : array_like
+        The estimate of the particles.
+    estimate_error : float
+        The error of the estimate in meters according to the haversine distance in 2D.
+    estimate_variance : array_like
+        The variance of the estimate.
+    rms_error_2d : float
+        The root mean square error of the particles in 2D.
+    rms_error_3d : float
+        The root mean square error of the particles in 3D.
     """
     estimate = weights @ particles
-    estimate_error = haversine(estimate, truth[:2], Unit.METERS)
-    estimate_certainity = weights @ (particles - estimate) ** 2
+    estimate_error = haversine(estimate[:2], truth[:2], Unit.METERS)
+    estimate_variance = weights @ (particles - estimate) ** 2
     rms_error_2d = rmse(
         particles,
         truth[:2],
@@ -947,7 +999,7 @@ def calculate_errors(
         weights=weights,
     )
 
-    return estimate, estimate_error, estimate_certainity, rms_error_2d, rms_error_3d
+    return estimate, estimate_error, estimate_variance, rms_error_2d, rms_error_3d
 
 
 '''
