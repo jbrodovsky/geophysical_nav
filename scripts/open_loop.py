@@ -23,9 +23,9 @@ handler.setFormatter(formatter)
 # Add the handlers to the logger
 logger.addHandler(handler)
 
-pf_config = pf.ParticleFilterConfig.from_dict(
+pf_config_delocalized = pf.ParticleFilterConfig.from_dict(
     {
-        "n": 100,
+        "n": 100_000,
         "cov": [0.01, 0.01, 1, 0.1, 0.1, 0.1, 0, 0, 0, 0],
         "noise": [0.0, 0.0, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 0.1],
         "input_config": pf.ParticleFilterInputConfig.VELOCITY,
