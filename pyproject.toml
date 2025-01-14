@@ -1,9 +1,5 @@
-[build-system]
-requires = ["setuptools", "wheel", "mypy", "build"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "Geophyiscal_Navigation_Simulator"
+name = "geophysical-nav"
 version = "0.1.0"
 requires-python = ">=3.9"
 description = "A simulator and database manager for geophysical navigation systems"
@@ -16,29 +12,12 @@ homepage = "https://github.com/jbrodovsky/geophysical_nav"
 [project.scripts]
 dbmgr = "data_management.dbmgr:main"
 
-[tool.black]
-line-length = 120
-target-version = ['py311']
-
-[tool.isort]
-profile = "black"
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = "E203, W503"
-
-[tool.pylint]
-max-line-length = 120
-
-[mypy]
-ignore_missing_imports = true
-show_error_codes = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-plugins = "sqlalchemy.ext.mypy.plugin"
+[build-system]
+requires = ["setuptools", "wheel", "build"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir ={ "" = "src" }
 packages = ["geophysical", "data_management"]
 
 [tool.pytest]
@@ -50,3 +29,55 @@ python_functions = ["test_*"]
 [tool.pytest.ini_options]
 pythonpath = "./src"
 addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64", "osx-64"]
+
+[tool.pixi.pypi-dependencies]
+geophysical_nav = { path = ".", editable = true }
+python-ins = "*"
+anglewrapper = "*"
+build = "*"
+setuptools = "*"
+wheel = "*"
+
+[tool.pixi.dependencies]
+numpy = "*"
+pandas = "*"
+filterpy = "*"
+pytz = "*"
+haversine = "*"
+pygmt = "*"
+numba = "*"
+matplotlib = "*"
+h5py = "*"
+sqlalchemy = "*"
+sqlite = "*"
+tqdm = "*"
+pytables = "*"
+pip = ">=24.3.1,<25"
+
+[tool.pixi.tasks]
+clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
+build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
+install = {cmd = "pip install -e ."}
+
+[tool.pixi.feature.dev.dependencies]
+notebook = "*"
+
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+ruff = "*"
+
+[tool.pixi.feature.test.tasks]
+lint = "ruff format ."
+test = {cmd = "coverage run -m pytest", depends-on = "lint"}
+
+[tool.pixi.environments]
+test = { features = ["test"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }

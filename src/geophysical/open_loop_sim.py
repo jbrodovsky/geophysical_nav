@@ -240,7 +240,11 @@ def write_summary_data_file(
 
 
 def processing_wrapper(
-    table: str, config: dict, annotations: dict, source_trajectories_location: str, output_plots_location: str
+    table: str,
+    config: dict,
+    annotations: dict,
+    source_trajectories_location: str,
+    output_plots_location: str,
 ) -> None:
     """
     multiprocessing wrapper for process_particle_filter

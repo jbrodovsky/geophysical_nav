@@ -21,10 +21,12 @@ Data should be stored in a database with the following schema:
         - lat: float (lat of the data point)
         - lon: float (lon of the data point)
         - altitude: float (altitude of the data point)
+        - VN: float (velocity north of the data point)
+        - VE: float (velocity east of the data point)
+        - VD: float (velocity down of the data point)
         - roll: float (roll of the data point)
         - pitch: float (pitch of the data point)
         - heading: float (heading of the data point)
-        - speed: float (speed of the data point)
         - gyro_x: float (gyroscope x of the data point)
         - gyro_y: float (gyroscope y of the data point)
         - gyro_z: float (gyroscope z of the data point)
@@ -39,14 +41,14 @@ Data should be stored in a database with the following schema:
 """
 
 import argparse
-from datetime import datetime
 import os
+from datetime import datetime
 from typing import Any
 
 import h5py
 from haversine import Unit, haversine_vector
 from numpy import column_stack, nan_to_num, ndarray
-from pandas import DataFrame, read_sql, read_hdf
+from pandas import DataFrame, read_hdf, read_sql
 from sqlalchemy import (
     Boolean,
     DateTime,
@@ -118,16 +120,20 @@ class Data(Base):
     lat: Mapped[float] = mapped_column(Float)
     lon: Mapped[float] = mapped_column(Float)
     alt: Mapped[float] = mapped_column(Float)
+    vn: Mapped[float] = mapped_column(Float)
+    ve: Mapped[float] = mapped_column(Float)
+    vd: Mapped[float] = mapped_column(Float)
     roll: Mapped[float] = mapped_column(Float)
     pitch: Mapped[float] = mapped_column(Float)
     heading: Mapped[float] = mapped_column(Float)
-    speed: Mapped[float] = mapped_column(Float)
+    # speed: Mapped[float] = mapped_column(Float)
     gyro_x: Mapped[float] = mapped_column(Float)
     gyro_y: Mapped[float] = mapped_column(Float)
     gyro_z: Mapped[float] = mapped_column(Float)
     accel_x: Mapped[float] = mapped_column(Float)
     accel_y: Mapped[float] = mapped_column(Float)
     accel_z: Mapped[float] = mapped_column(Float)
+    distance: Mapped[float] = mapped_column(Float)
     depth: Mapped[float] = mapped_column(Float, nullable=True)
     mag_tot: Mapped[float] = mapped_column(Float, nullable=True)
     mag_res: Mapped[float] = mapped_column(Float, nullable=True)
@@ -170,7 +176,12 @@ class DatabaseManager:
         """Insert a trajectory into the database"""
         distances: ndarray[float] = haversine_vector(
             array1=column_stack(tup=(trajectory["lat"], trajectory["lon"])),
-            array2=column_stack(tup=(trajectory["lat"].shift(periods=1), trajectory["lon"].shift(periods=1))),
+            array2=column_stack(
+                tup=(
+                    trajectory["lat"].shift(periods=1),
+                    trajectory["lon"].shift(periods=1),
+                )
+            ),
             unit=Unit.METERS,
         )
 
@@ -214,23 +225,27 @@ class DatabaseManager:
             session.commit()
             trajectory_id: int = trajectory_entry.id
 
-            for _, row in trajectory.iterrows():
+            print(f"Inserting trajectory with ID: {trajectory_id}")
+            for _, row in tqdm(trajectory.iterrows()):
                 data_entry = Data(
                     trajectory_id=trajectory_id,
                     timestamp=row.name,
                     lat=row["lat"],
                     lon=row["lon"],
                     alt=row["alt"],
+                    vn=row["VN"],
+                    ve=row["VE"],
+                    vd=row["VD"],
                     roll=row["roll"],
                     pitch=row["pitch"],
                     heading=row["heading"],
-                    speed=row["speed"],
                     gyro_x=row["gyro_x"],
                     gyro_y=row["gyro_y"],
                     gyro_z=row["gyro_z"],
                     accel_x=row["accel_x"],
                     accel_y=row["accel_y"],
                     accel_z=row["accel_z"],
+                    distance=row["distance"],
                     depth=row["depth"],
                     mag_tot=row["mag_tot"],
                     mag_res=row["mag_res"],
@@ -246,7 +261,12 @@ class DatabaseManager:
         """Get a trajectory from the database"""
         with Session(bind=self.engine) as session:
             query: Query[Data] = session.query(Data).filter(Data.trajectory_id == trajectory_id)
-            return read_sql(sql=query.statement, con=self.engine)
+            traj = read_sql(sql=query.statement, con=self.engine)
+            traj = traj.rename(columns={"vn": "VN", "ve": "VE", "vd": "VD"})
+            time = traj["timestamp"].diff().dt.total_seconds().fillna(0).cumsum().to_numpy()
+            traj = traj.drop(columns=["timestamp", "id", "trajectory_id"])
+            traj.index = time
+            return traj.astype(float)
 
     def get_all_trajectories(self) -> DataFrame:
         """Get all trajectories from the database."""
@@ -317,7 +337,10 @@ def main() -> None:
     parser.add_argument("--source", type=str, help="Source file path", required=True)
     parser.add_argument("--output", type=str, help="Output file path", required=True)
     parser.add_argument(
-        "--interval", type=int, help="Time interval in seconds to parse for continuous data collections", required=True
+        "--interval",
+        type=int,
+        help="Time interval in seconds to parse for continuous data collections",
+        required=True,
     )
 
     args: argparse.Namespace = parser.parse_args()

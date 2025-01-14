@@ -2,10 +2,13 @@
 Toolbox module. Contains utility functions for accessing and manipulating geophysical map data.
 """
 
-import os
+from enum import Enum
 
-import numpy as np
-import xarray as xr
+from numpy.typing import NDArray
+from numpy import float64, int64
+
+# import xarray as xr
+from xarray import DataArray
 from anglewrapper import wrap
 from pygmt.datasets import (
     load_earth_free_air_anomaly,
@@ -14,214 +17,233 @@ from pygmt.datasets import (
 )
 
 
-def get_map_section(
-    west_lon: float,
-    east_lon: float,
-    south_lat: float,
-    north_lat: float,
-    map_type: str = "relief",
-    map_res: str = "02m",
-) -> xr.DataArray:
+class MapType(Enum):
     """
-    Function for querying the raw map to get map segments. This is the publicly facing function
-    that should be used in other modules for reading in maps from raw data. If you don't need to
-    query the GMT database and instead need to load a local map file use load_map_file() instead.
-    This function will query the remote GMT databases and return the map data as an xarray.DataArray.
-
-    Parameters
-    ----------
-    :param west_lon: West longitude value in degrees.
-    :type west_lon: float
-    :param east_lon: East longitude value in degrees.
-    :type east_lon: float
-    :param south_lat: South latitude value in degsubsectionsrees.
-    :type south_lat: float
-    :param north_lat: North latitude value in degrees.
-    :type north_lat: float
-    :param map_type: Geophysical map type (relief, gravity, magnetic)
-    :type map_type: string
-    :param map_res: map resolution of output, all maps have 01d, 30m, 20m, 15m, 10m, 06m, 05m,
-    04m, 03m, and 02m; additionally gravity and relief have 01m; additionally, relief has 30s,
-    15s, 03s, 01s
-    :type map_res: string
-
-    Returns
-    -------
-    :returns: xarray.DataArray
-
-    """
-    west_lon = wrap.to_180(west_lon)
-    east_lon = wrap.to_180(east_lon)
-    # assert that the west longitude is less than the east longitude
-    assert west_lon < east_lon, "West longitude must be less than east longitude."
-    # Validate map type and construct GMT map name to call via grdcut
-    if map_type == "gravity" and _validate_gravity_resolution(map_res):
-        out = load_earth_free_air_anomaly(
-            resolution=map_res,
-            region=[west_lon, east_lon, south_lat, north_lat],
-        )
-    elif map_type == "magnetic" and _validate_magentic_resolution(map_res):
-        out = load_earth_magnetic_anomaly(
-            resolution=map_res,
-            region=[west_lon, east_lon, south_lat, north_lat],
-        )
-    elif map_type == "relief" and _validate_relief_resoltion(map_res):
-        out = load_earth_relief(
-            resolution=map_res,
-            region=[west_lon, east_lon, south_lat, north_lat],
-        )
-    else:
-        # print("Map type not recognized")
-        raise ValueError("Map type not recognized")
-
-    return out
-
-
-def load_map_file(filepath: str) -> xr.DataArray:
-    """
-    Used to load the local .nc (netCDF4) map files in to a Python xarray DataArray structure.
-
-    Parameters
-    -----------
-    :param filepath: the filepath to the map file.
-    :type filepath: string
-
-    :returns: xarray.DataArray
-    """
-    # Add in error handling for file not found
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"File not found: {filepath}")
-    try:
-        return xr.load_dataarray(filepath)
-    except FileNotFoundError as e:
-        print(e)
-        raise e
-
-
-def save_map_file(map_data: xr.DataArray, filepath: str) -> None:
-    """
-    Used to save the map data to a local .nc (netCDF4) file.
-
-    Parameters
-    -----------
-    :param map_data: the map data to save.
-    :type map_data: xarray.DataArray
-    :param filepath: the filepath to save the map file.
-    :type filepath: string
-
-    :returns: None
-    """
-    # Add some control flow to validate the inputs and file paths
-    assert isinstance(map_data, xr.DataArray), "map_data must be an xarray.DataArray"
-    # Check to make sure the file path is valid, if the filepath contains a directory that
-    # doesn't exist, create it
-    if not os.path.exists(os.path.dirname(filepath)):
-        os.makedirs(os.path.dirname(filepath))
-
-    map_data.to_netcdf(filepath)
-    return None
-
-
-def get_map_point(geo_map: xr.DataArray, longitudes, latitudes) -> np.ndarray:
-    """
-    Wrapper on DataArray.interp() to query the map and simply get the returned values.
-    Converting the lists of longitudes and latitudes to xarray.DataArray objects speeds
-    up the query.
-
-    Parameters
-    -----------
-    :param geo_map: the map data to query.
-    :type geo_map: xarray.DataArray
-    :param longitudes: list-like of longitudes to query.
-    :type longitudes: list-like
-    :param latitudes: list-like of latitudes to query.
-    :type latitudes: list-like
-
-    :returns: numpy.ndarray
-
-    """
-    longitudes = xr.DataArray(longitudes)
-    latitudes = xr.DataArray(latitudes)
-    vals = geo_map.interp(lon=longitudes, lat=latitudes)
-    return vals.data
-
-
-def _validate_gravity_resolution(res: str) -> bool:
-    valid = [
-        "01d",
-        "30m",
-        "20m",
-        "15m",
-        "10m",
-        "06m",
-        "05m",
-        "04m",
-        "03m",
-        "02m",
-        "01m",
-    ]
-    if any(res == R for R in valid):
-        return True
-    # else:
-    #     print("Invalid resolution for map type: GRAVITY")
-    #     return False
-    raise ValueError(f"Resolution {res} invalid for map type: GRAVITY. Valid resolutions are: {valid}")
-
-
-def _validate_magentic_resolution(res: str) -> bool:
-    valid = ["01d", "30m", "20m", "15m", "10m", "06m", "05m", "04m", "03m", "02m"]
-    if any(res == R for R in valid):
-        return True
-    raise ValueError(f"Resolution {res} invalid for map type: MAGNETIC. Valid resolutions are: {valid}")
-
-
-def _validate_relief_resoltion(res: str) -> bool:
-    valid = [
-        "1d",
-        "30m",
-        "20m",
-        "15m",
-        "10m",
-        "06m",
-        "05m",
-        "04m",
-        "03m",
-        "02m",
-        "01m",
-        "30s",
-        "15s",
-        "03s",
-        "01s",
-    ]
-    if any(res == R for R in valid):
-        return True
-
-    raise ValueError(f"Resolution {res} invalid for map type: RELIEF. Valid resolutions are: {valid}")
-
-
-def inflate_bounds(min_x, min_y, max_x, max_y, inflation_percent):
-    """
-    Used to inflate the cropping bounds for the map section
+    Enum class for PyGMT map names. Used to validate the map type and resolution.
     """
 
-    # Calculate the width and height of the original bounds
-    width = max_x - min_x
-    height = max_y - min_y
+    RELIEF = "elevation"
+    GRAVITY = "free_air_anomaly"
+    MAGNETIC = "magnetic_anomaly"
+    UNKNOWN = "unknown"
 
-    # Check if the width or height is near zero and add a small amount
-    if width <= 1e-6:
-        width = 0.1
-    if height <= 1e-6:
-        height = 0.1
+    def __str__(self):
+        if self == MapType.RELIEF:
+            return "elevation"
+        elif self == MapType.GRAVITY:
+            return "free_air_anomaly"
+        elif self == MapType.MAGNETIC:
+            return "magnetic_anomaly"
+        else:
+            return "unknown"
 
-    # Calculate the amount to inflate based on the percentage
-    inflate_x = width * inflation_percent
-    inflate_y = height * inflation_percent
+    def __repr__(self):
+        return f"MapType<{str(self)}>"
 
-    # Calculate the new minimum and maximum coordinates
-    new_min_x = min_x - inflate_x
-    new_min_y = min_y - inflate_y
-    new_max_x = max_x + inflate_x
-    new_max_y = max_y + inflate_y
 
-    return new_min_x, new_min_y, new_max_x, new_max_y
+class MeasurementType(Enum):
+    BATHYMETRY = 0
+    RELIEF = 1
+    GRAVITY = 2
+    MAGNETIC = 3
+
+    def __str__(self):
+        if self == MeasurementType.BATHYMETRY:
+            return "BATHYMETRY"
+        elif self == MeasurementType.RELIEF:
+            return "RELIEF"
+        elif self == MeasurementType.GRAVITY:
+            return "GRAVITY"
+        elif self == MeasurementType.MAGNETIC:
+            return "MAGNETIC"
+        else:
+            return "Unknown"
+
+    def __repr__(self):
+        return f"MeasurementType<{str(self)}>"
+
+
+class ReliefResolution(Enum):
+    ONE_DEGREE = "01d"
+    THIRTY_MINUTES = "30m"
+    TWENTY_MINUTES = "20m"
+    FIFTEEN_MINUTES = "15m"
+    TEN_MINUTES = "10m"
+    SIX_MINUTES = "06m"
+    FIVE_MINUTES = "05m"
+    FOUR_MINUTES = "04m"
+    THREE_MINUTES = "03m"
+    TWO_MINUTES = "02m"
+    ONE_MINUTE = "01m"
+    THIRTY_SECONDS = "30s"
+    FIFTEEN_SECONDS = "15s"
+    THREE_SECONDS = "03s"
+    ONE_SECOND = "01s"
+
+
+class GravityResolution(Enum):
+    ONE_DEGREE = "01d"
+    THIRTY_MINUTES = "30m"
+    TWENTY_MINUTES = "20m"
+    FIFTEEN_MINUTES = "15m"
+    TEN_MINUTES = "10m"
+    SIX_MINUTES = "06m"
+    FIVE_MINUTES = "05m"
+    FOUR_MINUTES = "04m"
+    THREE_MINUTES = "03m"
+    TWO_MINUTES = "02m"
+    ONE_MINUTE = "01m"
+
+
+class MagneticResolution(Enum):
+    ONE_DEGREE = "01d"
+    THIRTY_MINUTES = "30m"
+    TWENTY_MINUTES = "20m"
+    FIFTEEN_MINUTES = "15m"
+    TEN_MINUTES = "10m"
+    SIX_MINUTES = "06m"
+    FIVE_MINUTES = "05m"
+    FOUR_MINUTES = "04m"
+    THREE_MINUTES = "03m"
+    TWO_MINUTES = "02m"
+
+
+class GeophysicalMap:
+    """
+    Class for storing and validating geophysical map data. Combination of a dataclass and a
+    thin wrapper around xarray.DataArray. The class is used to store the map data and query
+    the map data for specific points. The class is also used to validate the map type and
+    resolution and to construct the map data from the GMT databases.
+    """
+
+    map_type: MeasurementType
+    map_resolution: ReliefResolution | GravityResolution | MagneticResolution
+    west_lon: float
+    east_lon: float
+    south_lat: float
+    north_lat: float
+    map_data: DataArray
+
+    def __init__(
+        self,
+        map_type: MeasurementType,
+        map_resolution: ReliefResolution | GravityResolution | MagneticResolution,
+        west_lon: float,
+        east_lon: float,
+        south_lat: float,
+        north_lat: float,
+        inflate_bounds: float = 0.0,
+    ):
+        assert isinstance(map_type, MeasurementType), "map_type must be a MeasurementType"
+        self.map_type = map_type
+        assert isinstance(
+            map_resolution, (ReliefResolution, GravityResolution, MagneticResolution)
+        ), "map_resolution must be a valid ReliefResolution, GravityResolution, or MagneticResolution"
+        self.map_resolution = map_resolution
+        west_lon = wrap.to_180(west_lon)
+        east_lon = wrap.to_180(east_lon)
+        # assert that the west longitude is less than the east longitude
+        assert west_lon < east_lon, "West longitude must be less than east longitude."
+        assert south_lat < north_lat, "South latitude must be less than north latitude."
+        # Inflate the bounds to ensure that the map section is large enough to interpolate
+        assert 0 <= inflate_bounds, "Inflation percentage must be greater than or equal to zero."
+        if inflate_bounds > 0:
+            west_lon, south_lat, east_lon, north_lat = self._inflate_bounds(
+                west_lon, south_lat, east_lon, north_lat, inflate_bounds
+            )
+        self.west_lon = west_lon
+        self.east_lon = east_lon
+        self.south_lat = south_lat
+        self.north_lat = north_lat
+        # Validate map type and construct GMT map name to call via grdcut
+        if map_type == MeasurementType.RELIEF or map_type == MeasurementType.BATHYMETRY:
+            assert isinstance(map_resolution, ReliefResolution), "map_resolution must be a ReliefResolution"
+            self.map_data = load_earth_relief(
+                resolution=map_resolution.value,
+                region=[west_lon, east_lon, south_lat, north_lat],
+            )
+        elif map_type == MeasurementType.GRAVITY:
+            assert isinstance(map_resolution, GravityResolution), "map_resolution must be a GravityResolution"
+            self.map_data = load_earth_free_air_anomaly(
+                resolution=map_resolution.value,
+                region=[west_lon, east_lon, south_lat, north_lat],
+            )
+        elif map_type == MeasurementType.MAGNETIC:
+            assert isinstance(map_resolution, MagneticResolution), "map_resolution must be a MagneticResolution"
+            self.map_data = load_earth_magnetic_anomaly(
+                resolution=map_resolution.value,
+                region=[west_lon, east_lon, south_lat, north_lat],
+            )
+        else:
+            raise ValueError("Map type not recognized")
+
+    def get_map_point(
+        self,
+        longitudes: list[int | float | int64 | float64] | NDArray[int64 | float64] | DataArray,
+        latitudes: list[int | float | int64 | float64] | NDArray[int64 | float64] | DataArray,
+    ) -> NDArray[float64]:
+        """
+        Wrapper on DataArray.interp() to query the map and simply get the returned values.
+        Converting the lists of longitudes and latitudes to xarray.DataArray objects speeds
+        up the query.
+
+        Parameters
+        -----------
+        :param geo_map: the map data to query.
+        :type geo_map: xarray.DataArray
+        :param longitudes: list-like of longitudes to query.
+        :type longitudes: list-like
+        :param latitudes: list-like of latitudes to query.
+        :type latitudes: list-like
+
+        :returns: numpy.ndarray
+
+        """
+        longitudes = DataArray(longitudes)
+        latitudes = DataArray(latitudes)
+        vals = self.map_data.interp(lon=longitudes, lat=latitudes)
+        return vals.data
+
+    def _inflate_bounds(self, min_x, min_y, max_x, max_y, inflation_percent):
+        """
+        Used to inflate the cropping bounds for the map section
+        """
+
+        # Calculate the width and height of the original bounds
+        width = max_x - min_x
+        height = max_y - min_y
+
+        # Check if the width or height is near zero and add a small amount
+        if width <= 1e-6:
+            width = 0.1
+        if height <= 1e-6:
+            height = 0.1
+
+        # Calculate the amount to inflate based on the percentage
+        inflate_x = width * inflation_percent
+        inflate_y = height * inflation_percent
+
+        # Calculate the new minimum and maximum coordinates
+        new_min_x = min_x - inflate_x
+        new_min_y = min_y - inflate_y
+        new_max_x = max_x + inflate_x
+        new_max_y = max_y + inflate_y
+
+        return new_min_x, new_min_y, new_max_x, new_max_y
+
+    def __str__(self):
+        return f"GeophysicalMap<{self.map_type}, {self.map_resolution}, {self.west_lon}, {self.east_lon}, {self.south_lat}, {self.north_lat}>"
+
+    def __repr__(self):
+        return f"GeophysicalMap<{self.map_type}, {self.map_resolution}, {self.west_lon}, {self.east_lon}, {self.south_lat}, {self.north_lat}>"
+
+    # TODO: #75 Add method to save the map data to a netCDF file
+    # def save(self, filename: str):
+    #    """
+    #    Save the map data to a netCDF file. Uses the xarray.DataArray.to_netcdf()
+    #    method but also needs to save the resolution as attributes in the netCDF file.
+    #    """
+
+    # TODO: #76 Add method to load the map data from a netCDF file
+    # @classmethod
+    # def load(self, filename: str):

@@ -4,8 +4,8 @@ Test the M77T toolbox implementation.
 
 import os
 import shutil
-from typing import List
 import unittest
+from typing import List
 
 from numpy.typing import NDArray
 from pandas import DataFrame, read_csv
@@ -72,11 +72,31 @@ class TestM77TToolbox(unittest.TestCase):
     def test_calculate_bearing(self) -> None:
         """Test that the bearing can be calculated successfully."""
         self.assertTrue(expr=m77t.calculate_bearing)
-        self.assertAlmostEqual(first=m77t.calculate_bearing(coords1=(0, 0), coords2=(1, 1)), second=45, places=2)
-        self.assertAlmostEqual(first=m77t.calculate_bearing(coords1=(0, 0), coords2=(1, 0)), second=0, places=2)
-        self.assertAlmostEqual(first=m77t.calculate_bearing(coords1=(0, 0), coords2=(0, 1)), second=90, places=2)
-        self.assertAlmostEqual(first=m77t.calculate_bearing(coords1=(0, 0), coords2=(-1, 0)), second=180, places=2)
-        self.assertAlmostEqual(first=m77t.calculate_bearing(coords1=(0, 0), coords2=(0, -1)), second=270, places=2)
+        self.assertAlmostEqual(
+            first=m77t.calculate_bearing(coords1=(0, 0), coords2=(1, 1)),
+            second=45,
+            places=2,
+        )
+        self.assertAlmostEqual(
+            first=m77t.calculate_bearing(coords1=(0, 0), coords2=(1, 0)),
+            second=0,
+            places=2,
+        )
+        self.assertAlmostEqual(
+            first=m77t.calculate_bearing(coords1=(0, 0), coords2=(0, 1)),
+            second=90,
+            places=2,
+        )
+        self.assertAlmostEqual(
+            first=m77t.calculate_bearing(coords1=(0, 0), coords2=(-1, 0)),
+            second=180,
+            places=2,
+        )
+        self.assertAlmostEqual(
+            first=m77t.calculate_bearing(coords1=(0, 0), coords2=(0, -1)),
+            second=270,
+            places=2,
+        )
 
     def test_calculate_bearing_vector(self) -> None:
         """Test that the bearing vector can be calculated successfully."""
