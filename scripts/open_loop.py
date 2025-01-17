@@ -32,6 +32,17 @@ pf_config_delocalized = pf.ParticleFilterConfig.from_dict(
         "measurement_config": [{"name": "bathymetry", "std": 100}],
     }
 )
+
+pf_config_localized = pf.ParticleFilterConfig.from_dict(
+    {
+        "n": 100_000,
+        "cov": [15 / (1852 * 60), 15 / (1852 * 60), 1, 0.1, 0.1, 0.1, 0, 0, 0, 0],
+        "noise": [0.0, 0.0, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 0.1],
+        "input_config": pf.ParticleFilterInputConfig.VELOCITY,
+        "measurement_config": [{"name": "bathymetry", "std": 100}],
+    }
+)
+
 db = dbmgr.DatabaseManager("../.db")
 
 
@@ -73,7 +84,7 @@ def load_simulation_results(filename: str) -> tuple[pd.DataFrame, pd.DataFrame, 
     return result, trajectory, trajectory_sd
 
 
-def process_trajectory(j: int, output_dir: str):
+def process_trajectory(j: int, pf_config: dict, output_dir: str):
     name = db.get_all_trajectories()["source"][j] + "_" + str(j)
     logger.info(f"Processing trajectory {name}")
     try:
@@ -116,11 +127,15 @@ def process_trajectory(j: int, output_dir: str):
 
 
 # Define a function to process each trajectory
-def process_trajectory_wrapper(bathy_trajectories: pd.DataFrame, j: int, output_dir: str):
+def process_trajectory_wrapper(bathy_trajectories: pd.DataFrame, pf_config: dict, j: int, output_dir: str):
     if bathy_trajectories.loc[bathy_trajectories.index[j], "duration"] < 3600:
         logger.info(f"Trajectory {j} is too short: {bathy_trajectories.iloc[j]['duration']}")
         return
-    process_trajectory(j, output_dir)
+    try:
+        process_trajectory(j, pf_config, output_dir)
+    except Exception as e:
+        logger.warning("Failed to process trajectory {j} for some unknown reason.")
+        logger.warning(e)
 
 
 def main():
@@ -131,13 +146,30 @@ def main():
     # Create the output directory for saving results
     output_dir = "bathy_pf_results"
     if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        os.makedirs(os.path.join(output_dir, "delocalized"))
+        os.makedirs(os.path.join(output_dir, "localized"))
     # Use multiprocessing to process trajectories in parallel
     with mp.Pool(processes=mp.cpu_count()) as pool:
         pool.starmap(
-            process_trajectory_wrapper, [(bathy_trajectories, j, output_dir) for j in tqdm(bathy_trajectories.index)]
+            process_trajectory_wrapper,
+            [
+                (bathy_trajectories, pf_config_delocalized, j, os.path.join(output_dir, "delocalized"))
+                for j in tqdm(bathy_trajectories["id"])
+            ],
         )
-    logger.info("Finished run of bathy particle filter")
+    logger.info("Finished delocalized run of bathy particle filter")
+    logger.info("=========================================")
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        pool.starmap(
+            process_trajectory_wrapper,
+            [
+                (bathy_trajectories, pf_config_localized, j, os.path.join(output_dir, "localized"))
+                for j in tqdm(bathy_trajectories["id"])
+            ],
+        )
+    logger.info("Finished localized run of bathy particle filter")
+    logger.info("=========================================")
+    logger.info("COMPLETED!")
 
 
 if __name__ == "__main__":
