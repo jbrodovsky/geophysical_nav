@@ -59,7 +59,8 @@ sqlalchemy = "*"
 sqlite = "*"
 tqdm = "*"
 pytables = "*"
-pip = ">=24.3.1,<25"
+pip = "*"
+ruff = "*"
 
 [tool.pixi.tasks]
 clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"

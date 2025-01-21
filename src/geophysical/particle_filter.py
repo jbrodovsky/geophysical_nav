@@ -169,9 +169,9 @@ class ParticleFilterConfig:
             m = 9 + len(measurement_config)
         elif input_config == ParticleFilterInputConfig.IMU:
             m = 15 + len(measurement_config)
-        assert cov.shape[0] == m, (
-            f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
-        )
+        assert (
+            cov.shape[0] == m
+        ), f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
         assert noise.shape[0] == m, f"Particle filter configuration {input_config} requires a noise matrix of size {m}."
         return cls(n, cov, noise, measurement_config, input_config, m)
 
@@ -568,14 +568,14 @@ def propagate_imu(
     gyros = array(gyros)
     accels = array(accels)
     noise = array(noise)
-    assert particles.shape[1] >= 9, (
-        "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
-    )
+    assert (
+        particles.shape[1] >= 9
+    ), "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
-    assert noise.shape[0] == particles.shape[1], (
-        "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
-    )
+    assert (
+        noise.shape[0] == particles.shape[1]
+    ), "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
     c_ = transform.mat_from_rph(particles[:, 6:9])  # Calls scipy Rotation under the hood with degrees as true.

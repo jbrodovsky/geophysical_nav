@@ -6,6 +6,8 @@ source_data
 *.zip
 .ruff_cache
 *.h5
+*.log
+*.png
 
 # C extensions
 *.so
@@ -113,3 +115,4 @@ CMakeCache.txt
 CMakeInit.txt
 install_manifest.txt
 src/navtoolbox/CMakeFiles/
+scripts/bathy_pf.log
