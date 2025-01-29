@@ -3386,3 +3386,197 @@
 2025-01-20 20:22:52,343 || Processing trajectory wi933014_35
 2025-01-20 20:23:27,139 || Finished processing trajectory index17_102
 2025-01-20 20:23:27,161 || Processing trajectory index17_103
+2025-01-20 20:27:34,594 || Finished processing trajectory wi933014_35
+2025-01-20 20:27:34,628 || Processing trajectory wi933014_36
+2025-01-20 20:31:19,015 || Failed to calculate truth for trajectory 83. Cause: 2-th leading minor of the array is not positive definite.
+2025-01-20 20:31:19,124 || Processing trajectory index17_84
+2025-01-20 20:35:48,619 || Finished processing trajectory wi933014_36
+2025-01-20 20:35:48,645 || Processing trajectory wi933014_37
+2025-01-20 20:39:42,867 || Finished processing trajectory wi933014_37
+2025-01-20 20:39:42,879 || Processing trajectory wi933014_38
+2025-01-20 20:43:05,290 || Finished processing trajectory wi933014_38
+2025-01-20 20:45:46,318 || Finished processing trajectory index17_84
+2025-01-20 20:45:46,331 || Processing trajectory index17_85
+2025-01-20 20:45:56,730 || Finished processing trajectory wi933014_6
+2025-01-20 20:45:56,742 || Processing trajectory wi933014_7
+2025-01-20 20:52:18,078 || Finished processing trajectory wi933014_7
+2025-01-20 20:52:18,107 || Processing trajectory wi933014_8
+2025-01-20 20:56:03,822 || Finished processing trajectory index17_103
+2025-01-20 20:56:03,856 || Processing trajectory index17_104
+2025-01-20 21:01:37,945 || Finished processing trajectory index17_85
+2025-01-20 21:01:37,958 || Processing trajectory index17_86
+2025-01-20 21:03:07,743 || Finished processing trajectory index17_86
+2025-01-20 21:03:07,767 || Processing trajectory index17_87
+2025-01-20 21:04:12,364 || Finished processing trajectory index17_104
+2025-01-20 21:04:12,376 || Processing trajectory index17_105
+2025-01-20 21:07:41,187 || Finished processing trajectory index17_87
+2025-01-20 21:07:41,218 || Processing trajectory index17_88
+2025-01-20 21:10:18,799 || Finished processing trajectory index17_105
+2025-01-20 21:10:18,810 || Processing trajectory index17_106
+2025-01-20 21:15:04,189 || Finished processing trajectory index17_88
+2025-01-20 21:15:04,219 || Processing trajectory index17_89
+2025-01-20 21:21:47,929 || Finished processing trajectory index17_89
+2025-01-20 21:21:47,942 || Processing trajectory index17_90
+2025-01-20 21:29:04,342 || Finished processing trajectory index17_90
+2025-01-20 21:29:04,371 || Processing trajectory index17_91
+2025-01-20 21:31:27,510 || Finished processing trajectory index17_91
+2025-01-20 21:31:27,530 || Processing trajectory index17_92
+2025-01-20 21:32:49,689 || Finished processing trajectory index17_92
+2025-01-20 21:32:49,709 || Processing trajectory index17_93
+2025-01-20 21:39:12,097 || Finished processing trajectory index17_93
+2025-01-20 21:39:12,112 || Processing trajectory index17_94
+2025-01-20 21:41:54,110 || Finished processing trajectory index17_94
+2025-01-20 21:41:54,123 || Processing trajectory index17_95
+2025-01-20 21:47:07,237 || Finished processing trajectory index17_106
+2025-01-20 21:47:07,260 || Processing trajectory ew0112_107
+2025-01-20 22:02:33,549 || Finished processing trajectory index17_95
+2025-01-20 23:00:44,533 || Finished processing trajectory ew0112_107
+2025-01-20 23:00:44,545 || Processing trajectory ew9704_108
+2025-01-20 23:45:45,043 || Finished processing trajectory wi933014_8
+2025-01-20 23:45:45,055 || Processing trajectory wi933014_9
+2025-01-20 23:58:35,806 || Finished processing trajectory wi933014_9
+2025-01-20 23:58:35,819 || Processing trajectory wi933014_10
+2025-01-21 00:00:32,300 || Finished processing trajectory wi933014_10
+2025-01-21 00:00:32,312 || Processing trajectory wi933014_11
+2025-01-21 00:03:46,070 || Finished processing trajectory wi933014_11
+2025-01-21 00:03:46,082 || Processing trajectory wi933014_12
+2025-01-21 00:03:50,083 || Failed to get bathymetry map for trajectory 12. Cause: South latitude must be less than north latitude..
+2025-01-21 00:03:50,106 || Processing trajectory wi933014_13
+2025-01-21 00:05:04,215 || Finished processing trajectory wi933014_13
+2025-01-21 00:05:04,227 || Processing trajectory wi933014_14
+2025-01-21 00:07:49,218 || Finished processing trajectory wi933014_14
+2025-01-21 00:07:49,233 || Processing trajectory wi933014_15
+2025-01-21 00:08:52,646 || Finished processing trajectory wi933014_15
+2025-01-21 00:08:52,658 || Processing trajectory wi933014_16
+2025-01-21 00:10:29,183 || Finished processing trajectory wi933014_16
+2025-01-21 00:10:29,195 || Processing trajectory wi933014_17
+2025-01-21 00:12:30,226 || Finished processing trajectory wi933014_17
+2025-01-21 00:12:30,238 || Processing trajectory wi933014_18
+2025-01-21 00:14:02,597 || Finished processing trajectory wi933014_18
+2025-01-21 00:14:02,621 || Processing trajectory wi933014_19
+2025-01-21 00:15:40,990 || Finished processing trajectory wi933014_19
+2025-01-21 05:42:00,239 || Finished processing trajectory ew9704_108
+2025-01-21 05:42:00,249 || Processing trajectory ew9704_112
+2025-01-21 05:42:09,113 || Finished processing trajectory ew9704_112
+2025-01-21 05:42:09,123 || Processing trajectory ew9704_113
+2025-01-21 05:42:18,031 || Finished processing trajectory ew9704_113
+2025-01-21 05:42:18,042 || Processing trajectory ew9704_114
+2025-01-21 05:42:27,819 || Finished processing trajectory ew9704_114
+2025-01-21 05:42:27,830 || Processing trajectory ew9704_115
+2025-01-21 05:42:36,922 || Finished processing trajectory ew9704_115
+2025-01-21 05:42:36,932 || Processing trajectory ew9704_116
+2025-01-21 05:42:46,595 || Finished processing trajectory ew9704_116
+2025-01-21 05:42:46,606 || Processing trajectory ew9704_117
+2025-01-21 05:42:56,196 || Finished processing trajectory ew9704_117
+2025-01-21 05:42:56,267 || Finished localized run of bathy particle filter. Elapsed time: 62308.697769641876
+2025-01-21 05:42:56,267 || =========================================
+2025-01-21 05:42:56,267 || COMPLETED!
+2025-01-21 05:42:56,267 || =========================================
+2025-01-21 05:42:56,267 || Running post-processing
+2025-01-21 12:07:16,500 || Running post-processing
+2025-01-21 12:13:04,549 || Failed to calculate distance. Cause: Latitude(s) out of range [-90, 90]. Attempting to calculate through loop...
+2025-01-21 12:13:17,135 || Failed to calculate distance for index 18150. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-21 12:13:17,136 || Failed to calculate distance for index 18151. Cause: Longitude 413.3778469482616 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,137 || Failed to calculate distance for index 18152. Cause: Longitude 413.3778469482616 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,194 || Failed to calculate distance for index 18191. Cause: Longitude -186.07076861188568 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,195 || Failed to calculate distance for index 18192. Cause: Longitude -213.0510948480207 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,196 || Failed to calculate distance for index 18193. Cause: Longitude -229.02737905120574 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,198 || Failed to calculate distance for index 18194. Cause: Longitude -237.45227770020585 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,199 || Failed to calculate distance for index 18195. Cause: Longitude -242.61067057709445 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,201 || Failed to calculate distance for index 18196. Cause: Longitude -246.22345830352754 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,202 || Failed to calculate distance for index 18197. Cause: Longitude -248.98572903599484 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,203 || Failed to calculate distance for index 18198. Cause: Longitude -251.2289367559732 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,205 || Failed to calculate distance for index 18199. Cause: Longitude -253.13123991213396 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,206 || Failed to calculate distance for index 18200. Cause: Longitude -259.89658896124865 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,208 || Failed to calculate distance for index 18201. Cause: Longitude -263.2191399628453 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,209 || Failed to calculate distance for index 18202. Cause: Longitude -266.5970426155822 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,210 || Failed to calculate distance for index 18203. Cause: Longitude -269.8039509381972 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,212 || Failed to calculate distance for index 18204. Cause: Longitude -272.6787105267935 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,213 || Failed to calculate distance for index 18205. Cause: Longitude -275.17497212024386 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,215 || Failed to calculate distance for index 18206. Cause: Longitude -277.31828146988954 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,217 || Failed to calculate distance for index 18207. Cause: Longitude -279.16288940089265 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,219 || Failed to calculate distance for index 18208. Cause: Longitude -280.76757486059813 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,220 || Failed to calculate distance for index 18209. Cause: Longitude -282.1851764685234 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,222 || Failed to calculate distance for index 18210. Cause: Longitude -283.45958695500155 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,223 || Failed to calculate distance for index 18211. Cause: Longitude -284.62599389211306 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,225 || Failed to calculate distance for index 18212. Cause: Longitude -285.7122091180835 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,228 || Failed to calculate distance for index 18213. Cause: Longitude -286.740174071338 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,229 || Failed to calculate distance for index 18214. Cause: Longitude -287.72727509114367 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,231 || Failed to calculate distance for index 18215. Cause: Longitude -288.6873521940824 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,233 || Failed to calculate distance for index 18216. Cause: Longitude -289.6314498874521 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,235 || Failed to calculate distance for index 18217. Cause: Longitude -290.5683200355145 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,236 || Failed to calculate distance for index 18218. Cause: Longitude -291.50469146815533 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,238 || Failed to calculate distance for index 18219. Cause: Longitude -292.44532979314084 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,240 || Failed to calculate distance for index 18220. Cause: Longitude -293.39287064545107 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,242 || Failed to calculate distance for index 18221. Cause: Longitude -294.3473938573181 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,245 || Failed to calculate distance for index 18222. Cause: Longitude -295.30570377528016 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,247 || Failed to calculate distance for index 18223. Cause: Longitude -296.26025847430185 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,249 || Failed to calculate distance for index 18224. Cause: Longitude -297.1977229905187 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,251 || Failed to calculate distance for index 18225. Cause: Longitude -298.0970916423011 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,253 || Failed to calculate distance for index 18226. Cause: Longitude -298.92766653738437 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,254 || Failed to calculate distance for index 18227. Cause: Longitude -299.6465422659466 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,257 || Failed to calculate distance for index 18228. Cause: Longitude -300.198816039888 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,259 || Failed to calculate distance for index 18229. Cause: Longitude -300.5109579371451 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,261 || Failed to calculate distance for index 18230. Cause: Longitude -300.5052930294574 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,262 || Failed to calculate distance for index 18231. Cause: Longitude -300.1078247317011 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,264 || Failed to calculate distance for index 18232. Cause: Longitude -299.23161623658723 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,265 || Failed to calculate distance for index 18233. Cause: Longitude -297.8146332998647 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,266 || Failed to calculate distance for index 18234. Cause: Longitude -295.83404149255347 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,268 || Failed to calculate distance for index 18235. Cause: Longitude -293.29670857584233 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,269 || Failed to calculate distance for index 18236. Cause: Longitude -290.2477942743968 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,271 || Failed to calculate distance for index 18237. Cause: Longitude -286.7582123393093 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,273 || Failed to calculate distance for index 18238. Cause: Longitude -282.91562400763627 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,275 || Failed to calculate distance for index 18239. Cause: Longitude -278.7931009807218 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,276 || Failed to calculate distance for index 18240. Cause: Longitude -274.4665563397942 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,278 || Failed to calculate distance for index 18241. Cause: Longitude -270.00702800225605 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,280 || Failed to calculate distance for index 18242. Cause: Longitude -265.4179782199743 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,282 || Failed to calculate distance for index 18243. Cause: Longitude -260.6981408080107 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,283 || Failed to calculate distance for index 18244. Cause: Longitude -255.8485954617507 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,285 || Failed to calculate distance for index 18245. Cause: Longitude -250.8413800192568 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,287 || Failed to calculate distance for index 18246. Cause: Longitude -245.6457315886732 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,289 || Failed to calculate distance for index 18247. Cause: Longitude -240.22648643796055 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,290 || Failed to calculate distance for index 18248. Cause: Longitude -234.54997451067345 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,291 || Failed to calculate distance for index 18249. Cause: Longitude -228.58724432812772 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,293 || Failed to calculate distance for index 18250. Cause: Longitude -222.31719724218993 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,295 || Failed to calculate distance for index 18251. Cause: Longitude -210.56053136614938 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,296 || Failed to calculate distance for index 18252. Cause: Longitude -200.48446735134945 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,298 || Failed to calculate distance for index 18253. Cause: Longitude -186.89172890830292 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:13:17,299 || Failed to calculate distance for index 18254. Cause: Longitude -186.89172890830292 is out of range [-180, 180]. Setting distance to NaN.
+2025-01-21 12:19:51,997 || Finished post-processing
+2025-01-21 12:19:51,997 || Simulation complete!
+2025-01-21 12:27:55,150 || Running post-processing
+2025-01-21 12:28:32,390 || Running post-processing
+2025-01-21 12:34:10,150 || Failed to calculate distance. Cause: Latitude(s) out of range [-90, 90]. Attempting to calculate through loop...
+2025-01-21 12:34:22,012 || Failed to calculate distance for index 18150. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-21 12:34:22,013 || Failed to calculate distance for index 18151. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-21 12:40:57,911 || Finished post-processing
+2025-01-21 12:40:57,911 || Simulation complete!
+2025-01-21 15:55:34,777 || Running post-processing
+2025-01-21 16:01:49,307 || Failed to calculate distance. Cause: Latitude(s) out of range [-90, 90]. Attempting to calculate through loop...
+2025-01-21 16:02:03,001 || Failed to calculate distance for index 18150. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-21 16:02:03,002 || Failed to calculate distance for index 18151. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-21 16:09:05,967 || Finished post-processing
+2025-01-21 16:09:05,967 || Simulation complete!
+2025-01-24 16:06:20,074 || Running post-processing
+2025-01-25 14:24:47,728 || Running post-processing
+2025-01-25 14:27:45,334 || Failed to calculate distance. Cause: Latitude(s) out of range [-90, 90]. Attempting to calculate through loop...
+2025-01-25 14:27:58,205 || Failed to calculate distance for index 18150. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-25 14:27:58,205 || Failed to calculate distance for index 18151. Cause: Latitude -92.1781688222947 is out of range [-90, 90]. Setting distance to NaN.
+2025-01-25 14:31:01,658 || Finished post-processing
+2025-01-25 14:31:01,658 || Simulation complete!
+2025-01-29 11:09:37,909 || =========================================
+2025-01-29 11:09:37,909 || Beginning new run of bathy particle filter
+2025-01-29 11:09:37,930 || Number of CPUs available: 12
+2025-01-29 11:09:37,931 || Number of trajectories to process: 104
+2025-01-29 11:09:38,039 || Processing trajectory wi933014_77
+2025-01-29 11:09:38,039 || Processing trajectory wi933014_20
+2025-01-29 11:09:38,039 || Processing trajectory wi933014_39
+2025-01-29 11:09:38,040 || Processing trajectory ew9704_175
+2025-01-29 11:09:38,041 || Processing trajectory ew9704_156
+2025-01-29 11:09:38,041 || Processing trajectory ew9704_213
+2025-01-29 11:09:38,042 || Processing trajectory wi933014_58
+2025-01-29 11:09:38,041 || Processing trajectory ew0114_1
+2025-01-29 11:09:38,043 || Processing trajectory index17_96
+2025-01-29 11:09:38,049 || Processing trajectory ew9704_137
+2025-01-29 11:09:38,061 || Processing trajectory ew9704_194
+2025-01-29 11:09:38,063 || Processing trajectory ew9704_118

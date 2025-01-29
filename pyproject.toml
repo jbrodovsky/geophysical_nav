@@ -61,6 +61,7 @@ tqdm = "*"
 pytables = "*"
 pip = "*"
 ruff = "*"
+scikit-learn = ">=1.6.1,<2"
 
 [tool.pixi.tasks]
 clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"

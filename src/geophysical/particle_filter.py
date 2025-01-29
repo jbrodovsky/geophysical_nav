@@ -169,9 +169,9 @@ class ParticleFilterConfig:
             m = 9 + len(measurement_config)
         elif input_config == ParticleFilterInputConfig.IMU:
             m = 15 + len(measurement_config)
-        assert (
-            cov.shape[0] == m
-        ), f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
+        assert cov.shape[0] == m, (
+            f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
+        )
         assert noise.shape[0] == m, f"Particle filter configuration {input_config} requires a noise matrix of size {m}."
         return cls(n, cov, noise, measurement_config, input_config, m)
 
@@ -568,14 +568,14 @@ def propagate_imu(
     gyros = array(gyros)
     accels = array(accels)
     noise = array(noise)
-    assert (
-        particles.shape[1] >= 9
-    ), "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
+    assert particles.shape[1] >= 9, (
+        "Please check dimensions of particles. Particles must have at least 9 elements corresponding to the strapdown INS states and be shaped as a (n, 9) array."
+    )
     assert gyros.shape == (3,), "Gyros must be a 3-element vector."
     assert accels.shape == (3,), "Accels must be a 3-element vector."
-    assert (
-        noise.shape[0] == particles.shape[1]
-    ), "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
+    assert noise.shape[0] == particles.shape[1], (
+        "Noise must either be a vector or square matrix of equal dimension to the state vector (>=15)."
+    )
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
     c_ = transform.mat_from_rph(particles[:, 6:9])  # Calls scipy Rotation under the hood with degrees as true.
@@ -754,7 +754,7 @@ def update_anomaly(
     if bias.shape[0] < particles.shape[0]:
         bias = tile(bias, (particles.shape[0],))
     observation -= bias
-    return (particles, geo_map, observation, sigma)
+    return _update(particles, geo_map, observation, sigma)
 
 
 def _update(
@@ -897,7 +897,11 @@ def run_particle_filter(
                 )
             elif measurement.name == MeasurementType.RELIEF:
                 new_weights += update_relief(
-                    particles, geomaps[measurement.name], truth.loc[truth.index[i], "depth"], measurement.std
+                    particles,
+                    geomaps[measurement.name],
+                    truth.loc[truth.index[i], "depth"],
+                    measurement.std,
+                    particles[:, 9],
                 )
             elif measurement.name == MeasurementType.GRAVITY:
                 new_weights += update_anomaly(
@@ -905,6 +909,7 @@ def run_particle_filter(
                     geomaps[measurement.name],
                     truth.loc[truth.index[i], "freeair"],
                     measurement.std,
+                    particles[:, 9],
                 )
             elif measurement.name == MeasurementType.MAGNETIC:
                 new_weights += update_anomaly(
@@ -912,6 +917,7 @@ def run_particle_filter(
                     geomaps[measurement.name],
                     truth.loc[truth.index[i], "mag_res"],
                     measurement.std,
+                    particles[:, 9],
                 )
             else:
                 raise ValueError(f"Measurement type {measurement.name} not recognized.")
@@ -1000,80 +1006,6 @@ def calculate_errors(
     )
 
     return estimate, estimate_error, estimate_variance, rms_error_2d, rms_error_3d
-
-
-'''
-# Simulation functions
-def process_particle_filter(
-    trajectory: DataFrame,
-    config: ParticleFilterConfig,
-    map_type: str = "relief",
-    map_resolution: str = "15s",
-) -> DataFrame:
-    """
-    Process a single run of the particle filter. This method provides the neccessary
-    pre-processing to load the map(s) and setup the initial conditions for the particle filter
-    that are then given to run_particle_filter().
-    """
-
-    # trajectory: DataFrame,
-    # geomap: DataArray,
-    # config: ParticleFilterConfig,
-
-
-    min_lon = trajectory["lon"].min()
-    max_lon = trajectory["lon"].max()
-    min_lat = trajectory["lat"].min()
-    max_lat = trajectory["lat"].max()
-    min_lon, min_lat, max_lon, max_lat = inflate_bounds(min_lon, min_lat, max_lon, max_lat, 0.25)
-    geo_map = get_map_section(
-        min_lon,
-        max_lon,
-        min_lat,
-        max_lat,
-        map_type,
-        map_resolution,
-    )
-    # Load initial conditions
-    mu = asarray([data.iloc[0].LAT, data.iloc[0].LON, 0, 0, 0, 0])
-    cov = asarray(configurations["cov"])
-    cov = diag(cov)
-    noise = asarray(configurations["velocity_noise"])
-    noise = diag(noise)
-    if map_type == "relief":
-        measurement_sigma = configurations["bathy_std"]
-        measurment_type = "DEPTH"
-        measurement_bias = configurations["bathy_mean_d"]
-    elif map_type == "gravity":
-        measurement_sigma = configurations["gravity_std"]
-        measurement_bias = configurations["gravity_mean_d"]
-        measurment_type = "GRAV_ANOM"
-    elif map_type == "magnetic":
-        measurement_sigma = configurations["magnetic_std"]
-        measurement_bias = configurations["magnetic_mean_d"]
-        measurment_type = "MAG_RES"
-    else:
-        raise ValueError("Map type not recognized")
-
-    n = configurations["n"]
-    data[measurment_type] = data[measurment_type] - measurement_bias
-
-    estimate, rms_error, error = run_particle_filter(
-        mu,
-        cov,
-        n,
-        data,
-        geo_map,
-        noise,
-        measurement_sigma,
-        measurment_type=measurment_type,
-    )
-
-    data[["PF_LAT", "PF_LON", "PF_DEPTH", "PF_VN", "PF_VE", "PF_VD"]] = estimate
-    data["RMSE"] = rms_error
-    data["ERROR"] = error
-    return data, geo_map
-'''
 
 
 # Error functions

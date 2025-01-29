@@ -1,0 +1,32 @@
+Number of trajectories: 828
+Number of recoveries: 1300 | 1.57
+Number of recoveries below pixel: 1069 | 1.29
+Number of certain recoveries: 876 | 1.06
+Number of certain recoveries below pixel: 976 | 1.18
+----------------------------------------
+Mean trajectory duration: 2:39:59.637681
+Mean trajectory distance: 60.99 km (32.93 nmi)
+Min trajectory distance: 0.56 km (0.30 nmi)
+Max trajectory distance: 4240.36 km (2289.61 nmi)
+Min trajectory duration: 0:47:00
+Max trajectory duration: 7 days, 6:19:00
+----------------------------------------
+Mean recovery duration: 0:32:05.769231
+Mean recovery distance: 7.40 km (3.99 nmi)
+Mean recovery error: 899.91 meters
+Median recovery error: 884.48 meters
+----------------------------------------
+Mean recovery below pixel duration: 0:13:19.363891
+Mean recovery below pixel distance: 2.05 km (1.11 nmi)
+Mean recovery below pixel error: 271.78 meters
+Median recovery below pixel error: 270.87 meters
+----------------------------------------
+Mean certain recovery duration: 2:18:38.082192
+Mean certain recovery distance: 53.17 km (28.71 nmi)
+Mean certain recovery error: 20606.96 meters
+Median certain recovery error: 19365.73 meters
+----------------------------------------
+Mean certain recovery below pixel duration: 1:42:39.344262
+Mean certain recovery below pixel distance: 39.60 km (21.38 nmi)
+Mean certain recovery below pixel error: 32619.32 meters
+Median certain recovery below pixel error: 32166.60 meters
