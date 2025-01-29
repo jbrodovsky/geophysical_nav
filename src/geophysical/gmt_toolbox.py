@@ -136,9 +136,9 @@ class GeophysicalMap:
     ):
         assert isinstance(map_type, MeasurementType), "map_type must be a MeasurementType"
         self.map_type = map_type
-        assert isinstance(
-            map_resolution, (ReliefResolution, GravityResolution, MagneticResolution)
-        ), "map_resolution must be a valid ReliefResolution, GravityResolution, or MagneticResolution"
+        assert isinstance(map_resolution, (ReliefResolution, GravityResolution, MagneticResolution)), (
+            "map_resolution must be a valid ReliefResolution, GravityResolution, or MagneticResolution"
+        )
         self.map_resolution = map_resolution
         west_lon = wrap.to_180(west_lon)
         east_lon = wrap.to_180(east_lon)
@@ -151,10 +151,16 @@ class GeophysicalMap:
             west_lon, south_lat, east_lon, north_lat = self._inflate_bounds(
                 west_lon, south_lat, east_lon, north_lat, inflate_bounds
             )
-        self.west_lon = west_lon
-        self.east_lon = east_lon
-        self.south_lat = south_lat
-        self.north_lat = north_lat
+        west_lon = wrap.to_180(west_lon)
+        east_lon = wrap.to_180(east_lon)
+        if east_lon < west_lon:
+            self.west_lon = east_lon
+            self.east_lon = west_lon
+        else:
+            self.west_lon = west_lon
+            self.east_lon = east_lon
+        self.south_lat = south_lat if south_lat >= -90 else -90
+        self.north_lat = north_lat if north_lat <= 90 else 90
         # Validate map type and construct GMT map name to call via grdcut
         if map_type == MeasurementType.RELIEF or map_type == MeasurementType.BATHYMETRY:
             assert isinstance(map_resolution, ReliefResolution), "map_resolution must be a ReliefResolution"
