@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from geophysical import gmt_toolbox as gmt
 from data_management import dbmgr, m77t
 from geophysical import particle_filter as pf
-from geophysical.gmt_toolbox import GeophysicalMap, MeasurementType, MagneticResolution
+from geophysical.gmt_toolbox import GeophysicalMap, MeasurementType, GravityResolution
 import haversine as hs
 import h5py
 from tqdm import tqdm
@@ -30,20 +30,20 @@ N = 10
 pf_config_delocalized = pf.ParticleFilterConfig.from_dict(
     {
         "n": N,
-        "cov": [0.01, 0.01, 1, 0.1, 0.1, 0.1, 0, 0, 0, 0],
-        "noise": [0.0, 0.0, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 0.1],
+        "cov": [0.01, 0.01, 1.0, 0.10, 0.10, 0.10, 0.000, 0.000, 0, 10],
+        "noise": [0.00, 0.00, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 1],
         "input_config": pf.ParticleFilterInputConfig.VELOCITY,
-        "measurement_config": [{"name": "magnetic", "std": 194}],
+        "measurement_config": [{"name": "GRAVITY", "std": 5}],
     }
 )
 
 pf_config_localized = pf.ParticleFilterConfig.from_dict(
     {
         "n": N,
-        "cov": [15 / (1852 * 60), 15 / (1852 * 60), 1, 0.1, 0.1, 0.1, 0, 0, 0, 0],
-        "noise": [0.0, 0.0, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 0.1],
+        "cov": [15 / (1852 * 60), 15 / (1852 * 60), 1, 0.1, 0.1, 0.1, 0, 0, 0, 10],
+        "noise": [0.0, 0.0, 0.0, 1.75, 1.75, 0.01, 0.001, 0.001, 0.001, 1],
         "input_config": pf.ParticleFilterInputConfig.VELOCITY,
-        "measurement_config": [{"name": "magnetic", "std": 194}],
+        "measurement_config": [{"name": "GRAVITY", "std": 5}],
     }
 )
 
@@ -145,12 +145,12 @@ def process_trajectory(id: int, pf_config: dict, output_dir: str):
 
     try:
         grav_map = GeophysicalMap(
-            MeasurementType.MAGNETIC, MagneticResolution.TWO_MINUTES, min_lon, max_lon, min_lat, max_lat, 0.25
+            MeasurementType.GRAVITY, GravityResolution.ONE_MINUTE, min_lon, max_lon, min_lat, max_lat, 0.25
         )
     except Exception as e:
-        logger.info(f"Failed to get magnetic map for trajectory {id}. Cause: {e}.")
+        logger.info(f"Failed to get GRAVITY map for trajectory {id}. Cause: {e}.")
         return
-    geomaps = {gmt.MeasurementType.MAGNETIC: grav_map}
+    geomaps = {gmt.MeasurementType.GRAVITY: grav_map}
     try:
         result = pf.run_particle_filter(truth, trajectory, geomaps, pf_config)
     except Exception as e:
@@ -198,7 +198,7 @@ def plot_estimate_error(
         alpha=0.3,
         label="Estimate error less than drift",
     )
-
+    # TODO: #79 Refactor this to remove plotting the map resolution line, as it isn't a useful metric for magnetic and gravity data
     axes[0].fill_between(
         trajectory["distance"] / 1000,
         result["estimate_error"] + result["planar_variance"] / 2,
@@ -208,7 +208,7 @@ def plot_estimate_error(
         alpha=0.3,
         label="Estimate Error less than map resolution",
     )
-    axes[0].axhline(452, color="g", linestyle="--", label="Map resolution")
+    axes[0].axhline(map_resolution, color="g", linestyle="--", label="Map resolution")
     axes[0].set_xlabel("Distance traveled (km)")
     axes[0].set_ylabel("Error (meters)")
     axes[0].set_xlim(left=0, right=trajectory["distance"].max() / 1000)
@@ -461,7 +461,7 @@ def summarize_results(base_dir: str, initialization: str) -> None:
 
 def main():
     logger.info("=========================================")
-    logger.info("Beginning new run of magnetic particle filter")
+    logger.info("Beginning new run of GRAVITY particle filter")
     all_trajs = db.get_all_trajectories()
     grav_trajectories = all_trajs.loc[(all_trajs["duration"] >= 3600) & (all_trajs["freeair"])]
     # Create the output directory for saving results
@@ -502,10 +502,10 @@ def main():
         os.path.join(output_dir, "delocalized"),
         "De-localized Particle Filter Estimate Error",
         recovery_offset=1852.0,
-        map_resolution=222_390.0,
+        map_resolution=1852 * 60,
     )
     run_post_processing(
-        os.path.join(output_dir, "localized"), "Particle Filter Estimate Error", map_resolution=222_390.0
+        os.path.join(output_dir, "localized"), "Particle Filter Estimate Error", map_resolution=1852 * 60
     )
     logger.info("Finished post-processing")
     print("Finished post-processing")

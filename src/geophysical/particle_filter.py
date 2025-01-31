@@ -817,12 +817,15 @@ def calculate_truth(trajectory: DataFrame) -> tuple[DataFrame, DataFrame]:
     return integrator.trajectory, feedback
 
 
-def initialize_particle_filter(initial_state: NDArray, config: ParticleFilterConfig) -> NDArray:
+def initialize_particle_filter(initial_state: NDArray, config: ParticleFilterConfig, bias: float = 0) -> NDArray:
     """Initializes the particle filter with the initial state and configuration."""
     assert isinstance(config.n, int), "Number of particles must be an integer."
     assert config.n > 0, "Number of particles must be greater than zero."
-    intial_state = append(initial_state, zeros(config.cov.shape[0] - initial_state.shape[0]))
-    particles = mvn(intial_state, diag(config.cov), (config.n,))
+    initial_state = append(initial_state, zeros(config.cov.shape[0] - initial_state.shape[0]))
+    if bias > 0:
+        initial_state[-1] = bias
+    print(f"initializing particles about {initial_state}")
+    particles = mvn(initial_state, diag(config.cov), (config.n,))
     return particles
 
 
@@ -857,7 +860,12 @@ def run_particle_filter(
         The resulting estimate (latitude, longitude, altitude, velocities north, east, and west) of the particle filter and some error metrics.
     """
     # Initialization
-    particles = initialize_particle_filter(truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config)
+    if config.measurement_config[0].name == MeasurementType.GRAVITY:
+        particles = initialize_particle_filter(
+            truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config, 25
+        )
+    else:
+        particles = initialize_particle_filter(truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config)
     weights = ones((config.n,)) / config.n
     rms_error_2d = zeros(len(trajectory))
     rms_error_3d = zeros_like(rms_error_2d)
