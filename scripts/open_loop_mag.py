@@ -174,7 +174,6 @@ def plot_estimate_error(
     title_str: str = "Particle Filter Estimate Error",
     recovery_offset: float = 0,
 ) -> plt.Figure:
-    drift_rate += recovery_offset
     fig, axes = plt.subplots(2, 1, figsize=figure_size, gridspec_kw={"height_ratios": [3, 1]})
 
     duration = trajectory.index[-1] * 60
@@ -191,7 +190,7 @@ def plot_estimate_error(
 
     axes[0].fill_between(
         trajectory["distance"] / 1000,
-        np.maximum(result["estimate_error"] + result["planar_variance"] / 2, map_resolution),
+        result["estimate_error"] + result["planar_variance"] / 2,
         drift_rate,
         where=result["estimate_error"] + result["planar_variance"] / 2 <= drift_rate,
         color="magenta",
@@ -199,20 +198,21 @@ def plot_estimate_error(
         label="Estimate error less than drift",
     )
 
-    axes[0].fill_between(
-        trajectory["distance"] / 1000,
-        result["estimate_error"] + result["planar_variance"] / 2,
-        map_resolution,
-        where=result["estimate_error"] + result["planar_variance"] / 2 <= map_resolution,
-        color="green",
-        alpha=0.3,
-        label="Estimate Error less than map resolution",
-    )
-    axes[0].axhline(452, color="g", linestyle="--", label="Map resolution")
+    # axes[0].fill_between(
+    #     trajectory["distance"] / 1000,
+    #     result["estimate_error"] + result["planar_variance"] / 2,
+    #     map_resolution,
+    #     where=result["estimate_error"] + result["planar_variance"] / 2 <= map_resolution,
+    #     color="green",
+    #     alpha=0.3,
+    #     label="Estimate Error less than map resolution",
+    # )
+    # axes[0].axhline(map_resolution, color="g", linestyle="--", label="Map resolution")
+
     axes[0].set_xlabel("Distance traveled (km)")
     axes[0].set_ylabel("Error (meters)")
     axes[0].set_xlim(left=0, right=trajectory["distance"].max() / 1000)
-    axes[0].set_ylim(bottom=0)
+    axes[0].set_ylim(bottom=0, top=max(drift_rate) * 1.5)
     axes[0].legend()
     axes[0].set_title(f"{title_str} | Duration: {duration / 3600:0.2f} hours")
 
@@ -297,6 +297,7 @@ def run_post_processing(
                 filename = file.split(".")[0]
                 result, trajectory, trajectory_std = load_simulation_results(os.path.join(root, f"{filename}.h5"))
                 drift_rate = trajectory.index.to_numpy() * 60 * 1852 / (24 * 3600) + recovery_offset
+                print(f"Initial drift offset: {drift_rate[0]:0.2f} meters")
                 trajectory_summary.loc[filename] = [
                     np.nan,
                     np.nan,
@@ -461,41 +462,41 @@ def summarize_results(base_dir: str, initialization: str) -> None:
 
 def main():
     logger.info("=========================================")
-    logger.info("Beginning new run of magnetic particle filter")
-    all_trajs = db.get_all_trajectories()
-    mag_trajectories = all_trajs.loc[(all_trajs["duration"] >= 3600) & (all_trajs["mag_res"])]
-    # Create the output directory for saving results
+    # logger.info("Beginning new run of magnetic particle filter")
+    # all_trajs = db.get_all_trajectories()
+    # mag_trajectories = all_trajs.loc[(all_trajs["duration"] >= 3600) & (all_trajs["mag_res"])]
+    # # Create the output directory for saving results
     output_dir = "mag_pf_results"
-    if not os.path.exists(output_dir):
-        os.makedirs(os.path.join(output_dir, "delocalized"))
-        os.makedirs(os.path.join(output_dir, "localized"))
-    # Use multiprocessing to process trajectories in parallel
-    print("Processing delocalized initialization")
-    # Find the number of CPUs available
-    cpu_count = mp.cpu_count()
-    logger.info(f"Number of CPUs available: {cpu_count}")
-    logger.info(f"Number of trajectories to process: {len(mag_trajectories)}")
-    start = time.time()
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        pool.starmap(
-            process_trajectory,
-            [
-                (id, pf_config_delocalized, os.path.join(output_dir, "delocalized"))
-                for id in tqdm(mag_trajectories["id"])
-            ],
-        )
-    logger.info(f"Finished delocalized run of mag particle filter. Elapsed time: {time.time() - start}")
-    logger.info("=========================================")
-    print("Processing localized initialization")
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        pool.starmap(
-            process_trajectory,
-            [(id, pf_config_localized, os.path.join(output_dir, "localized")) for id in tqdm(mag_trajectories["id"])],
-        )
-    logger.info(f"Finished localized run of mag particle filter. Elapsed time: {time.time() - start}")
-    logger.info("=========================================")
-    logger.info("COMPLETED!")
-    logger.info("=========================================")
+    # if not os.path.exists(output_dir):
+    #     os.makedirs(os.path.join(output_dir, "delocalized"))
+    #     os.makedirs(os.path.join(output_dir, "localized"))
+    # # Use multiprocessing to process trajectories in parallel
+    # print("Processing delocalized initialization")
+    # # Find the number of CPUs available
+    # cpu_count = mp.cpu_count()
+    # logger.info(f"Number of CPUs available: {cpu_count}")
+    # logger.info(f"Number of trajectories to process: {len(mag_trajectories)}")
+    # start = time.time()
+    # with mp.Pool(processes=mp.cpu_count()) as pool:
+    #     pool.starmap(
+    #         process_trajectory,
+    #         [
+    #             (id, pf_config_delocalized, os.path.join(output_dir, "delocalized"))
+    #             for id in tqdm(mag_trajectories["id"])
+    #         ],
+    #     )
+    # logger.info(f"Finished delocalized run of mag particle filter. Elapsed time: {time.time() - start}")
+    # logger.info("=========================================")
+    # print("Processing localized initialization")
+    # with mp.Pool(processes=mp.cpu_count()) as pool:
+    #     pool.starmap(
+    #         process_trajectory,
+    #         [(id, pf_config_localized, os.path.join(output_dir, "localized")) for id in tqdm(mag_trajectories["id"])],
+    #     )
+    # logger.info(f"Finished localized run of mag particle filter. Elapsed time: {time.time() - start}")
+    # logger.info("=========================================")
+    # logger.info("COMPLETED!")
+    # logger.info("=========================================")
     logger.info("Running post-processing")
     print("Running post-processing")
     run_post_processing(
