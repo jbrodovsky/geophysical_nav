@@ -1,85 +1,47 @@
 [project]
 name = "geophysical-nav"
 version = "0.1.0"
-requires-python = ">=3.9"
-description = "A simulator and database manager for geophysical navigation systems"
+description = "Add your description here"
 readme = "README.md"
-authors = [{name="James Brodovsky"}]
+authors = [
+    { name = "James Brodovsky", email = "james.brodovsky@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "anglewrapper>=0.1.1",
+    "filterpy>=1.4.5",
+    "h5py>=3.13.0",
+    "haversine>=2.9.0",
+    "matplotlib>=3.10.1",
+    "numba>=0.61.0",
+    "numpy>=2.1.3",
+    "pandas>=2.2.3",
+    "pygmt>=0.14.2",
+    "python-ins>=1.0.1",
+    "pytz>=2025.1",
+    "ruff>=0.9.9",
+    "scikit-learn>=1.6.1",
+    "sqlalchemy>=2.0.38",
+    "tqdm>=4.67.1",
+]
 
-[project.urls]
-homepage = "https://github.com/jbrodovsky/geophysical_nav"
-
-[project.scripts]
-dbmgr = "data_management.dbmgr:main"
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
 
 [build-system]
-requires = ["setuptools", "wheel", "build"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir ={ "" = "src" }
-packages = ["geophysical", "data_management"]
-
-[tool.pytest]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py", "tests.py", "test.py"]
-python_classes = ["Test*", "*Test"]
-python_functions = ["test_*"]
-
-[tool.pytest.ini_options]
-pythonpath = "./src"
-addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
-
-[tool.ruff]
-line-length = 120
+requires = ["scikit-build-core>=0.10", "pybind11"]
+build-backend = "scikit_build_core.build"
 
 [tool.pixi.project]
 channels = ["conda-forge"]
-platforms = ["linux-64", "win-64", "osx-64"]
+platforms = ["linux-64", "osx-64", "win-64"]
+
 
 [tool.pixi.pypi-dependencies]
-geophysical_nav = { path = ".", editable = true }
-python-ins = "*"
-anglewrapper = "*"
-build = "*"
-setuptools = "*"
-wheel = "*"
-
-[tool.pixi.dependencies]
-numpy = "*"
-pandas = "*"
-filterpy = "*"
-pytz = "*"
-haversine = "*"
-pygmt = "*"
-numba = "*"
-matplotlib = "*"
-h5py = "*"
-sqlalchemy = "*"
-sqlite = "*"
-tqdm = "*"
-pytables = "*"
-pip = "*"
-ruff = "*"
-scikit-learn = ">=1.6.1,<2"
+geophysical-nav = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
-build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
-install = {cmd = "pip install -e ."}
 
-[tool.pixi.feature.dev.dependencies]
-notebook = "*"
-
-[tool.pixi.feature.test.dependencies]
-pytest = "*"
-pytest-cov = "*"
-ruff = "*"
-
-[tool.pixi.feature.test.tasks]
-lint = "ruff format ."
-test = {cmd = "coverage run -m pytest", depends-on = "lint"}
-
-[tool.pixi.environments]
-test = { features = ["test"], solve-group = "default" }
-dev = { features = ["dev"], solve-group = "default" }
+[tool.pixi.dependencies]
+pybind11 = ">=2.13.6,<3"
