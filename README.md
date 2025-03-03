@@ -4,6 +4,32 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 3 March 2025
+
+For career building purposes, skill development, and actual computational speed, I'm going to be incorporating C++ on the backend of some modules, namely the navigation toolbox for the actual nav filters. Refactored the repository to use `uv` and `scikit-build-core` to build the combined package and `pybind11` to create the actual Python C++ bindings. TBD on whether or not I'll stick with `multiprocessing` for parallel processing or switch to a C++ varient. 
+
+Package architecture needs to be as follows as `scikit-build-core` defaults to looking for packages in `/src`:
+```
+geophysical_nav/      // root folder
+  src/                // ALL source code
+    geophysical_nav/  // Python package root
+      data_management   // A python module folder
+      geophysical       // A python module folder
+      <python_cpp_module>   // A C++ bindings file which defines a module using pybind11
+  scripts/            // Experiment scripts
+  tests/              // Test scripts
+  pyproject.toml
+  setup.py
+```
+
+The project should largely be managed by uv. `pygmt` is availble on `pypi` now and should work fine. `pixi` will be used for local environment management of the C++ dependencies by downloading via `conda-forge`. `pixi` setting should be managed via the `pyproject.toml` file under `[tool.pixi]`.
+
+* To build: `uv build`
+* To install: `uv pip install .`
+* To sync Python vitual environment: `uv sync`
+
+Again, the development of the package should be seperate from the experiments.
+
 ### Update 5 Noveber 2024
 
 **Dev environment**
@@ -30,8 +56,6 @@ To that end, I need to look into packaging the source code and library a bit mor
 So I feel that this project is a good enough excuse for me to work on my C/C++ skills as well. Also considering the sheer bulk of data and repetitions I'm going to be making, having a faster backend would be beneficial. I'm going to be using `pybind11` to write the backend code in C++ and then use Python to interface with it. All Python-based backend code should make use of heavy type hints and be transcompiled and built using MyPyC. Simulations and experiments should be conducted in the `scripts` folder and make use of the built source code found in `src`.
 
 The general plan is to use Python more like a highly developed scripting and shell language to run the simulations and manage the data, while the heavy lifting is done in C++. Data pre- and post-processing will be done in Python while the key navigation algorithm code and run-to-run simulation will be done in C++. I'm not yet sure how to best make use of multi threading or parallel processing. The main issue is passing the trajectory information between the two languages. I can convert the DataFrame to a NumPy array and pass that over to C++, but then it's Python running the simulation and I can't make use of C++ proper multi-threading. Alternatively I can rebuild a sqlite client in C++ and have it read the selected data from the database but that seems like a lot of work for little gain. I'll have to think about this more.
-
-
 
 ### Update 14 May 2024
 
