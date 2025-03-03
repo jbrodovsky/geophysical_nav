@@ -6,16 +6,19 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ### Update 3 March 2025
 
-For career building purposes, skill development, and actual computational speed, I'm going to be incorporating C++ on the backend of some modules, namely the navigation toolbox for the actual nav filters. Refactored the repository to use `uv` and `scikit-build-core` to build the combined package and `pybind11` to create the actual Python C++ bindings. TBD on whether or not I'll stick with `multiprocessing` for parallel processing or switch to a C++ varient. 
+For career building purposes, skill development, and actual computational speed, I'm going to be incorporating C++ on the backend of some modules, namely the navigation toolbox for the actual nav filters. Refactored the repository to use `uv` and `scikit-build-core` to build the combined package and `pybind11` to create the actual Python C++ bindings. TBD on whether or not I'll stick with `multiprocessing` for parallel processing or switch to a C++ varient.
 
 Package architecture needs to be as follows as `scikit-build-core` defaults to looking for packages in `/src`:
-```
+
+```plaintext
 geophysical_nav/      // root folder
   src/                // ALL source code
+    include           // C++ headers
     geophysical_nav/  // Python package root
       data_management   // A python module folder
       geophysical       // A python module folder
-      <python_cpp_module>   // A C++ bindings file which defines a module using pybind11
+    <python_cpp_module>   // A C++ bindings file which defines a module using pybind11
+    src/              // C++ source code
   scripts/            // Experiment scripts
   tests/              // Test scripts
   pyproject.toml
@@ -32,14 +35,14 @@ Again, the development of the package should be seperate from the experiments.
 
 ### Update 5 Noveber 2024
 
-**Dev environment**
+#### Dev environment
 
 Got fed up with `conda` and switched to `pixi` for environment and package management. Pixi builds on the conda philosophy but instead of having a central local environment it instead builds the environment within the project folder. This requires a slightly different workflow:
 
 1. Project dependencies are listed in the `pyproject.toml` file under the `[tool.pixi]` section. I've additionally seperated out the dependancies for testing, linting, and development into seperate sections. This requires that the appropriate environment be 'activated' (namely `dev` since I use notebooks and other interactive tools in testing) using `pixi shell -e dev`.
 2. The project does not need to build manually built prior to writing an experiment in `/scripts`. Pixi lists the current project as an editable dependancy and builds and installs the project in the environment when the shell and environment is activated using `pixi shell`. Note that the root folder/project name `geophysical_nav` is not required anymore and imports and intellisense works from below the `/src` folder.
 
-**Language usage**
+#### Language usage
 
 I'm getting a little annoyed wrestling with `numba` and don't like storing the navigation states in arrays which require a known order of states. The arrays are somewhat useful for the linear algebra computations they enable, but that can likely be stored and utilized still with small specific sets of states ex: `nav_states.position = [lat, lon, alt]` and `nav_states.velocity = [v_n, v_e, v_d]`. I'm going to see about using Numba's `jitclass` functionality. If that gets annoying, I'll switch to using `pybind11` to write the backend in C++ and use Python as a scripting language to run the simulations and manage the data.
 
@@ -49,7 +52,7 @@ The main issue is that I don't want to write *multiple* versions of the basic st
 
 Using Insync and OneDrive I've gotten around the source data issue. The plan is to store the source data and resulting processed database on OneDrive location and use this a network drive. Insync allows for OneDrive syncing directly to the filesystem on a linux machine and will allow me to transfer and access the data on my remote linux desktop. Development paradigm will be to use my laptop and WSL2 for development and testing. Code will then be pushed to GitHub and pulled down on the remote desktop for testing and deployment and running full-scale simulations.
 
-To that end, I need to look into packaging the source code and library a bit more. I think the current model of packaging it as a conda environment is the best place to start from. 
+To that end, I need to look into packaging the source code and library a bit more. I think the current model of packaging it as a conda environment is the best place to start from.
 
 ### Update 16 July 2024
 
