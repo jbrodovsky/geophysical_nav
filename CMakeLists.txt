@@ -26,8 +26,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_compile_options(
         -fsanitize=address
         -fsanitize=undefined
-        #-fsanitize=leak
-        #-fsanitize=thread
+        -fsanitize=leak
+        -fsanitize=thread
         -fno-omit-frame-pointer
         -g
     )
@@ -64,10 +64,7 @@ target_link_libraries(navtoolbox PRIVATE Eigen3::Eigen)
 add_executable(main src/src/main.cpp)
 target_link_libraries(main PRIVATE navtoolbox)
 target_link_libraries(main PRIVATE Eigen3::Eigen)
-    # install to lib directory
-    # install(TARGETS navtoolbox DESTINATION ./bin)
-    # return()
-#else()
+
 if (SKBUILD_PROJECT_NAME)
     message(STATUS "Building Python bindings")
     # If SKBUILD_PROJECT_NAME is set, we are building the Python bindings
