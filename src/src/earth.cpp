@@ -38,9 +38,9 @@ Eigen::Matrix3d rotateECEFToNED(const double& lat, const double& lon) {
  */
 Eigen::Matrix3d rotateNEDToBody(const double& roll, const double& pitch, const double& yaw) {
     Eigen::Matrix3d R;
-    R = (Eigen::AngleAxisd(yaw * DEG2RAD, Eigen::Vector3d::UnitZ()) *
+    R = (Eigen::AngleAxisd(roll * DEG2RAD, Eigen::Vector3d::UnitX()) *
          Eigen::AngleAxisd(pitch * DEG2RAD, Eigen::Vector3d::UnitY()) *
-         Eigen::AngleAxisd(roll * DEG2RAD, Eigen::Vector3d::UnitX())).toRotationMatrix();
+         Eigen::AngleAxisd(yaw * DEG2RAD, Eigen::Vector3d::UnitZ())).toRotationMatrix();
     return R;
 }
 /**
@@ -98,6 +98,40 @@ Eigen::Matrix3d rotateBodyToNED(const Eigen::Vector3d& rpy) {
     return rotateBodyToNED(rpy(0), rpy(1), rpy(2));
 }
 // Other useful transformations
+
+/**
+ * @brief Converts a rotation matrix to roll, pitch, yaw.
+ * 
+ * @param R Eigen::Matrix3d, 3x3 rotation matrix
+ * @return Eigen::Vector3d, 3x1 roll, pitch, yaw in degrees
+ */
+Eigen::Vector3d rotationMatrixToRPY(const Eigen::Matrix3d& R) {
+    Eigen::Vector3d rpy;
+    rpy(0) = atan2(R(2, 1), R(2, 2)) * RAD2DEG;
+    rpy(1) = asin(-R(2, 0)) * RAD2DEG;
+    rpy(2) = atan2(R(1, 0), R(0, 0)) * RAD2DEG;
+    return rpy;
+}
+/**
+ * @brief Converts roll, pitch, yaw to a rotation matrix.
+ * 
+ * @param rpy Eigen::Vector3d, 3x1 roll, pitch, yaw in degrees
+ * @return Eigen::Matrix3d, 3x3 rotation matrix
+ */
+Eigen::Matrix3d rpyToRotationMatrix(const Eigen::Vector3d& rpy) {
+    return rotateNEDToBody(rpy);
+}
+/**
+ * @brief Converts roll, pitch, yaw to a rotation matrix.
+ * 
+ * @param roll double, roll angle in degrees
+ * @param pitch double, pitch angle in degrees
+ * @param yaw double, yaw angle in degrees
+ * @return Eigen::Matrix3d, 3x3 rotation matrix
+ */
+Eigen::Matrix3d rpyToRotationMatrix(const double& roll, const double& pitch, const double& yaw) {
+    return rotateNEDToBody(roll, pitch, yaw);
+}
 /**
  * @brief Converts a vector to a skew-symmetric matrix.
  * 

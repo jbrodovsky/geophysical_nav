@@ -63,6 +63,9 @@ Eigen::Matrix3d rotateNEDToECEF(const double& lat, const double& lon);
 Eigen::Matrix3d rotateBodyToNED(const double& roll, const double& pitch, const double& yaw);
 Eigen::Matrix3d rotateBodyToNED(const Eigen::Vector3d& rpy);    // Roll, pitch, yaw
 // Other useful transformations
+Eigen::Vector3d rotationMatrixToRPY(const Eigen::Matrix3d& R);
+Eigen::Matrix3d rpyToRotationMatrix(const Eigen::Vector3d& rpy);
+Eigen::Matrix3d rpyToRotationMatrix(const double& roll, const double& pitch, const double& yaw);
 Eigen::Matrix3d vectorToSkewSymmetric(const Eigen::Vector3d& v);
 Eigen::Vector3d skewSymmetricToVector(const Eigen::Matrix3d& m);
 // Cooridnate conversions

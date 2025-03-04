@@ -22,6 +22,9 @@ PYBIND11_MODULE(earth, m) {
     m.def("rotate_ned_to_ecef", &rotateNEDToECEF, "Rotation matrix from NED to ECEF");
     m.def("rotate_body_to_ned", py::overload_cast<const double&, const double&, const double&>(&rotateBodyToNED), "Rotation matrix from body to NED");
     m.def("rotate_body_to_ned", py::overload_cast<const Eigen::Vector3d&>(&rotateBodyToNED), "Rotation matrix from body to NED");
+    m.def("rpy_to_rotation_matrix", py::overload_cast<const double&, const double&, const double&>(&rpyToRotationMatrix), "Convert roll, pitch, yaw to a rotation matrix");
+    m.def("rpy_to_rotation_matrix", py::overload_cast<const Eigen::Vector3d&>(&rpyToRotationMatrix), "Convert roll, pitch, yaw to a rotation matrix");
+    m.def("rotation_matrix_to_rpy", &rotationMatrixToRPY, "Convert a rotation matrix to roll, pitch, yaw");
     m.def("vector_to_skew_symmetric", &vectorToSkewSymmetric, "Convert a vector to a skew-symmetric matrix");
     m.def("skew_symmetric_to_vector", &skewSymmetricToVector, "Convert a skew-symmetric matrix to a vector");
     m.def("eci_to_ecef", py::overload_cast<const double&, const double&, const double&, const double&>(&eciToECEF), "Convert ECI coordinates to ECEF coordinates");
