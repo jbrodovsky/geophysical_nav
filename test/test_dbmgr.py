@@ -81,7 +81,9 @@ def test_write_and_read_results_to_file() -> None:
             columns=["error", "measurements", "time"],
         ),
     ]
-    dbmgr.write_results_to_file(filename=filename, configuration=configuration, summary=summary, results=results)
+    dbmgr.write_results_to_file(
+        filename=filename, configuration=configuration, summary=summary, results=results
+    )
     assert os.path.exists(os.path.join(filename))
     configuration, summary, results = dbmgr.read_results_file(filename=filename)
     assert configuration == {"test": "test"}

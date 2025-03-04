@@ -51,7 +51,9 @@ def test_coning_and_sculling_correction() -> None:
     previous_gyros = np.array([0, 0, 0])
     previous_accel = np.array([0, 0, 9.81])
 
-    thetas, dv = coning_and_sculling_correction(current_gyros, current_accel, previous_gyros, previous_accel, dt)
+    thetas, dv = coning_and_sculling_correction(
+        current_gyros, current_accel, previous_gyros, previous_accel, dt
+    )
     assert thetas.shape == (3,)
     assert dv.shape == (3,)
 
@@ -93,7 +95,9 @@ def test_update_relief() -> None:
     Test the relief update.
     """
     particles = np.random.random((10, 15))
-    relief = GeophysicalMap(MeasurementType.RELIEF, ReliefResolution.ONE_MINUTE, -1, 1, -1, 1, 0.1)
+    relief = GeophysicalMap(
+        MeasurementType.RELIEF, ReliefResolution.ONE_MINUTE, -1, 1, -1, 1, 0.1
+    )
     observation = relief.get_map_point(0, 0)
     weights = update_relief(particles, relief, observation, 0.1)
     assert len(weights) == 10
@@ -104,11 +108,15 @@ def test_update_anomaly() -> None:
     Test the anomaly update.
     """
     particles = np.random.random((10, 15))
-    anomaly = GeophysicalMap(MeasurementType.GRAVITY, GravityResolution.ONE_MINUTE, -1, 1, -1, 1, 0.1)
+    anomaly = GeophysicalMap(
+        MeasurementType.GRAVITY, GravityResolution.ONE_MINUTE, -1, 1, -1, 1, 0.1
+    )
     observation = anomaly.get_map_point(0, 0)
     weights = update_anomaly(particles, anomaly, observation, 0.1)
     assert len(weights) == 10
-    anomaly = GeophysicalMap(MeasurementType.MAGNETIC, MagneticResolution.TWO_MINUTES, -1, 1, -1, 1, 0.1)
+    anomaly = GeophysicalMap(
+        MeasurementType.MAGNETIC, MagneticResolution.TWO_MINUTES, -1, 1, -1, 1, 0.1
+    )
     observation = anomaly.get_map_point(0, 0)
     weights = update_anomaly(particles, anomaly, observation, 0.1)
     assert len(weights) == 10

@@ -59,7 +59,9 @@ def m77t_to_df(data: DataFrame) -> DataFrame:
     datetimes += timezones.astype(str)
     datetimes = to_datetime(datetimes, format="%Y%m%d%H%M%z")
     data.index = Index(datetimes)
-    data = data[["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]]
+    data = data[
+        ["LAT", "LON", "CORR_DEPTH", "MAG_TOT", "MAG_RES", "GRA_OBS", "FREEAIR"]
+    ]
     # Rename "CORR_DEPTH" to "DEPTH"
     data = data.rename(columns={"CORR_DEPTH": "DEPTH"})
     # Sort the DataFrame by the index
@@ -133,13 +135,17 @@ def create_trajectory(df: DataFrame) -> DataFrame:
         grav_anom = df["FREEAIR"].to_numpy()
         grav_anom = grav_anom[:-1]
 
-    ins = ins.assign(depth=depths, gra_obs=grav, freeair=grav_anom, mag_tot=mags, mag_res=mag_anom)
+    ins = ins.assign(
+        depth=depths, gra_obs=grav, freeair=grav_anom, mag_tot=mags, mag_res=mag_anom
+    )
     # shift all column names of INS to lowercase
     # ins.columns = Index(data=[col.lower() for col in ins.columns])
     return ins
 
 
-def calculate_bearing_vector(coords1: NDArray[float64], coords2: NDArray[float64]) -> NDArray[float64]:
+def calculate_bearing_vector(
+    coords1: NDArray[float64], coords2: NDArray[float64]
+) -> NDArray[float64]:
     """
     Calculate the bearing between two sets of coordinates. Vectors are row-wise.
     """
@@ -169,7 +175,9 @@ def calculate_bearing_vector(coords1: NDArray[float64], coords2: NDArray[float64
     return bearing
 
 
-def calculate_bearing(coords1: Tuple[float, float], coords2: Tuple[float, float]) -> float:
+def calculate_bearing(
+    coords1: Tuple[float, float], coords2: Tuple[float, float]
+) -> float:
     """
     Calculate the bearing between two sets of coordinates.
     """
@@ -230,12 +238,18 @@ def _populate_imu(data: DataFrame) -> DataFrame:
     # vel_ned: NDArray[float64] = column_stack(tup=(vel_north, vel_east, vel_down))
 
     lla: NDArray[float64] = column_stack((lat, lon, zeros_like(lat)))
-    rph: NDArray[float64] = column_stack(tup=(zeros_like(bearings), zeros_like(bearings), bearings))
+    rph: NDArray[float64] = column_stack(
+        tup=(zeros_like(bearings), zeros_like(bearings), bearings)
+    )
 
-    time: NDArray[float64] = data.index.to_series().diff().dt.total_seconds().fillna(value=0).to_numpy()
+    time: NDArray[float64] = (
+        data.index.to_series().diff().dt.total_seconds().fillna(value=0).to_numpy()
+    )
     time = time.cumsum()
 
-    out: Tuple[DataFrame, DataFrame] = generate_imu(time=time[:-1], lla=lla[:-1, :], rph=rph, sensor_type="rate")
+    out: Tuple[DataFrame, DataFrame] = generate_imu(
+        time=time[:-1], lla=lla[:-1, :], rph=rph, sensor_type="rate"
+    )
     traj: DataFrame = out[0]
     imu: DataFrame = out[1]
 
@@ -279,7 +293,9 @@ def process_m77t_file(filepath: str, max_time_delta: float = 60) -> List[DataFra
     for traj in continuous:
         points: NDArray[float64] = traj[["lat", "lon"]].to_numpy()
         try:
-            dists: NDArray[float64] = haversine_vector(array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS)
+            dists: NDArray[float64] = haversine_vector(
+                array1=points[:-1, :], array2=points[1:, :], unit=Unit.METERS
+            )
             traj.loc[:, ["distance"]] = concatenate([[0], dists.cumsum()])
         except ValueError:
             print(f"Error calculating distance. This trackline has {len(traj)} points.")

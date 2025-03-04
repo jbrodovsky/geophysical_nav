@@ -68,7 +68,9 @@ def main():
     logger.info("Checking for completed tables")
     try:
         completed_tables = get_tables(RESULTS_DB)
-        remaining_tables = [table for table in gravity_tables if table not in completed_tables]
+        remaining_tables = [
+            table for table in gravity_tables if table not in completed_tables
+        ]
     except FileNotFoundError:
         completed_tables = []
         remaining_tables = gravity_tables
@@ -90,7 +92,9 @@ def main():
         logger.info("Double checking to make sure all tables are complete")
         # Get completed tables
         completed_tables = get_tables(RESULTS_DB)
-        remaining_tables = [table for table in gravity_tables if table not in completed_tables]
+        remaining_tables = [
+            table for table in gravity_tables if table not in completed_tables
+        ]
         logger.info("Found remaining tables: %s", remaining_tables)
     logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
@@ -109,7 +113,9 @@ def main():
             mode="a",
             header=(not os.path.exists(output_path)),
         )
-    logger.info("Finished summarizing results. Process complete. Executing post processing.")
+    logger.info(
+        "Finished summarizing results. Process complete. Executing post processing."
+    )
 
     post_process_batch(f"{PLOTS_OUTPUT}/summary.csv", RESULTS_DB)
 
@@ -167,7 +173,9 @@ def post_process_batch(
     write_summary_data_file(output_location, results_tables, summary, pixel, first)
 
 
-def _check_for_missing_tables(source_tables: list[DataFrame], test_tables: DataFrame) -> int:
+def _check_for_missing_tables(
+    source_tables: list[DataFrame], test_tables: DataFrame
+) -> int:
     """
     Check to see if tables from the source are missing from the test tables.
     """
@@ -198,7 +206,7 @@ def write_summary_data_file(
         f.write("----- Summary -----\n")
         f.write(
             f"At least one position estimate below drift error in {num_recoveries} "
-            + f"({num_recoveries / total :0.4f}) trajectories.\n"
+            + f"({num_recoveries / total:0.4f}) trajectories.\n"
         )
         f.write(f"Mean duration:\t  {summary['duration'].mean()}\n")
         f.write(f"Median duration:\t{summary['duration'].median()}\n")
@@ -227,7 +235,7 @@ def write_summary_data_file(
         f.write(f"There are {len(pixel)} total below pixel resolution fixes.\n")
         f.write(
             f"At least one estimate below pixel resolution in {below_pixel_fixes}"
-            + f"({below_pixel_fixes/total :0.4f}) trajectories.\n"
+            + f"({below_pixel_fixes / total:0.4f}) trajectories.\n"
         )
         f.write(f"Mean duration:\t  {pixel['duration'].mean()}\n")
         f.write(f"Median duration:\t{pixel['duration'].median()}\n")
@@ -256,7 +264,9 @@ def processing_wrapper(
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
     try:
-        results, geo_map = process_particle_filter(df, config, map_type="gravity", map_resolution="01m")
+        results, geo_map = process_particle_filter(
+            df, config, map_type="gravity", map_resolution="01m"
+        )
     # Catch hdf5 errors
     except OSError as e:
         logger.error("Error processing table: %s", table)
@@ -279,7 +289,9 @@ def processing_wrapper(
     logger.info("Saved results for table: %s", table)
     fig, _ = plot_estimate(geo_map, results, measurment_type=config["measurment_type"])
     logger.info("Plotting estimate for table: %s", table)
-    fig.savefig(os.path.join(output_plots_location, "estimate", f"{table}_estimate.png"))
+    fig.savefig(
+        os.path.join(output_plots_location, "estimate", f"{table}_estimate.png")
+    )
     plt.close()
     logger.info("Estimate plot saved for table: %s", table)
     fig, _ = plot_error(results, annotations=annotations)

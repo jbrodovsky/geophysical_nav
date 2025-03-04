@@ -26,8 +26,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_compile_options(
         -fsanitize=address
         -fsanitize=undefined
-        -fsanitize=leak
-        -fsanitize=thread
+        #-fsanitize=leak
+        #-fsanitize=thread
         -fno-omit-frame-pointer
         -g
     )

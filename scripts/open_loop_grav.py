@@ -51,7 +51,10 @@ db = dbmgr.DatabaseManager("../.db")
 
 
 def save_simulation_results(
-    filename: str, pf_result: pd.DataFrame, trajectory: pd.DataFrame, trajectory_sd: pd.DataFrame
+    filename: str,
+    pf_result: pd.DataFrame,
+    trajectory: pd.DataFrame,
+    trajectory_sd: pd.DataFrame,
 ):
     # Create an HDF5 file
     with h5py.File(f"{filename}.h5", "w") as f:
@@ -68,10 +71,14 @@ def save_simulation_results(
         # Save the feedback.trajectory_sd dataframe
         trajectory_sd_group = f.create_group("trajectory_sd")
         for column in trajectory_sd.columns:
-            trajectory_sd_group.create_dataset(column, data=trajectory_sd[column].values)
+            trajectory_sd_group.create_dataset(
+                column, data=trajectory_sd[column].values
+            )
 
 
-def load_simulation_results(filename: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_simulation_results(
+    filename: str,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     # Open the HDF5 file
     with h5py.File(filename, "r") as f:
         # Load the result dataframe
@@ -79,19 +86,27 @@ def load_simulation_results(filename: str) -> tuple[pd.DataFrame, pd.DataFrame, 
         result = pd.DataFrame(result_data)
 
         # Load the feedback.trajectory dataframe
-        trajectory_data = {column: f["trajectory"][column][:] for column in f["trajectory"]}
+        trajectory_data = {
+            column: f["trajectory"][column][:] for column in f["trajectory"]
+        }
         trajectory = pd.DataFrame(trajectory_data)
 
         # Load the feedback.trajectory_sd dataframe
-        trajectory_sd_data = {column: f["trajectory_sd"][column][:] for column in f["trajectory_sd"]}
+        trajectory_sd_data = {
+            column: f["trajectory_sd"][column][:] for column in f["trajectory_sd"]
+        }
         trajectory_sd = pd.DataFrame(trajectory_sd_data)
 
     try:
         distance = hs.haversine_vector(
-            trajectory[["lat", "lon"]].to_numpy(), trajectory[["lat", "lon"]].shift(1).to_numpy(), hs.Unit.METERS
+            trajectory[["lat", "lon"]].to_numpy(),
+            trajectory[["lat", "lon"]].shift(1).to_numpy(),
+            hs.Unit.METERS,
         )
     except ValueError as ve:
-        logger.info(f"Failed to calculate distance. Cause: {ve}. Attempting to calculate through loop...")
+        logger.info(
+            f"Failed to calculate distance. Cause: {ve}. Attempting to calculate through loop..."
+        )
         distance = np.zeros(len(trajectory))
         for i in range(1, len(trajectory)):
             try:
@@ -102,7 +117,9 @@ def load_simulation_results(filename: str) -> tuple[pd.DataFrame, pd.DataFrame, 
                 ll1[1] = wrap.to_180(ll1[1])
                 distance[i] = hs.haversine(ll0, ll1, hs.Unit.METERS)
             except ValueError as ve:
-                logger.info(f"Failed to calculate distance for index {i}. Cause: {ve}. Setting distance to NaN.")
+                logger.info(
+                    f"Failed to calculate distance for index {i}. Cause: {ve}. Setting distance to NaN."
+                )
                 distance[i] = np.nan
     distance = np.cumsum(np.nan_to_num(distance, nan=0))
 
@@ -112,7 +129,9 @@ def load_simulation_results(filename: str) -> tuple[pd.DataFrame, pd.DataFrame, 
     trajectory["distance"] = distance
 
     lat_lon_var = np.sqrt(result[["lat_var", "lon_var"]].to_numpy())
-    planar_variance = hs.haversine_vector(np.zeros_like(lat_lon_var), lat_lon_var, hs.Unit.METERS)
+    planar_variance = hs.haversine_vector(
+        np.zeros_like(lat_lon_var), lat_lon_var, hs.Unit.METERS
+    )
     three_d_variance = np.sqrt(planar_variance**2 + result["alt_var"].to_numpy() ** 2)
 
     result["planar_variance"] = planar_variance
@@ -145,7 +164,13 @@ def process_trajectory(id: int, pf_config: dict, output_dir: str):
 
     try:
         grav_map = GeophysicalMap(
-            MeasurementType.GRAVITY, GravityResolution.ONE_MINUTE, min_lon, max_lon, min_lat, max_lat, 0.25
+            MeasurementType.GRAVITY,
+            GravityResolution.ONE_MINUTE,
+            min_lon,
+            max_lon,
+            min_lat,
+            max_lat,
+            0.25,
         )
     except Exception as e:
         logger.info(f"Failed to get GRAVITY map for trajectory {id}. Cause: {e}.")
@@ -158,7 +183,9 @@ def process_trajectory(id: int, pf_config: dict, output_dir: str):
         return
     try:
         out_path = os.path.join(output_dir, f"{name}")
-        save_simulation_results(f"{out_path}", result, trajectory, feedback.trajectory_sd)
+        save_simulation_results(
+            f"{out_path}", result, trajectory, feedback.trajectory_sd
+        )
     except Exception as e:
         logger.info(f"Failed to save results for trajectory {id}. Cause: {e}.")
         return
@@ -174,7 +201,9 @@ def plot_estimate_error(
     title_str: str = "Particle Filter Estimate Error",
     recovery_offset: float = 0,
 ) -> plt.Figure:
-    fig, axes = plt.subplots(2, 1, figsize=figure_size, gridspec_kw={"height_ratios": [3, 1]})
+    fig, axes = plt.subplots(
+        2, 1, figsize=figure_size, gridspec_kw={"height_ratios": [3, 1]}
+    )
 
     duration = trajectory.index[-1] * 60
     axes[0].plot(trajectory["distance"] / 1000, drift_rate, "m", label="INS Drift Rate")
@@ -186,7 +215,12 @@ def plot_estimate_error(
         alpha=0.2,
         label="PF planar certainty",
     )
-    axes[0].plot(trajectory["distance"] / 1000, result["estimate_error"], "k", label="Estimate error")
+    axes[0].plot(
+        trajectory["distance"] / 1000,
+        result["estimate_error"],
+        "k",
+        label="Estimate error",
+    )
 
     axes[0].fill_between(
         trajectory["distance"] / 1000,
@@ -217,8 +251,12 @@ def plot_estimate_error(
 
     # Compress the y-axis of the second plot
     axes[1].set_aspect(aspect="auto", adjustable="datalim")
-    axes[1].plot(trajectory["distance"] / 1000, result["planar_variance"], "k", label="2D")
-    axes[1].plot(trajectory["distance"] / 1000, result["three_d_variance"], "b", label="3D")
+    axes[1].plot(
+        trajectory["distance"] / 1000, result["planar_variance"], "k", label="2D"
+    )
+    axes[1].plot(
+        trajectory["distance"] / 1000, result["three_d_variance"], "b", label="3D"
+    )
     axes[1].set_xlabel("Distance traveled (km)")
     axes[1].set_ylabel("Estimate Certainty (m)")
     axes[1].set_xlim(left=0, right=trajectory["distance"].max() / 1000)
@@ -227,7 +265,9 @@ def plot_estimate_error(
     return fig
 
 
-def find_estimate_statistic(result: pd.DataFrame, threshold_mask: list | np.ndarray) -> pd.DataFrame:
+def find_estimate_statistic(
+    result: pd.DataFrame, threshold_mask: list | np.ndarray
+) -> pd.DataFrame:
     """
     Find the periods where the estimate error is below a certain threshold
     """
@@ -266,7 +306,10 @@ def find_estimate_statistic(result: pd.DataFrame, threshold_mask: list | np.ndar
 
 
 def run_post_processing(
-    output_dir: str, title_str: str, recovery_offset: float = 0.0, map_resolution: float = 452
+    output_dir: str,
+    title_str: str,
+    recovery_offset: float = 0.0,
+    map_resolution: float = 452,
 ) -> None:
     trajectory_summary = pd.DataFrame(
         columns=[
@@ -294,8 +337,13 @@ def run_post_processing(
             if file.endswith(".h5"):
                 # filename = os.path.join(root, file).split('.')[0]
                 filename = file.split(".")[0]
-                result, trajectory, trajectory_std = load_simulation_results(os.path.join(root, f"{filename}.h5"))
-                drift_rate = trajectory.index.to_numpy() * 60 * 1852 / (24 * 3600) + recovery_offset
+                result, trajectory, trajectory_std = load_simulation_results(
+                    os.path.join(root, f"{filename}.h5")
+                )
+                drift_rate = (
+                    trajectory.index.to_numpy() * 60 * 1852 / (24 * 3600)
+                    + recovery_offset
+                )
                 trajectory_summary.loc[filename] = [
                     np.nan,
                     np.nan,
@@ -323,30 +371,62 @@ def run_post_processing(
                 estimate_error = result["estimate_error"].rename(filename)
                 estimate_error.index = result["distance"]
                 estimate_error_summary = pd.merge(
-                    estimate_error_summary_distance, estimate_error, left_index=True, right_index=True, how="outer"
+                    estimate_error_summary_distance,
+                    estimate_error,
+                    left_index=True,
+                    right_index=True,
+                    how="outer",
                 )
                 estimate_error_time = result["estimate_error"].rename(filename)
                 estimate_error_time.index = trajectory.index * 60
                 estimate_error_summary_time = pd.merge(
-                    estimate_error_summary_time, estimate_error_time, left_index=True, right_index=True, how="outer"
+                    estimate_error_summary_time,
+                    estimate_error_time,
+                    left_index=True,
+                    right_index=True,
+                    how="outer",
                 )
                 recoveries = pd.concat(
-                    [recoveries, find_estimate_statistic(result, result["estimate_error"] >= drift_rate)]
+                    [
+                        recoveries,
+                        find_estimate_statistic(
+                            result, result["estimate_error"] >= drift_rate
+                        ),
+                    ]
                 )
                 below_pixel = pd.concat(
-                    [below_pixel, find_estimate_statistic(result, result["estimate_error"] >= map_resolution)]
+                    [
+                        below_pixel,
+                        find_estimate_statistic(
+                            result, result["estimate_error"] >= map_resolution
+                        ),
+                    ]
                 )
 
                 certain_recoveries = pd.concat(
-                    [certain_recoveries, find_estimate_statistic(result, result["planar_variance"] >= drift_rate)]
+                    [
+                        certain_recoveries,
+                        find_estimate_statistic(
+                            result, result["planar_variance"] >= drift_rate
+                        ),
+                    ]
                 )
                 certain_below_pixel = pd.concat(
-                    [certain_below_pixel, find_estimate_statistic(result, result["planar_variance"] >= map_resolution)]
+                    [
+                        certain_below_pixel,
+                        find_estimate_statistic(
+                            result, result["planar_variance"] >= map_resolution
+                        ),
+                    ]
                 )
 
     trajectory_summary.to_csv(os.path.join(output_dir, "trajectory_summary.csv"))
-    estimate_error_summary_distance.to_csv(os.path.join(output_dir, "estimate_error_summary_distance.csv"))
-    estimate_error_summary_time.to_csv(os.path.join(output_dir, "estimate_error_summary_time.csv"))
+    estimate_error_summary_distance.to_csv(
+        os.path.join(output_dir, "estimate_error_summary_distance.csv")
+    )
+    estimate_error_summary_time.to_csv(
+        os.path.join(output_dir, "estimate_error_summary_time.csv")
+    )
     recoveries.to_csv(os.path.join(output_dir, "recoveries.csv"))
     below_pixel.to_csv(os.path.join(output_dir, "below_pixel.csv"))
     certain_recoveries.to_csv(os.path.join(output_dir, "certain_recoveries.csv"))
@@ -389,19 +469,34 @@ def summarize_results(base_dir: str, initialization: str) -> None:
     -------
     None
     """
-    trajectories = pd.read_csv(os.path.join(base_dir, initialization, "trajectory_summary.csv"), index_col=0)
-    recoveries = pd.read_csv(os.path.join(base_dir, initialization, "recoveries.csv"), index_col=0)
-    recoveries_below_pixel = pd.read_csv(os.path.join(base_dir, initialization, "below_pixel.csv"), index_col=0)
-    certain_recoveries = pd.read_csv(os.path.join(base_dir, initialization, "certain_recoveries.csv"), index_col=0)
-    certain_below_pixel = pd.read_csv(os.path.join(base_dir, initialization, "certain_below_pixel.csv"), index_col=0)
+    trajectories = pd.read_csv(
+        os.path.join(base_dir, initialization, "trajectory_summary.csv"), index_col=0
+    )
+    recoveries = pd.read_csv(
+        os.path.join(base_dir, initialization, "recoveries.csv"), index_col=0
+    )
+    recoveries_below_pixel = pd.read_csv(
+        os.path.join(base_dir, initialization, "below_pixel.csv"), index_col=0
+    )
+    certain_recoveries = pd.read_csv(
+        os.path.join(base_dir, initialization, "certain_recoveries.csv"), index_col=0
+    )
+    certain_below_pixel = pd.read_csv(
+        os.path.join(base_dir, initialization, "certain_below_pixel.csv"), index_col=0
+    )
     # summary = pd.read_csv(os.path.join(base_dir, initialization, "summary.csv"), index_col=0)
     estimate_error_summary = pd.read_csv(
-        os.path.join(base_dir, initialization, "estimate_error_summary.csv"), index_col=0
+        os.path.join(base_dir, initialization, "estimate_error_summary.csv"),
+        index_col=0,
     )
     number_trajectories = len(trajectories)
-    with open(os.path.join(base_dir, initialization, "summary_statements.txt"), "w") as f:
+    with open(
+        os.path.join(base_dir, initialization, "summary_statements.txt"), "w"
+    ) as f:
         f.write(f"Number of trajectories: {number_trajectories}\n")
-        f.write(f"Number of recoveries: {len(recoveries)} | {len(recoveries) / number_trajectories:.2f}\n")
+        f.write(
+            f"Number of recoveries: {len(recoveries)} | {len(recoveries) / number_trajectories:.2f}\n"
+        )
         f.write(
             f"Number of recoveries below pixel: {len(recoveries_below_pixel)} | {len(recoveries_below_pixel) / number_trajectories:.2f}\n"
         )
@@ -412,7 +507,9 @@ def summarize_results(base_dir: str, initialization: str) -> None:
             f"Number of certain recoveries below pixel: {len(certain_below_pixel)} | {len(certain_below_pixel) / number_trajectories:.2f}\n"
         )
         f.write("----------------------------------------\n")
-        f.write(f"Mean trajectory duration: {str(timedelta(seconds=trajectories['duration'].mean()))}\n")
+        f.write(
+            f"Mean trajectory duration: {str(timedelta(seconds=trajectories['duration'].mean()))}\n"
+        )
         f.write(
             f"Mean trajectory distance: {trajectories['distance'].mean() / 1000:.2f} km ({trajectories['distance'].mean() / 1852:.2f} nmi)\n"
         )
@@ -422,15 +519,23 @@ def summarize_results(base_dir: str, initialization: str) -> None:
         f.write(
             f"Max trajectory distance: {trajectories['distance'].max() / 1000:.2f} km ({trajectories['distance'].max() / 1852:.2f} nmi)\n"
         )
-        f.write(f"Min trajectory duration: {str(timedelta(seconds=trajectories['duration'].min()))}\n")
-        f.write(f"Max trajectory duration: {str(timedelta(seconds=trajectories['duration'].max()))}\n")
+        f.write(
+            f"Min trajectory duration: {str(timedelta(seconds=trajectories['duration'].min()))}\n"
+        )
+        f.write(
+            f"Max trajectory duration: {str(timedelta(seconds=trajectories['duration'].max()))}\n"
+        )
         f.write("----------------------------------------\n")
-        f.write(f"Mean recovery duration: {str(timedelta(seconds=recoveries['duration'].mean()))}\n")
+        f.write(
+            f"Mean recovery duration: {str(timedelta(seconds=recoveries['duration'].mean()))}\n"
+        )
         f.write(
             f"Mean recovery distance: {recoveries['distance_traveled'].mean() / 1000:.2f} km ({recoveries['distance_traveled'].mean() / 1852:.2f} nmi)\n"
         )
         f.write(f"Mean recovery error: {recoveries['mean_error'].mean():.2f} meters\n")
-        f.write(f"Median recovery error: {recoveries['median_error'].mean():.2f} meters\n")
+        f.write(
+            f"Median recovery error: {recoveries['median_error'].mean():.2f} meters\n"
+        )
         f.write("----------------------------------------\n")
         f.write(
             f"Mean recovery below pixel duration: {str(timedelta(seconds=recoveries_below_pixel['duration'].mean()))}\n"
@@ -438,15 +543,25 @@ def summarize_results(base_dir: str, initialization: str) -> None:
         f.write(
             f"Mean recovery below pixel distance: {recoveries_below_pixel['distance_traveled'].mean() / 1000:.2f} km ({recoveries_below_pixel['distance_traveled'].mean() / 1852:.2f} nmi)\n"
         )
-        f.write(f"Mean recovery below pixel error: {recoveries_below_pixel['mean_error'].mean():.2f} meters\n")
-        f.write(f"Median recovery below pixel error: {recoveries_below_pixel['median_error'].mean():.2f} meters\n")
+        f.write(
+            f"Mean recovery below pixel error: {recoveries_below_pixel['mean_error'].mean():.2f} meters\n"
+        )
+        f.write(
+            f"Median recovery below pixel error: {recoveries_below_pixel['median_error'].mean():.2f} meters\n"
+        )
         f.write("----------------------------------------\n")
-        f.write(f"Mean certain recovery duration: {str(timedelta(seconds=certain_recoveries['duration'].mean()))}\n")
+        f.write(
+            f"Mean certain recovery duration: {str(timedelta(seconds=certain_recoveries['duration'].mean()))}\n"
+        )
         f.write(
             f"Mean certain recovery distance: {certain_recoveries['distance_traveled'].mean() / 1000:.2f} km ({certain_recoveries['distance_traveled'].mean() / 1852:.2f} nmi)\n"
         )
-        f.write(f"Mean certain recovery error: {certain_recoveries['mean_error'].mean():.2f} meters\n")
-        f.write(f"Median certain recovery error: {certain_recoveries['median_error'].mean():.2f} meters\n")
+        f.write(
+            f"Mean certain recovery error: {certain_recoveries['mean_error'].mean():.2f} meters\n"
+        )
+        f.write(
+            f"Median certain recovery error: {certain_recoveries['median_error'].mean():.2f} meters\n"
+        )
         f.write("----------------------------------------\n")
         f.write(
             f"Mean certain recovery below pixel duration: {str(timedelta(seconds=certain_below_pixel['duration'].mean()))}\n"
@@ -454,8 +569,12 @@ def summarize_results(base_dir: str, initialization: str) -> None:
         f.write(
             f"Mean certain recovery below pixel distance: {certain_below_pixel['distance_traveled'].mean() / 1000:.2f} km ({certain_below_pixel['distance_traveled'].mean() / 1852:.2f} nmi)\n"
         )
-        f.write(f"Mean certain recovery below pixel error: {certain_below_pixel['mean_error'].mean():.2f} meters\n")
-        f.write(f"Median certain recovery below pixel error: {certain_below_pixel['median_error'].mean():.2f} meters\n")
+        f.write(
+            f"Mean certain recovery below pixel error: {certain_below_pixel['mean_error'].mean():.2f} meters\n"
+        )
+        f.write(
+            f"Median certain recovery below pixel error: {certain_below_pixel['median_error'].mean():.2f} meters\n"
+        )
 
 
 def main():
@@ -504,7 +623,9 @@ def main():
         map_resolution=1852 * 60,
     )
     run_post_processing(
-        os.path.join(output_dir, "localized"), "Particle Filter Estimate Error", map_resolution=1852 * 60
+        os.path.join(output_dir, "localized"),
+        "Particle Filter Estimate Error",
+        map_resolution=1852 * 60,
     )
     logger.info("Finished post-processing")
     print("Finished post-processing")

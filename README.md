@@ -25,7 +25,7 @@ geophysical_nav/      // root folder
   setup.py
 ```
 
-The project should largely be managed by uv. `pygmt` is availble on `pypi` now and should work fine. `pixi` will be used for local environment management of the C++ dependencies by downloading via `conda-forge`. `pixi` setting should be managed via the `pyproject.toml` file under `[tool.pixi]`.
+The project should be managed by `pixi` but setup as a `uv`-like Python project. `pygmt` is availble on PyPI now and should work fine. `pixi` will be used for local environment management of the C++ and Python dependencies by downloading C++ libraries via `conda-forge` and defaulting to PyPi for Python. `pixi` setting should be managed via the `pyproject.toml` file under `[tool.pixi]`. Python dependencies should be listed uner the `[dependencies]` section and C++ dependencies under `[tool.pixi.dependencies]`.
 
 * To build: `uv build`
 * To install: `uv pip install .`

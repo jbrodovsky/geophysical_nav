@@ -260,10 +260,19 @@ class DatabaseManager:
     def get_trajectory(self, trajectory_id: int) -> DataFrame:
         """Get a trajectory from the database"""
         with Session(bind=self.engine) as session:
-            query: Query[Data] = session.query(Data).filter(Data.trajectory_id == trajectory_id)
+            query: Query[Data] = session.query(Data).filter(
+                Data.trajectory_id == trajectory_id
+            )
             traj = read_sql(sql=query.statement, con=self.engine)
             traj = traj.rename(columns={"vn": "VN", "ve": "VE", "vd": "VD"})
-            time = traj["timestamp"].diff().dt.total_seconds().fillna(0).cumsum().to_numpy()
+            time = (
+                traj["timestamp"]
+                .diff()
+                .dt.total_seconds()
+                .fillna(0)
+                .cumsum()
+                .to_numpy()
+            )
             traj = traj.drop(columns=["timestamp", "id", "trajectory_id"])
             traj.index = time
             return traj.astype(float)
@@ -275,7 +284,9 @@ class DatabaseManager:
             return read_sql(sql=query.statement, con=self.engine)
 
 
-def write_results_to_file(filename: str, configuration: dict, summary: DataFrame, results: list[DataFrame]) -> None:
+def write_results_to_file(
+    filename: str, configuration: dict, summary: DataFrame, results: list[DataFrame]
+) -> None:
     """Writes the results of a simulation to a hdf5 file"""
 
     # Check if the filepath specified by filename exists
@@ -364,7 +375,9 @@ def main() -> None:
 
     # Get a list of .m77t files as specified by the source path
     # (names:list[str], trajectories: list[DataFrame])
-    data: tuple[list[str], list[DataFrame]] = _get_m77t_files(source=args.source, interval=args.interval)
+    data: tuple[list[str], list[DataFrame]] = _get_m77t_files(
+        source=args.source, interval=args.interval
+    )
     names: list[str] = data[0]
     trajectories: list[DataFrame] = data[1]
     # data = zip(names, trajectories)

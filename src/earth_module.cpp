@@ -8,9 +8,12 @@ PYBIND11_MODULE(earth, m) {
     m.doc() = "WGS84 Earth model class definition and coordinate transformations";
     m.attr("RATE") = py::cast(RATE);
     m.attr("EQUATORIAL_RADIUS") = py::cast(EQUATORIAL_RADIUS);
+    m.attr("POLAR_RADIUS") = py::cast(POLAR_RADIUS);
+    m.attr("ECCENTRICITY") = py::cast(ECCENTRICITY);
     m.attr("ECCENTRICITY_SQUARED") = py::cast(ECCENTRICITY_SQUARED);
     m.attr("GE") = py::cast(GE);
     m.attr("GP") = py::cast(GP);
+    m.attr("f") = py::cast(f);
     m.attr("F") = py::cast(F);
     m.def("eci_to_ecef", &ECIToECEF, "Rotation matrix from ECI to ECEF");
     m.def("ecef_to_ned", &ECEFToNED, "Rotation matrix from ECEF to NED");

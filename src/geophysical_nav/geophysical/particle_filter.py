@@ -78,7 +78,9 @@ class GeophysicalMeasurement:
     name: MeasurementType
     std: int | float | int64 | float64
 
-    def __init__(self, name: MeasurementType | int | str, std: int | float | int64 | float64):
+    def __init__(
+        self, name: MeasurementType | int | str, std: int | float | int64 | float64
+    ):
         if isinstance(name, MeasurementType):
             self.name = name
         elif isinstance(name, int):
@@ -163,7 +165,10 @@ class ParticleFilterConfig:
         n = config["n"]
         cov = array(config["cov"])
         noise = array(config["noise"])
-        measurement_config = [GeophysicalMeasurement.from_dict(meas) for meas in config["measurement_config"]]
+        measurement_config = [
+            GeophysicalMeasurement.from_dict(meas)
+            for meas in config["measurement_config"]
+        ]
         input_config = ParticleFilterInputConfig(config["input_config"])
         if input_config == ParticleFilterInputConfig.VELOCITY:
             m = 9 + len(measurement_config)
@@ -172,7 +177,9 @@ class ParticleFilterConfig:
         assert cov.shape[0] == m, (
             f"Particle filter configuration {input_config} requires a covariance matrix of size {m}."
         )
-        assert noise.shape[0] == m, f"Particle filter configuration {input_config} requires a noise matrix of size {m}."
+        assert noise.shape[0] == m, (
+            f"Particle filter configuration {input_config} requires a noise matrix of size {m}."
+        )
         return cls(n, cov, noise, measurement_config, input_config, m)
 
     def to_dict(self) -> dict:
@@ -399,7 +406,9 @@ def _skew_symmetric_to_vector(m: NDArray[float64 | int64]) -> NDArray[float64 | 
 
 
 @njit
-def _principal_radii(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64]) -> tuple[NDArray, NDArray, NDArray]:
+def _principal_radii(
+    lat: NDArray[float64 | int64], alt: NDArray[float64 | int64]
+) -> tuple[NDArray, NDArray, NDArray]:
     """Compute the principal radii of curvature of Earth ellipsoid.
 
     Parameters
@@ -427,7 +436,9 @@ def _principal_radii(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64
 
 
 @njit
-def _gravity(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64], degrees: bool = True) -> NDArray[float64]:
+def _gravity(
+    lat: NDArray[float64 | int64], alt: NDArray[float64 | int64], degrees: bool = True
+) -> NDArray[float64]:
     """Compute gravity vector in NED frame.
 
     Parameters
@@ -447,7 +458,12 @@ def _gravity(lat: NDArray[float64 | int64], alt: NDArray[float64 | int64], degre
         sin_lat = sin(deg2rad(lat))
     else:
         sin_lat = sin(lat)
-    g[:, 2] = earth.GE * (1 + earth.F * sin_lat**2) / (1 - earth.E2 * sin_lat**2) ** 0.5 * (1 - 2 * alt / earth.A)
+    g[:, 2] = (
+        earth.GE
+        * (1 + earth.F * sin_lat**2)
+        / (1 - earth.E2 * sin_lat**2) ** 0.5
+        * (1 - 2 * alt / earth.A)
+    )
     return g
 
 
@@ -507,7 +523,9 @@ def _propagate_imu(
         Omega_ie = _vector_to_skew_symmetric(omega_ie[i])
         c[i] = c_[i] @ (eye(3) + Omega_ib * dt) - (Omega_ie + Omega_en) @ c_[i] * dt
         # Specific force update
-        f: NDArray = 0.5 * (c[i] + c_[i]) @ accels  # - particles[i, 12:]) # This is JUST the INTEGRATION method
+        f: NDArray = (
+            0.5 * (c[i] + c_[i]) @ accels
+        )  # - particles[i, 12:]) # This is JUST the INTEGRATION method
         # --------------------------------------------------------------------------------------------------------
         # Note on the biases:
         # The biases are not updated in this function. They are updated in the main loop of the particle filter.
@@ -522,7 +540,9 @@ def _propagate_imu(
     alt = alt_ - (dt / 2) * (vd_ + velocity[:, 2])
     lat = lat_ + (dt / 2) * ((vn_ / (Rn_ + alt_)) + (velocity[:, 0] / (Rn_ + alt)))
     _, Re, _ = _principal_radii(lat, alt)
-    lon = lon_ + (dt / 2) * ((ve_ / ((Re_ + alt_) * cos(lat_))) + (velocity[:, 1] / ((Re + alt) * cos(lat))))
+    lon = lon_ + (dt / 2) * (
+        (ve_ / ((Re_ + alt_) * cos(lat_))) + (velocity[:, 1] / ((Re + alt) * cos(lat)))
+    )
     lat = rad2deg(lat)
     lon = rad2deg(lon)
     return column_stack([lat, lon, alt, velocity]), c
@@ -578,9 +598,13 @@ def propagate_imu(
     )
     assert dt > 0, "Time step must be greater than zero."
     assert all(noise >= 0), "Noise must be greater than or equal to zero."
-    c_ = transform.mat_from_rph(particles[:, 6:9])  # Calls scipy Rotation under the hood with degrees as true.
+    c_ = transform.mat_from_rph(
+        particles[:, 6:9]
+    )  # Calls scipy Rotation under the hood with degrees as true.
     new_particles, c = _propagate_imu(particles, c_, gyros, accels, dt)
-    new_particles = column_stack([new_particles, transform.mat_to_rph(c), particles[:, 9:]])
+    new_particles = column_stack(
+        [new_particles, transform.mat_to_rph(c), particles[:, 9:]]
+    )
     # jitter = mvn(zeros(particles.shape[1]), diag(noise), len(particles))
     return new_particles  # + jitter
 
@@ -645,7 +669,9 @@ def propagate_ned(
     lat = lat_ + dt / 2 * (vn_ / (Rn_ + lat_) + velocities[:, 0] / (Rn_ + alt))
     # Get new Rn, Re and update longitude
     _, Re, _ = _principal_radii(lat, alt)
-    lon = lon_ + dt / 2 * (ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[:, 1] / ((Re + alt) * cos(lat)))
+    lon = lon_ + dt / 2 * (
+        ve_ / ((Re_ + alt_) * cos(lat_)) + velocities[:, 1] / ((Re + alt) * cos(lat))
+    )
     out = empty_like(particles)
     out[:, 0] = rad2deg(lat)
     out[:, 1] = rad2deg(lon)
@@ -808,20 +834,35 @@ def calculate_truth(trajectory: DataFrame) -> tuple[DataFrame, DataFrame]:
     observations = measurements.Position(
         sim.generate_position_measurements(trajectory[["lat", "lon", "alt"]], 5.0), 5.0
     )
-    init_pva = trajectory.loc[trajectory.index[0], ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"]]
+    init_pva = trajectory.loc[
+        trajectory.index[0],
+        ["lat", "lon", "alt", "VN", "VE", "VD", "roll", "pitch", "heading"],
+    ]
     integrator = strapdown.Integrator(init_pva, True)
     integrator.integrate(increments)
     feedback = filters.run_feedback_filter(
-        init_pva, 5, 2, 1, 1, increments, measurements=[observations], time_step=1.0, with_altitude=True
+        init_pva,
+        5,
+        2,
+        1,
+        1,
+        increments,
+        measurements=[observations],
+        time_step=1.0,
+        with_altitude=True,
     )
     return integrator.trajectory, feedback
 
 
-def initialize_particle_filter(initial_state: NDArray, config: ParticleFilterConfig, bias: float = 0) -> NDArray:
+def initialize_particle_filter(
+    initial_state: NDArray, config: ParticleFilterConfig, bias: float = 0
+) -> NDArray:
     """Initializes the particle filter with the initial state and configuration."""
     assert isinstance(config.n, int), "Number of particles must be an integer."
     assert config.n > 0, "Number of particles must be greater than zero."
-    initial_state = append(initial_state, zeros(config.cov.shape[0] - initial_state.shape[0]))
+    initial_state = append(
+        initial_state, zeros(config.cov.shape[0] - initial_state.shape[0])
+    )
     if bias > 0:
         initial_state[-1] = bias
     print(f"initializing particles about {initial_state}")
@@ -865,7 +906,9 @@ def run_particle_filter(
             truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config, 25
         )
     else:
-        particles = initialize_particle_filter(truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config)
+        particles = initialize_particle_filter(
+            truth.loc[truth.index[0], config.get_base_state()].to_numpy(), config
+        )
     weights = ones((config.n,)) / config.n
     rms_error_2d = zeros(len(trajectory))
     rms_error_3d = zeros_like(rms_error_2d)
@@ -880,8 +923,16 @@ def run_particle_filter(
     # for i, item in enumerate(trajectory.iloc[0:].iterrows()):
     while i < len(truth):
         # Error calculations
-        estimate[i, :], estimate_error[i], estimate_variance[i, :], rms_error_2d[i], rms_error_3d[i] = calculate_errors(
-            particles, weights, truth.loc[truth.index[i], ["lat", "lon", "alt"]].to_numpy()
+        (
+            estimate[i, :],
+            estimate_error[i],
+            estimate_variance[i, :],
+            rms_error_2d[i],
+            rms_error_3d[i],
+        ) = calculate_errors(
+            particles,
+            weights,
+            truth.loc[truth.index[i], ["lat", "lon", "alt"]].to_numpy(),
         )
 
         # Propagate particles
@@ -967,7 +1018,9 @@ def run_particle_filter(
 
 
 def calculate_errors(
-    particles: NDArray[float64 | int64], weights: NDArray[float64], truth: NDArray[float64 | int64]
+    particles: NDArray[float64 | int64],
+    weights: NDArray[float64],
+    truth: NDArray[float64 | int64],
 ) -> tuple[float64, float64, float64, float64, float64, float64]:
     """
     Calculate the errors between the particles and the truth. This function calculates the root mean square error
@@ -1169,7 +1222,9 @@ def plot_estimate(
     contour.set_clim(clim)
     # Plot the colorbar for the map. If the map is taller than wide plot it on the right, otherwise plot it on the
     # bottom
-    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
+    aspect_ratio = (ax.get_xlim()[1] - ax.get_xlim()[0]) / (
+        ax.get_ylim()[1] - ax.get_ylim()[0]
+    )
     if aspect_ratio > 1:
         cbar = fig.colorbar(
             contour,
