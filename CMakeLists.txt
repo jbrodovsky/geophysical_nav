@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 20) # Ubuntu 24.04 has GCC 13.3.0-2; C++20 and modules are only fully supported in GCC 14
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -44,7 +44,6 @@ endif()
 
 # Detect Pixi environment
 set(PIXI_ENV_PATH .pixi/envs/$ENV{PIXI_ENVIRONMENT_NAME})
-
 message(STATUS "PIXI_ENV_PATH: ${PIXI_ENV_PATH}")
 
 # Tell CMake where to find dependencies
@@ -52,13 +51,13 @@ set(CMAKE_PREFIX_PATH ${PIXI_ENV_PATH})
 set(CMAKE_INCLUDE_PATH ${PIXI_ENV_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${PIXI_ENV_PATH}/lib)
 
+# Find Eigen3
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIR})
+
+# Add the source files
 include_directories(src/include)
-
-# If SKBUILD_PROJECT_NAME is not set, we are building the library and not the Python bindings
-
-file(GLOB_RECURSE SRC_FILES src/src/*.cpp)
+file(GLOB_RECURSE SRC_FILES src/src/earth.cpp)
 add_library(navtoolbox SHARED ${SRC_FILES})
 target_link_libraries(navtoolbox PRIVATE Eigen3::Eigen)
 add_executable(main src/src/main.cpp)

@@ -50,7 +50,7 @@ platforms = ["linux-64", "osx-64", "win-64"]
 #geophysical-nav = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-config = "mkdir -p build; cd build; cmake .."
+config = "mkdir -p build; cd build; cmake .. -GNinja"
 compile = {cmd = "cmake --build build --parallel", depends-on = ["config"]}
 format = "ruff format"
 build = "uv build"
@@ -60,3 +60,4 @@ install = {cmd = "uv pip install .", depends-on = ["build"]}
 pybind11 = "*"
 eigen = "*"
 cmake = "*"
+compilers = ">=1.9.0,<2"

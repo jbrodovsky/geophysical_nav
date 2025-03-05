@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include "include/earth.hpp"
 namespace py = pybind11;
+using namespace earth;
 
 PYBIND11_MODULE(earth, m) {
     m.doc() = "WGS84 Earth model class definition and coordinate transformations";
