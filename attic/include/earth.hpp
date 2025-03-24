@@ -73,6 +73,6 @@ namespace earth{
     Eigen::Vector3d gravitation(const double& lat, const double& lon, const double& alt);
     Eigen::Vector3d gravitation(const Eigen::Vector3d& lla);
     Eigen::Vector3d rateNED(const double& lat);
-    // rotation matricies ???
-    // def mat_en_from_ll
+    Eigen::Vector3d calculateTransportRate(const double& lat, const double& alt, const double& vel_N, const double& vel_E, const double& vel_D);
+    Eigen::Vector3d calculateTransportRate(const Eigen::Vector3d& lla, const Eigen::Vector3d& vel);
 } // namespace earth

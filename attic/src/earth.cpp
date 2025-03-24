@@ -63,9 +63,9 @@ Eigen::Matrix3d earth::rotateECEFToNED(const double& lat, const double& lon) {
  */
 Eigen::Matrix3d earth::rotateNEDToBody(const double& roll, const double& pitch, const double& yaw) {
     Eigen::Matrix3d R;
-    R = (Eigen::AngleAxisd(roll * earth::DEG2RAD, Eigen::Vector3d::UnitX()) *
-        Eigen::AngleAxisd(pitch * earth::DEG2RAD, Eigen::Vector3d::UnitY()) *
-        Eigen::AngleAxisd(yaw * earth::DEG2RAD, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+    R = (Eigen::AngleAxisd(yaw * earth::DEG2RAD, Eigen::Vector3d::UnitZ()) *
+         Eigen::AngleAxisd(pitch * earth::DEG2RAD, Eigen::Vector3d::UnitY()) *
+         Eigen::AngleAxisd(roll * earth::DEG2RAD, Eigen::Vector3d::UnitX())).toRotationMatrix();
     return R;
 }
 /**
@@ -418,14 +418,14 @@ double earth::gravity(const double& lat, const double& alt){
     double sin_lat = sin(earth::DEG2RAD * lat);
     double g0 =  (earth::GE * (1 + earth::k * sin_lat * sin_lat)) / 
         sqrt(1 - earth::ECCENTRICITY_SQUARED * sin_lat * sin_lat);
-    return g0 - 3.086e-6 * alt; // Cassinis height dependence
+    return g0 - 3.08e-6 * alt; // Cassinis height dependence
 }
 /**
  * @brief Computes the gravitational force in the ECEF frame as a vector.
  * 
- * @param lat double, latitude in degrees
- * @param lon double, longitude in degrees
- * @param alt double, altitude above sea level in meters
+ * @param lat double, NED latitude in degrees
+ * @param lon double, NED longitude in degrees
+ * @param alt double, NED altitude above sea level in meters
  * @return Eigen::Vector3d 
  */
 Eigen::Vector3d earth::gravitation(const double& lat, const double& lon, const double& alt){
@@ -465,4 +465,20 @@ Eigen::Vector3d earth::rateNED(const double& lat){
             0, 
             -earth::RATE * sin_lat;
     return rate;
+}
+
+Eigen::Vector3d earth::calculateTransportRate(const double& lat, const double& alt, const double& vel_N, const double& vel_E, const double& vel_D) {
+    std::tuple<double, double, double> radii = earth::principalRadii(lat, alt);
+    double R_N = std::get<0>(radii);
+    double R_E = std::get<1>(radii);
+    
+    double lat_rad = lat * earth::DEG2RAD;
+    double omega_en_n_x = vel_E / (R_N + alt);
+    double omega_en_n_y = -vel_N / (R_E + alt);
+    double omega_en_n_z = -vel_E * std::tan(lat_rad) / (R_N + alt);
+    
+    return {omega_en_n_x, omega_en_n_y, omega_en_n_z};
+}
+Eigen::Vector3d earth::calculateTransportRate(const Eigen::Vector3d& lla, const Eigen::Vector3d& vel) {
+    return calculateTransportRate(lla(0), lla(2), vel(0), vel(1), vel(2));
 }

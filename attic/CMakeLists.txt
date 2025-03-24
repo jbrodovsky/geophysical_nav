@@ -24,18 +24,18 @@ add_compile_options(
 # Additional flags for Debug mode
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_compile_options(
-        -fsanitize=address
+        # -fsanitize=address
         -fsanitize=undefined
-        -fsanitize=leak
-        -fsanitize=thread
+        # -fsanitize=leak
+        # -fsanitize=thread
         -fno-omit-frame-pointer
         -g
     )
     add_link_options(
-        -fsanitize=address
+        #-fsanitize=address
         -fsanitize=undefined
-        -fsanitize=leak
-        -fsanitize=thread
+        #-fsanitize=leak
+        #-fsanitize=thread
     )
 else()
     # Optimizations for Release

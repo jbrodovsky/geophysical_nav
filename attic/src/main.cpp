@@ -26,6 +26,7 @@ int main() {
     std::cout << "Gravity: " << g << std::endl;
     Eigen::Vector3d grav = earth::gravitation(lla(0), lla(1), lla(2));
     std::cout << "Gravitation: " << std::endl << grav << std::endl;
+    std::cout << "Gravitation vector in NED: " << std::endl << earth::rotateECEFToNED(lla(0), lla(1)) * grav << std::endl;
     Eigen::Vector3d rate = earth::rateNED(lla(0));
     std::cout << "Rate NED: " << std::endl << rate << std::endl;
     std::cout << "=============================\n";

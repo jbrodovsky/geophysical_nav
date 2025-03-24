@@ -4,6 +4,25 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 15 March 2025
+
+Haha, never mind I'm going with Rust. I'm tired of CMake crap. Python build backend is being converted to `maturin` and `pyo3` for the Python bindings. The C++ backend is being converted to Rust. The project structure is as follows:
+
+```plaintext
+geophysical_nav/              // root folder
+  src/                        // ALL source code
+    geophysical_nav/          // Python package root
+      data_management         // A python module folder
+      geophysical             // A python module folder
+    navtoolbox.rs             // Primary Rust library file for the modules
+    <rust_module>.rs          // All remaining Rust source files for modules
+    <rust_executables>.rs     // Any/all Rust executables (ex: main.rs)
+  scripts/                    // Experiment scripts (primarily Python)
+  tests/                      // Python test scripts
+  pyproject.toml
+  Cargo.toml
+```
+
 ### Update 3 March 2025
 
 For career building purposes, skill development, and actual computational speed, I'm going to be incorporating C++ on the backend of some modules, namely the navigation toolbox for the actual nav filters. Refactored the repository to use `uv` and `scikit-build-core` to build the combined package and `pybind11` to create the actual Python C++ bindings. TBD on whether or not I'll stick with `multiprocessing` for parallel processing or switch to a C++ varient.

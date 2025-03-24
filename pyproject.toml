@@ -1,7 +1,7 @@
 [project]
 name = "geophysical-nav"
 version = "0.1.0"
-description = "Add your description here"
+description = "A toolbox for researching geophysical based navigation"
 readme = "README.md"
 authors = [
     { name = "James Brodovsky", email = "james.brodovsky@gmail.com" }
@@ -12,8 +12,8 @@ dependencies = [
     "filterpy",
     "h5py",
     "haversine",
-    "ipython",
     "matplotlib",
+    "notebook",
     "numba",
     "numpy",
     "pandas",
@@ -26,38 +26,50 @@ dependencies = [
     "tqdm",
 ]
 
-[tool.scikit-build]
-cmake.build-type = "Release"
-cmake.args = [
-    "-DCMAKE_CXX_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow",
-    "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG",
-    "-DCMAKE_CXX_FLAGS_DEBUG=-g -fsanitize=address -fsanitize=undefined -fsanitize=leak -fsanitize=thread"
-]
-
-
-minimum-version = "build-system.requires"
-build-dir = "build/{wheel_tag}"
-
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11"]
-build-backend = "scikit_build_core.build"
+requires = ["Maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
-[tool.pixi.project]
-channels = ["conda-forge"]
-platforms = ["linux-64", "osx-64", "win-64"]
+[tool.maturin]
+module-name = "geophysical_nav.navtoolbox"
+python-packages = ["geophysical_nav"]
+python-source = "src"
 
-[tool.pixi.pypi-dependencies]
+
+# Old C++ backend
+# 
+# [tool.scikit-build]
+# cmake.build-type = "Release"
+# cmake.args = [
+#     "-DCMAKE_CXX_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow",
+#     "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG",
+#     "-DCMAKE_CXX_FLAGS_DEBUG=-g -fsanitize=address -fsanitize=undefined -fsanitize=leak -fsanitize=thread"
+# ]
+
+
+# minimum-version = "build-system.requires"
+# build-dir = "build/{wheel_tag}"
+
+# [build-system]
+# requires = ["scikit-build-core>=0.10", "pybind11"]
+# build-backend = "scikit_build_core.build"
+
+# [tool.pixi.project]
+# channels = ["conda-forge"]
+# platforms = ["linux-64", "osx-64", "win-64"]
+
+# [tool.pixi.pypi-dependencies]
 #geophysical-nav = { path = ".", editable = true }
 
-[tool.pixi.tasks]
-config = "mkdir -p build; cd build; cmake .. -GNinja"
-compile = {cmd = "cmake --build build --parallel", depends-on = ["config"]}
-format = "ruff format"
-build = "uv build"
-install = {cmd = "uv pip install .", depends-on = ["build"]}
+# [tool.pixi.tasks]
+# config = "mkdir -p build; cd build; cmake .. -GNinja"
+# compile = {cmd = "cmake --build build --parallel", depends-on = ["config"]}
+# format = "ruff format"
+# build = "uv build"
+# install = {cmd = "uv pip install .", depends-on = ["build"]}
 
-[tool.pixi.dependencies]
-pybind11 = "*"
-eigen = "*"
-cmake = "*"
-compilers = ">=1.9.0,<2"
+# [tool.pixi.dependencies]
+# pybind11 = "*"
+# eigen = "*"
+# cmake = "*"
+# compilers = ">=1.9.0,<2"
