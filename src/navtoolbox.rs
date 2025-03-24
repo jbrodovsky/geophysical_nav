@@ -1,11 +1,22 @@
-/// Strapdown navigation toolbox for various navigation filters
-///
-/// This crate provides a set of tools for implementing navigation filters in Rust. The filters are implemented as structs that can be initialized and updated with new sensor data. The filters are designed to be used in a strapdown navigation system, where the orientation of the sensor is known and the sensor data can be used to estimate the position and velocity of the sensor.
-/// Primarily built off of three crate dependencies:
-/// - nav-types: Provides the basic coordinate types and conversions.
-/// - nalgebra: Provides the linear algebra tools for the filters.
-/// - haversine-rs: Provides the haversine formula for calculating distances between two points on the Earth's surface.
-/// All other functionality is built on top of these crates. The primary reference text is _Prinicples of GNSS, Inertial, and Multisensor Integrated Navigation Systems, 2nd Edition_ by Paul D. Groves. Where applicable, calculations will be referenced by the appropriate equation number tied to the book. In general, variables will be named according to the quantity they represent and not the symbol used in the book. For example, the Earth's radius will be named `EARTH_RADIUS` instead of `a`.
+//! Strapdown navigation toolbox for various navigation filters
+//!
+//! This crate provides a set of tools for implementing navigation filters in Rust. The filters are implemented 
+//! as structs that can be initialized and updated with new sensor data. The filters are designed to be used in 
+//! a strapdown navigation system, where the orientation of the sensor is known and the sensor data can be used 
+//! to estimate the position and velocity of the sensor.
+//! 
+//! Primarily built off of three crate dependencies:
+//! - nav-types: Provides basic coordinate types and conversions.
+//! - nalgebra: Provides the linear algebra tools for the filters.
+//! - haversine-rs: Provides the haversine formula for calculating distances between two points on the Earth's surface.
+//! All other functionality is built on top of these crates. The primary reference text is _Prinicples of GNSS, 
+//! Inertial, and Multisensor Integrated Navigation Systems, 2nd Edition_ by Paul D. Groves. Where applicable, 
+//! calculations will be referenced by the appropriate equation number tied to the book. In general, variables 
+//! will be named according to the quantity they represent and not the symbol used in the book. For example, 
+//! the Earth's radius will be named `EARTH_RADIUS` instead of `a`. This style is sometimes relaxed within the 
+//! body of a given function, but the general rule is to use descriptive names for variables not mathematical
+//! symbols.
+
 pub mod earth;
 pub mod filter;
 pub mod strapdown;
