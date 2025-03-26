@@ -134,13 +134,9 @@ class GeophysicalMap:
         north_lat: float,
         inflate_bounds: float = 0.0,
     ):
-        assert isinstance(map_type, MeasurementType), (
-            "map_type must be a MeasurementType"
-        )
+        assert isinstance(map_type, MeasurementType), "map_type must be a MeasurementType"
         self.map_type = map_type
-        assert isinstance(
-            map_resolution, (ReliefResolution, GravityResolution, MagneticResolution)
-        ), (
+        assert isinstance(map_resolution, (ReliefResolution, GravityResolution, MagneticResolution)), (
             "map_resolution must be a valid ReliefResolution, GravityResolution, or MagneticResolution"
         )
         self.map_resolution = map_resolution
@@ -150,9 +146,7 @@ class GeophysicalMap:
         assert west_lon < east_lon, "West longitude must be less than east longitude."
         assert south_lat < north_lat, "South latitude must be less than north latitude."
         # Inflate the bounds to ensure that the map section is large enough to interpolate
-        assert 0 <= inflate_bounds, (
-            "Inflation percentage must be greater than or equal to zero."
-        )
+        assert 0 <= inflate_bounds, "Inflation percentage must be greater than or equal to zero."
         if inflate_bounds > 0:
             west_lon, south_lat, east_lon, north_lat = self._inflate_bounds(
                 west_lon, south_lat, east_lon, north_lat, inflate_bounds
@@ -169,25 +163,19 @@ class GeophysicalMap:
         self.north_lat = north_lat if north_lat <= 90 else 90
         # Validate map type and construct GMT map name to call via grdcut
         if map_type == MeasurementType.RELIEF or map_type == MeasurementType.BATHYMETRY:
-            assert isinstance(map_resolution, ReliefResolution), (
-                "map_resolution must be a ReliefResolution"
-            )
+            assert isinstance(map_resolution, ReliefResolution), "map_resolution must be a ReliefResolution"
             self.map_data = load_earth_relief(
                 resolution=map_resolution.value,
                 region=[west_lon, east_lon, south_lat, north_lat],
             )
         elif map_type == MeasurementType.GRAVITY:
-            assert isinstance(map_resolution, GravityResolution), (
-                "map_resolution must be a GravityResolution"
-            )
+            assert isinstance(map_resolution, GravityResolution), "map_resolution must be a GravityResolution"
             self.map_data = load_earth_free_air_anomaly(
                 resolution=map_resolution.value,
                 region=[west_lon, east_lon, south_lat, north_lat],
             )
         elif map_type == MeasurementType.MAGNETIC:
-            assert isinstance(map_resolution, MagneticResolution), (
-                "map_resolution must be a MagneticResolution"
-            )
+            assert isinstance(map_resolution, MagneticResolution), "map_resolution must be a MagneticResolution"
             self.map_data = load_earth_magnetic_anomaly(
                 resolution=map_resolution.value,
                 region=[west_lon, east_lon, south_lat, north_lat],
@@ -197,12 +185,8 @@ class GeophysicalMap:
 
     def get_map_point(
         self,
-        longitudes: list[int | float | int64 | float64]
-        | NDArray[int64 | float64]
-        | DataArray,
-        latitudes: list[int | float | int64 | float64]
-        | NDArray[int64 | float64]
-        | DataArray,
+        longitudes: list[int | float | int64 | float64] | NDArray[int64 | float64] | DataArray,
+        latitudes: list[int | float | int64 | float64] | NDArray[int64 | float64] | DataArray,
     ) -> NDArray[float64]:
         """
         Wrapper on DataArray.interp() to query the map and simply get the returned values.
@@ -258,14 +242,3 @@ class GeophysicalMap:
 
     def __repr__(self):
         return f"GeophysicalMap<{self.map_type}, {self.map_resolution}, {self.west_lon}, {self.east_lon}, {self.south_lat}, {self.north_lat}>"
-
-    # TODO: #75 Add method to save the map data to a netCDF file
-    # def save(self, filename: str):
-    #    """
-    #    Save the map data to a netCDF file. Uses the xarray.DataArray.to_netcdf()
-    #    method but also needs to save the resolution as attributes in the netCDF file.
-    #    """
-
-    # TODO: #76 Add method to load the map data from a netCDF file
-    # @classmethod
-    # def load(self, filename: str):

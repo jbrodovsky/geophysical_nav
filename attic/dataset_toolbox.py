@@ -5,9 +5,6 @@ as well as tools for saving and organizing the data into a database in either a 
 based .db format or a folder of .csv files.
 """
 
-# TODO: #23 Should look into converting sqlite3 to SQLAlchemy or Azure SQL format
-# TODO: #24 Refactor dataset_toolbox to only process sensor logger data
-
 import argparse
 import fnmatch
 import os
@@ -52,16 +49,12 @@ def process_sensor_logger_dataset(folder: str):
     barometer, and GPS data.
     """
 
-    accel = pd.read_csv(
-        f"{folder}/TotalAcceleration.csv", sep=",", header=0, index_col=0, dtype=float
-    )
+    accel = pd.read_csv(f"{folder}/TotalAcceleration.csv", sep=",", header=0, index_col=0, dtype=float)
     accel = accel.rename(columns={"z": "a_z", "y": "a_y", "x": "a_x"})
     accel["a_z"] = -accel["a_z"]
     accel = accel.drop(columns="seconds_elapsed")
 
-    gyros = pd.read_csv(
-        f"{folder}/Gyroscope.csv", sep=",", header=0, index_col=0, dtype=float
-    )
+    gyros = pd.read_csv(f"{folder}/Gyroscope.csv", sep=",", header=0, index_col=0, dtype=float)
     gyros["y"] = -gyros["y"]
     gyros = gyros.rename(columns={"z": "w_z", "y": "w_y", "x": "w_x"})
     gyros = gyros.drop(columns="seconds_elapsed")
@@ -70,25 +63,17 @@ def process_sensor_logger_dataset(folder: str):
     imu = imu.fillna(value=pd.NA)
     imu = _convert_datetime(imu)
 
-    magnetometer = pd.read_csv(
-        f"{folder}/Magnetometer.csv", sep=",", header=0, index_col=0, dtype=float
-    )
+    magnetometer = pd.read_csv(f"{folder}/Magnetometer.csv", sep=",", header=0, index_col=0, dtype=float)
     magnetometer["z"] = -magnetometer["z"]
-    magnetometer = magnetometer.rename(
-        columns={"z": "mag_z", "y": "mag_y", "x": "mag_x"}
-    )
+    magnetometer = magnetometer.rename(columns={"z": "mag_z", "y": "mag_y", "x": "mag_x"})
     magnetometer = magnetometer.drop(columns="seconds_elapsed")
     magnetometer = _convert_datetime(magnetometer)
 
-    barometer = pd.read_csv(
-        f"{folder}/Barometer.csv", sep=",", header=0, index_col=0, dtype=float
-    )
+    barometer = pd.read_csv(f"{folder}/Barometer.csv", sep=",", header=0, index_col=0, dtype=float)
     barometer = barometer.drop(columns="seconds_elapsed")
     barometer = _convert_datetime(barometer)
 
-    gps = pd.read_csv(
-        f"{folder}/LocationGps.csv", sep=",", header=0, index_col=0, dtype=float
-    )
+    gps = pd.read_csv(f"{folder}/LocationGps.csv", sep=",", header=0, index_col=0, dtype=float)
     gps = gps.drop(columns="seconds_elapsed")
     gps = _convert_datetime(gps)
 
@@ -201,9 +186,7 @@ def _search_folder(folder_path: str, extension: str) -> list:
     return new_file_paths
 
 
-def _convert_datetime(
-    df: pd.DataFrame, timezone: str = "America/New_York"
-) -> pd.DataFrame:
+def _convert_datetime(df: pd.DataFrame, timezone: str = "America/New_York") -> pd.DataFrame:
     """ """
     dates = pd.to_datetime(df.index / 1e9, unit="s").tz_localize("UTC")
     df.index = dates.tz_convert(pytz.timezone(timezone))
@@ -224,9 +207,7 @@ def haversine_angle(origin: tuple, destination: tuple) -> float:
     origin = np.deg2rad(origin)
     d_lon = destination[1] - origin[1]
     x = np.cos(destination[0]) * np.sin(d_lon)
-    y = np.cos(origin[0]) * np.sin(destination[0]) - np.sin(origin[0]) * np.cos(
-        destination[0]
-    ) * np.cos(d_lon)
+    y = np.cos(origin[0]) * np.sin(destination[0]) - np.sin(origin[0]) * np.cos(destination[0]) * np.cos(d_lon)
     heading = np.rad2deg(np.arctan2(x, y))
     return heading
 
@@ -270,11 +251,7 @@ def load_trackline_data(filepath: str, filtering_window=30, filtering_period=1):
     data["distance"] = dist
     data["heading"] = head
     data["vel"] = data["distance"] / (data["DT"] / timedelta(seconds=1))
-    data["vel_filt"] = (
-        data["vel"]
-        .rolling(window=filtering_window, min_periods=filtering_period)
-        .median()
-    )
+    data["vel_filt"] = data["vel"].rolling(window=filtering_window, min_periods=filtering_period).median()
     data["vN"] = np.cos(np.deg2rad(head)) * data["vel_filt"]
     data["vE"] = np.sin(np.deg2rad(head)) * data["vel_filt"]
     return data
@@ -341,8 +318,7 @@ def parse_args():
         type=float,
         default=60,
         required=False,
-        help="Minimum duration of a continuous dataset. Default is 60 minutes. Input "
-        + "units are minutes.",
+        help="Minimum duration of a continuous dataset. Default is 60 minutes. Input " + "units are minutes.",
     )
     return parser.parse_args()
 
