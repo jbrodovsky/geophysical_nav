@@ -141,7 +141,7 @@ impl StrapdownState {
         let rotation_rate: Matrix3<f64> =
             earth::vector_to_skew_symmetric(&earth::earth_rate_lla(&self.position[0]));
         let r = earth::ecef_to_lla(&self.position[0], &self.position[1]);
-        let grav: Vector3<f64> = earth::gravitation(&self.position[0], &self.position[2]);
+        let grav: Vector3<f64> = earth::gravitation(&self.position[0], &self.position[1], &self.position[2]);
         let v_1: Vector3<f64> = &self.velocity
             + (f_1 + grav - r * (transport_rate + 2.0 * rotation_rate) * &self.velocity) * dt;
         return v_1;
@@ -175,8 +175,8 @@ impl StrapdownState {
                     + v_1[1] / ((r_e_1 + &self.position[2]) * &lat_1.cos()))
                 * dt;
         // Update position to degrees
-        self.position[0] = lat_1;
-        self.position[1] = lon_1;
+        self.position[0] = lat_1.to_degrees();
+        self.position[1] = lon_1.to_degrees();
         // Update attitude to rotation
         self.attitude = Rotation3::from_matrix(&c_1);
         // Update velocity
