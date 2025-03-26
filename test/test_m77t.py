@@ -57,7 +57,9 @@ class TestM77TToolbox(unittest.TestCase):
         """
         Test that the M77T data can be converted to a DataFrame.
         """
-        df_in: DataFrame = read_csv(filepath_or_buffer="./test/test_data.m77t", delimiter="\t", header=0)
+        df_in: DataFrame = read_csv(
+            filepath_or_buffer="./test/test_data.m77t", delimiter="\t", header=0
+        )
         df_out: DataFrame = m77t.m77t_to_df(data=df_in)
         self.assertIsInstance(obj=df_out, cls=DataFrame)
         self.assertIn(member="LAT", container=df_out.columns)
@@ -103,7 +105,9 @@ class TestM77TToolbox(unittest.TestCase):
         self.assertTrue(expr=m77t.calculate_bearing_vector)
         coords1: list[list[int]] = [[0, 0], [0, 0]]
         coords2: list[list[int]] = [[1, 1], [1, 0]]
-        result: NDArray = m77t.calculate_bearing_vector(coords1=coords1, coords2=coords2)
+        result: NDArray = m77t.calculate_bearing_vector(
+            coords1=coords1, coords2=coords2
+        )
         self.assertAlmostEqual(first=result[0], second=45, places=2)
         self.assertAlmostEqual(first=result[1], second=0, places=2)
 

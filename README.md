@@ -4,16 +4,64 @@ Toolbox for INS aiding via geophysical position feedback. Restructuring my old r
 
 ## Working notes
 
+### Update 15 March 2025
+
+Haha, never mind I'm going with Rust. I'm tired of CMake crap. Python build backend is being converted to `maturin` and `pyo3` for the Python bindings. The C++ backend is being converted to Rust. The project structure is as follows:
+
+```plaintext
+geophysical_nav/              // root folder
+  src/                        // ALL source code
+    geophysical_nav/          // Python package root
+      data_management         // A python module folder
+      geophysical             // A python module folder
+    navtoolbox.rs             // Primary Rust library file for the modules
+    <rust_module>.rs          // All remaining Rust source files for modules
+    <rust_executables>.rs     // Any/all Rust executables (ex: main.rs)
+  scripts/                    // Experiment scripts (primarily Python)
+  tests/                      // Python test scripts
+  pyproject.toml
+  Cargo.toml
+```
+
+### Update 3 March 2025
+
+For career building purposes, skill development, and actual computational speed, I'm going to be incorporating C++ on the backend of some modules, namely the navigation toolbox for the actual nav filters. Refactored the repository to use `uv` and `scikit-build-core` to build the combined package and `pybind11` to create the actual Python C++ bindings. TBD on whether or not I'll stick with `multiprocessing` for parallel processing or switch to a C++ varient.
+
+Package architecture needs to be as follows as `scikit-build-core` defaults to looking for packages in `/src`:
+
+```plaintext
+geophysical_nav/      // root folder
+  src/                // ALL source code
+    include           // C++ headers
+    geophysical_nav/  // Python package root
+      data_management   // A python module folder
+      geophysical       // A python module folder
+    <python_cpp_module>   // A C++ bindings file which defines a module using pybind11
+    src/              // C++ source code
+  scripts/            // Experiment scripts
+  tests/              // Test scripts
+  pyproject.toml
+  setup.py
+```
+
+The project should be managed by `pixi` but setup as a `uv`-like Python project. `pygmt` is availble on PyPI now and should work fine. `pixi` will be used for local environment management of the C++ and Python dependencies by downloading C++ libraries via `conda-forge` and defaulting to PyPi for Python. `pixi` setting should be managed via the `pyproject.toml` file under `[tool.pixi]`. Python dependencies should be listed uner the `[dependencies]` section and C++ dependencies under `[tool.pixi.dependencies]`.
+
+* To build: `uv build`
+* To install: `uv pip install .`
+* To sync Python vitual environment: `uv sync`
+
+Again, the development of the package should be seperate from the experiments.
+
 ### Update 5 Noveber 2024
 
-**Dev environment**
+#### Dev environment
 
 Got fed up with `conda` and switched to `pixi` for environment and package management. Pixi builds on the conda philosophy but instead of having a central local environment it instead builds the environment within the project folder. This requires a slightly different workflow:
 
 1. Project dependencies are listed in the `pyproject.toml` file under the `[tool.pixi]` section. I've additionally seperated out the dependancies for testing, linting, and development into seperate sections. This requires that the appropriate environment be 'activated' (namely `dev` since I use notebooks and other interactive tools in testing) using `pixi shell -e dev`.
 2. The project does not need to build manually built prior to writing an experiment in `/scripts`. Pixi lists the current project as an editable dependancy and builds and installs the project in the environment when the shell and environment is activated using `pixi shell`. Note that the root folder/project name `geophysical_nav` is not required anymore and imports and intellisense works from below the `/src` folder.
 
-**Language usage**
+#### Language usage
 
 I'm getting a little annoyed wrestling with `numba` and don't like storing the navigation states in arrays which require a known order of states. The arrays are somewhat useful for the linear algebra computations they enable, but that can likely be stored and utilized still with small specific sets of states ex: `nav_states.position = [lat, lon, alt]` and `nav_states.velocity = [v_n, v_e, v_d]`. I'm going to see about using Numba's `jitclass` functionality. If that gets annoying, I'll switch to using `pybind11` to write the backend in C++ and use Python as a scripting language to run the simulations and manage the data.
 
@@ -23,15 +71,13 @@ The main issue is that I don't want to write *multiple* versions of the basic st
 
 Using Insync and OneDrive I've gotten around the source data issue. The plan is to store the source data and resulting processed database on OneDrive location and use this a network drive. Insync allows for OneDrive syncing directly to the filesystem on a linux machine and will allow me to transfer and access the data on my remote linux desktop. Development paradigm will be to use my laptop and WSL2 for development and testing. Code will then be pushed to GitHub and pulled down on the remote desktop for testing and deployment and running full-scale simulations.
 
-To that end, I need to look into packaging the source code and library a bit more. I think the current model of packaging it as a conda environment is the best place to start from. 
+To that end, I need to look into packaging the source code and library a bit more. I think the current model of packaging it as a conda environment is the best place to start from.
 
 ### Update 16 July 2024
 
 So I feel that this project is a good enough excuse for me to work on my C/C++ skills as well. Also considering the sheer bulk of data and repetitions I'm going to be making, having a faster backend would be beneficial. I'm going to be using `pybind11` to write the backend code in C++ and then use Python to interface with it. All Python-based backend code should make use of heavy type hints and be transcompiled and built using MyPyC. Simulations and experiments should be conducted in the `scripts` folder and make use of the built source code found in `src`.
 
 The general plan is to use Python more like a highly developed scripting and shell language to run the simulations and manage the data, while the heavy lifting is done in C++. Data pre- and post-processing will be done in Python while the key navigation algorithm code and run-to-run simulation will be done in C++. I'm not yet sure how to best make use of multi threading or parallel processing. The main issue is passing the trajectory information between the two languages. I can convert the DataFrame to a NumPy array and pass that over to C++, but then it's Python running the simulation and I can't make use of C++ proper multi-threading. Alternatively I can rebuild a sqlite client in C++ and have it read the selected data from the database but that seems like a lot of work for little gain. I'll have to think about this more.
-
-
 
 ### Update 14 May 2024
 

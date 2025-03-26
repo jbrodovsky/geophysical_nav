@@ -1,5 +1,7 @@
 """
-Executable for running the particle filter on gravimetric data
+Main CLI Tool and eventual API for the geophysical navigation simulation module.
+This module should take over from the original bathy_pf.py and gravity_pf.py scripts
+and provide a more robust and flexible simulation environment.
 """
 
 import json
@@ -8,10 +10,10 @@ import multiprocessing as mp
 import os
 
 from matplotlib import pyplot as plt
-from pandas import read_csv, to_timedelta
+from pandas import DataFrame, read_csv, to_timedelta
 
-from src.geophysical import db_tools as db
-from src.geophysical.particle_filter import (
+from .db_tools import get_tables, save_dataset, table_to_df
+from .particle_filter import (
     plot_error,
     plot_estimate,
     populate_velocities,
@@ -25,10 +27,11 @@ SOURCE_TRAJECTORIES = ".db/parsed.db"
 DATA_TYPE = "gravity"
 ANNOTATIONS = {"recovery": 1852, "res": 1852}
 
+# GLOBALS
 PLOTS_OUTPUT = f".db/plots_{DATA_TYPE}"
 RESULTS_DB = ".db/results_{DATA_TYPE}.db"
 
-# --- LOGGER SETUP ##############################################################
+# --- LOGGER SETUP ---
 # Create a logger
 logger = logging.getLogger(f"{DATA_TYPE}_pf")
 logger.setLevel(logging.INFO)
@@ -47,11 +50,10 @@ def main():
     Main function
     """
     logger.info("=========================================")
-    logger.info(f"Beginning new run of {DATA_TYPE}_pf.py")
-    tables = db.get_tables(SOURCE_TRAJECTORIES)
+    logger.info("Beginning new run of %s_pf.py", DATA_TYPE)
+    tables = get_tables(SOURCE_TRAJECTORIES)
 
     # Validate data type string
-
     gravity_tables = [table for table in tables if "_G_" in table]
     logger.info("Found tables: %s", gravity_tables)
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -61,11 +63,11 @@ def main():
         os.makedirs(os.path.join(PLOTS_OUTPUT, "estimate"))
     if not os.path.exists(os.path.join(PLOTS_OUTPUT, "errors")):
         os.makedirs(os.path.join(PLOTS_OUTPUT, "errors"))
-    # print("Begginnig processing")
+
     # Get completed tables
     logger.info("Checking for completed tables")
     try:
-        completed_tables = db.get_tables(RESULTS_DB)
+        completed_tables = get_tables(RESULTS_DB)
         remaining_tables = [
             table for table in gravity_tables if table not in completed_tables
         ]
@@ -79,9 +81,8 @@ def main():
         with mp.Pool(processes=mp.cpu_count()) as pool:
             try:
                 pool.starmap(
-                    multiprocessing_wrapper,
+                    processing_wrapper,
                     [(table, config, ANNOTATIONS) for table in remaining_tables],
-                    # chunksize=2,
                 )
             except OSError:
                 logger.error("Error in multiprocessing... probably a memory error")
@@ -90,22 +91,22 @@ def main():
         logger.info("Finished multiprocessing")
         logger.info("Double checking to make sure all tables are complete")
         # Get completed tables
-        completed_tables = db.get_tables(RESULTS_DB)
+        completed_tables = get_tables(RESULTS_DB)
         remaining_tables = [
             table for table in gravity_tables if table not in completed_tables
         ]
         logger.info("Found remaining tables: %s", remaining_tables)
     logger.info("Beginning second linear pass")
     # Second linear pass to check for memory errors
-    completed_tables = db.get_tables(RESULTS_DB)
+    completed_tables = get_tables(RESULTS_DB)
     for table in gravity_tables:
         if table not in completed_tables:
-            multiprocessing_wrapper(table, config, ANNOTATIONS)
+            processing_wrapper(table, config, ANNOTATIONS, "", "")
     logger.info("Summizing results")
-    results_tables = db.get_tables(RESULTS_DB)
+    results_tables = get_tables(RESULTS_DB)
     output_path = os.path.join(PLOTS_OUTPUT, "summary.csv")
     for table in results_tables:
-        df = db.table_to_df(RESULTS_DB, table)
+        df = table_to_df(RESULTS_DB, table)
         summary = summarize_results(table, df, 1852)
         summary.to_csv(
             output_path,
@@ -116,8 +117,7 @@ def main():
         "Finished summarizing results. Process complete. Executing post processing."
     )
 
-    post_process_batch(".db/plots/summary.csv", RESULTS_DB)
-    return None
+    post_process_batch(f"{PLOTS_OUTPUT}/summary.csv", RESULTS_DB)
 
 
 def post_process_batch(
@@ -145,7 +145,7 @@ def post_process_batch(
     :returns: None
 
     """
-    results_tables = db.get_tables(results_db)
+    results_tables = get_tables(results_db)
     # Load and pre-process the summary file
     summary = read_csv(
         summary_file,
@@ -164,28 +164,41 @@ def post_process_batch(
     summary["num"] = summary["Unnamed: 0"]
     summary = summary.drop(columns=["Unnamed: 0"])
     summary["start"] = to_timedelta(summary["start"])
-    summary["end"] = to_timedelta(summary["end"])
     summary["duration"] = to_timedelta(summary["duration"])
-
-    # check to see if all the tables in results_tables are present in summary["name"] and if not capture the missing tables
-    missing = []
-    for table in results_tables:
-        if table not in summary["name"].values:
-            missing.append(table)
-
-    total = len(results_tables)
-    num_recoveries = total - len(missing)
 
     # Get pixel level results
     pixel = summary.loc[summary["min error"] <= pixel_resolution]
-    # check to see if the tables in pixel are present in summary["name"] and if not capture the missing tables
-    missing = []
-    for table in results_tables:
-        if table not in pixel["name"].values:
-            missing.append(table)
-    below_pixel_fixes = total - len(missing)
-
+    # Find first fixes for each trajectory
     first = summary.loc[summary["num"] == 0]
+    write_summary_data_file(output_location, results_tables, summary, pixel, first)
+
+
+def _check_for_missing_tables(
+    source_tables: list[DataFrame], test_tables: DataFrame
+) -> int:
+    """
+    Check to see if tables from the source are missing from the test tables.
+    """
+    missing = []
+    for table in source_tables:
+        if table not in test_tables["name"].values:
+            missing.append(table)
+    return len(missing)
+
+
+def write_summary_data_file(
+    output_location: str,
+    results_tables: DataFrame,
+    summary: DataFrame,
+    pixel: DataFrame,
+    first: DataFrame,
+):
+    """
+    Writes the general summary of the experiment to a file
+    """
+    total = len(results_tables)
+    num_recoveries = total - _check_for_missing_tables(results_tables, summary)
+    below_pixel_fixes = total - _check_for_missing_tables(results_tables, pixel)
 
     with open(output_location, "w", encoding="utf-8") as f:
         # Summary
@@ -233,16 +246,20 @@ def post_process_batch(
         f.write(f"Minimum error     {pixel['average_error'].min()}\n")
         f.write(f"Maximum error     {pixel['average_error'].max()}\n")
 
-    return None
 
-
-def multiprocessing_wrapper(table, config, annotations):
+def processing_wrapper(
+    table: str,
+    config: dict,
+    annotations: dict,
+    source_trajectories_location: str,
+    output_plots_location: str,
+) -> None:
     """
     multiprocessing wrapper for process_particle_filter
     """
 
     logger.info("Starting processing for table: %s", table)
-    df = db.table_to_df(SOURCE_TRAJECTORIES, table)
+    df = table_to_df(source_trajectories_location, table)
     logger.info("Loaded table: %s", table)
     df = populate_velocities(df)
     logger.info("Begining run: %s", table)
@@ -262,7 +279,7 @@ def multiprocessing_wrapper(table, config, annotations):
     #     logger.error(e.with_traceback())
     #     return
     logger.info("%s run complete", table)
-    db.save_dataset(
+    save_dataset(
         [results],
         [table],
         output_location=".db",
@@ -270,14 +287,16 @@ def multiprocessing_wrapper(table, config, annotations):
         dataset_name="results_gravity",
     )
     logger.info("Saved results for table: %s", table)
-    fig, _ = plot_estimate(geo_map, results)
+    fig, _ = plot_estimate(geo_map, results, measurment_type=config["measurment_type"])
     logger.info("Plotting estimate for table: %s", table)
-    fig.savefig(os.path.join(PLOTS_OUTPUT, "estimate", f"{table}_estimate.png"))
+    fig.savefig(
+        os.path.join(output_plots_location, "estimate", f"{table}_estimate.png")
+    )
     plt.close()
     logger.info("Estimate plot saved for table: %s", table)
     fig, _ = plot_error(results, annotations=annotations)
     logger.info("Plotting error for table: %s", table)
-    fig.savefig(os.path.join(PLOTS_OUTPUT, "errors", f"{table}_error.png"))
+    fig.savefig(os.path.join(output_plots_location, "errors", f"{table}_error.png"))
     plt.close()
     logger.info("Error plot saved for table: %s", table)
     logger.info("Finished processing for table: %s", table)

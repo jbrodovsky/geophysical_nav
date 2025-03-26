@@ -1,85 +1,75 @@
 [project]
 name = "geophysical-nav"
 version = "0.1.0"
-requires-python = ">=3.9"
-description = "A simulator and database manager for geophysical navigation systems"
+description = "A toolbox for researching geophysical based navigation"
 readme = "README.md"
-authors = [{name="James Brodovsky"}]
-
-[project.urls]
-homepage = "https://github.com/jbrodovsky/geophysical_nav"
-
-[project.scripts]
-dbmgr = "data_management.dbmgr:main"
+authors = [
+    { name = "James Brodovsky", email = "james.brodovsky@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "anglewrapper",
+    "filterpy",
+    "h5py",
+    "haversine",
+    "matplotlib",
+    "notebook",
+    "numba",
+    "numpy",
+    "pandas",
+    "pygmt",
+    "python-ins",
+    "pytz",
+    "ruff",
+    "scikit-learn",
+    "sqlalchemy",
+    "tqdm",
+]
 
 [build-system]
-requires = ["setuptools", "wheel", "build"]
-build-backend = "setuptools.build_meta"
+requires = ["Maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
-[tool.setuptools]
-package-dir ={ "" = "src" }
-packages = ["geophysical", "data_management"]
+[tool.maturin]
+module-name = "geophysical_nav.navtoolbox"
+python-packages = ["geophysical_nav"]
+python-source = "src"
 
-[tool.pytest]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py", "tests.py", "test.py"]
-python_classes = ["Test*", "*Test"]
-python_functions = ["test_*"]
 
-[tool.pytest.ini_options]
-pythonpath = "./src"
-addopts = ["--import-mode=importlib", "--cov=src", "--cov-report=term-missing"]
+# Old C++ backend
+# 
+# [tool.scikit-build]
+# cmake.build-type = "Release"
+# cmake.args = [
+#     "-DCMAKE_CXX_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow",
+#     "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG",
+#     "-DCMAKE_CXX_FLAGS_DEBUG=-g -fsanitize=address -fsanitize=undefined -fsanitize=leak -fsanitize=thread"
+# ]
 
-[tool.ruff]
-line-length = 120
 
-[tool.pixi.project]
-channels = ["conda-forge"]
-platforms = ["linux-64", "win-64", "osx-64"]
+# minimum-version = "build-system.requires"
+# build-dir = "build/{wheel_tag}"
 
-[tool.pixi.pypi-dependencies]
-geophysical_nav = { path = ".", editable = true }
-python-ins = "*"
-anglewrapper = "*"
-build = "*"
-setuptools = "*"
-wheel = "*"
+# [build-system]
+# requires = ["scikit-build-core>=0.10", "pybind11"]
+# build-backend = "scikit_build_core.build"
 
-[tool.pixi.dependencies]
-numpy = "*"
-pandas = "*"
-filterpy = "*"
-pytz = "*"
-haversine = "*"
-pygmt = "*"
-numba = "*"
-matplotlib = "*"
-h5py = "*"
-sqlalchemy = "*"
-sqlite = "*"
-tqdm = "*"
-pytables = "*"
-pip = "*"
-ruff = "*"
-scikit-learn = ">=1.6.1,<2"
+# [tool.pixi.project]
+# channels = ["conda-forge"]
+# platforms = ["linux-64", "osx-64", "win-64"]
 
-[tool.pixi.tasks]
-clean = "find ./src -name '*.so' | grep . && find ./src -name '*.so' | xargs rm || true"
-build = {cmd = "rm -r dist; rm -r sdist; rm -r build; find ./src -name '*.so' | xargs rm; python -m build;"}
-install = {cmd = "pip install -e ."}
+# [tool.pixi.pypi-dependencies]
+#geophysical-nav = { path = ".", editable = true }
 
-[tool.pixi.feature.dev.dependencies]
-notebook = "*"
+# [tool.pixi.tasks]
+# config = "mkdir -p build; cd build; cmake .. -GNinja"
+# compile = {cmd = "cmake --build build --parallel", depends-on = ["config"]}
+# format = "ruff format"
+# build = "uv build"
+# install = {cmd = "uv pip install .", depends-on = ["build"]}
 
-[tool.pixi.feature.test.dependencies]
-pytest = "*"
-pytest-cov = "*"
-ruff = "*"
-
-[tool.pixi.feature.test.tasks]
-lint = "ruff format ."
-test = {cmd = "coverage run -m pytest", depends-on = "lint"}
-
-[tool.pixi.environments]
-test = { features = ["test"], solve-group = "default" }
-dev = { features = ["dev"], solve-group = "default" }
+# [tool.pixi.dependencies]
+# pybind11 = "*"
+# eigen = "*"
+# cmake = "*"
+# compilers = ">=1.9.0,<2"
