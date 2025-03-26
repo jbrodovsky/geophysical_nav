@@ -361,6 +361,9 @@ pub fn transport_rate(latitude: &f64, altitude: &f64, velocities: &Vector3<f64>)
     );
     return omega_en_n;
 }
+
+// TODO: #82 Implement magnetic field calculations
+
 /// Calculate the magentic field intesity in the local-level frame
 /// 
 pub fn calculate_magnetic_field() {
