@@ -1,0 +1,2 @@
+version,device name,recording epoch time,recording time,recording timezone,platform,appVersion,device id,sensors,sampleRateMs
+3,Pixel 6a,1691585262790,2023-08-09_12-47-42,America/New_York,android,1.18.0,4f4d863e-818d-41d0-a768-33da35e5bd96,Accelerometer|Gravity|Gyroscope|Orientation|Magnetometer|Barometer|Location|Annotation|TotalAcceleration|LocationNetwork|LocationGps,10|10|10|10|10|0|0||10|0|0

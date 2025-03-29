@@ -1,0 +1,2 @@
+version,device name,recording epoch time,recording time,recording timezone,platform,appVersion,device id,sensors,sampleRateMs,standardisation
+3,SM-S921U,1740847599959,2025-03-01_16-46-39,America/New_York,android,1.41.1,8d9452b2-be81-49b4-aaee-0fca66466fb2,Accelerometer|Gravity|Gyroscope|Orientation|Magnetometer|Compass|Barometer|Location|Annotation|TotalAcceleration|MagnetometerUncalibrated|GyroscopeUncalibrated|AccelerometerUncalibrated,10|10|10|10|10|10|0|0||10|10|10|10,false
